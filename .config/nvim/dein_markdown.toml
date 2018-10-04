@@ -1,0 +1,7 @@
+[[plugins]] 
+repo = 'kannokanno/previm'
+on_ft = ['markdown', 'mkd']
+
+[[plugins]] # :previmOpenでブラウザを開く
+repo = 'tyru/open-browser.vim'
+on_ft = ['markdown', 'mkd']

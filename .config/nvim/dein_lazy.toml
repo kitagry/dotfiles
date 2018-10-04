@@ -1,0 +1,80 @@
+[[plugins]]
+repo = "Shougo/deoplete.nvim"
+on_i = 1
+on_event = "InsertCharPre"
+hook_source = """
+  let g:deoplete#enable_at_startup = 1
+  let g:deoplete#auto_complete_delay = 0
+  let g:deoplete#auto_complete_start_length = 1
+  let g:deoplete#enable_camel_case = 0
+  let g:deoplete#enable_ignore_case = 0
+  let g:deoplete#enable_refresh_always = 0
+  let g:deoplete#enable_smart_case = 1
+  let g:deoplete#file#enable_buffer_path = 1
+  let g:deoplete#max_list = 10000
+  set completeopt-=preview
+  " autocmd InsertLeave,CompleteDone * if pumvisible() == 0 | pclose | endif
+"""
+
+[[plugins]]
+repo = 'Shougo/neomru.vim'
+
+[[plugins]]
+repo = 'Shougo/neoyank.vim'
+
+[[plugins]]
+repo = 'Shougo/denite.nvim'
+depends = ['neomru.vim', 'neoyank.vim']
+hook_add = '''
+nmap <silent> <C-u><C-t> :<C-u>Denite filetype<CR>  # filetypeを変更します
+nmap <silent> <C-u><C-p> :<C-u>Denite file_rec<CR>  # カレントディレクトリ以下のファイル
+nmap <silent> <C-u><C-l> :<C-u>Denite line<CR>  # 現在のファイルのラインを検索
+nmap <silent> <C-u><C-g> :<C-u>Denite grep<CR>  # カレントディレクトリの単語検索
+nmap <silent> <C-u><C-]> :<C-u>DeniteCursorWord grep<CR>  # 検索結果（カーソル以下の文字をインプットにする）
+nmap <silent> <C-u><C-u> :<C-u>Denite file_mru<CR> # 最近開いたバッファ（neomru.vim依存）
+nmap <silent> <C-u><C-y> :<C-u>Denite neoyank<CR> # ヤンクの履歴（neoyank.vim依存）
+nmap <silent> <C-u><C-r> :<C-u>Denite -resume<CR> # 前回のDeniteバッファを再表示する
+nmap <silent> <C-u>; :<C-u>Denite -resume -immediately -select=+1<CR>
+nmap <silent> <C-u>- :<C-u>Denite -resume -immediately -select=-1<CR>
+nmap <silent> <C-u><C-d> :<C-u>call denite#start([{'name': 'file_rec', 'args': ['~/dotfiles']}])<CR>
+nnoremap ml :<C-u>call denite#start([{'name': 'file_rec', 'args': [g:memolist_path]}])<CR>
+'''
+hook_post_source = '''
+call denite#custom#var('file_rec', 'command', ['ag', '--follow', '--nocolor', '--nogroup', '-g', ''])
+call denite#custom#var('grep', 'command', ['ag'])
+call denite#custom#var('grep', 'recursive_opts', [])
+call denite#custom#var('grep', 'pattern_opt', [])
+call denite#custom#var('grep', 'default_opts', ['--follow', '--no-group', '--no-color'])
+" 横割りオープンを`<C-k>`
+call denite#custom#map('insert', '<C-k>', '<denite:do_action:split>')
+" 縦割りオープンを`<C-h>`
+call denite#custom#map('insert', '<C-h>', '<denite:do_action:vsplit>')
+" タブオープンを`<C-t>`
+call denite#custom#map('insert', '<C-t>', '<denite:do_action:tabopen>')
+'''
+
+[[plugins]]
+repo = 'scrooloose/syntastic'
+hook_source = '''
+  let g:syntastic_mode_map = {'mode': 'passive', 'active_filetypes': ['python', 'ruby']}
+  let g:syntastic_python_checkers = ['pyflakes', 'pep8']
+  let g:syntastic_ruby_checkers = ['rubocop']
+  let g:syntastic_check_on_open = 1
+'''
+
+[[plugins]]
+repo = 'tpope/vim-commentary'
+
+[[plugins]]
+repo = 'tpope/vim-surround'
+
+# vim-surroundを.で繰り返せるようにする。
+[[plugins]]
+repo = 'tpope/vim-repeat'
+hook_post_source = '''
+  silent! call repeat#set("\<Plug>MyWonderfulMap", v:count)
+'''
+hook_add = '''
+  nmap B :Buffers<CR>
+  nmap t :Files
+'''

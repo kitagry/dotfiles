@@ -1,0 +1,14 @@
+[[plugins]]
+repo = 'let-def/vimbufsync'
+on_ft = 'coq'
+
+[[plugins]]
+repo = 'the-lambda-church/coquille'
+on_ft = 'coq'
+depends = ['vimbufsync']
+hook_source = '''
+  nmap <silent> <C-c><C-l> :CoqLaunch<CR>
+  nmap <silent> <C-c><C-n> :CoqNext<CR>
+  nmap <silent> <C-c><C-u> :CoqUndo<CR>
+  nmap <silent> <C-c><C-c> :CoqToCursor<CR>
+'''
