@@ -2,7 +2,7 @@
 
 set -eu
 
-DOT_DIRECTORY="${HOME}/dotfiles"
+DOT_DIRECTORY=${PWD}
 DOT_CONFIG_DIRECTORY=".config"
 
 for f in .??*
