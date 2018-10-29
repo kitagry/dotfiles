@@ -23,6 +23,7 @@ alias gs="git status"
 alias gcm="git checkout master"
 alias gpom="git pull origin master"
 alias gcb="git checkout -b"
+alias gbda="git branch --merged | grep -v '*' | xargs -I % git branch -d %"
 ###########################
 
 ###########################
