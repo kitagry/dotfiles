@@ -62,6 +62,12 @@ zplug "zsh-users/zsh-syntax-highlighting"
 zplug "mafredri/zsh-async", from:github
 zplug "sindresorhus/pure", use:pure.zsh, from:github, as:theme
 
+zplug "zsh-users/zaw", from:github
+if zplug check zsh-users/zaw; then
+  bindkey '^R' zaw-history
+  bindkey '^B' zaw-git-branches
+fi
+
 if ! zplug check --verbose; then
   printf 'Install? [y/N]: '
   if read -q; then
