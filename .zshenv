@@ -7,6 +7,8 @@ export PATH="$GOPATH/bin:$PATH"
 
 export GOPATH="$HOME/go/"
 
+export NVIM_PYTHON_LOG_FILE="$HOME/.config/nvim/logs/python.log"
+
 ###########################
 # unixコマンドのalias
 ###########################

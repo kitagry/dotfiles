@@ -219,8 +219,8 @@ nnoremap っｙ yy
 
 
 " pythonのホストの登録
-let g:python_host_prog = '/usr/local/bin/python2'
-let g:python3_host_prog = '/Users/ryo/.pyenv/shims/python3'
+let g:python_host_prog = expand('~/.pyenv/versions/2.7.15/bin/pip2')
+let g:python3_host_prog = expand('~/.pyenv/shims/python3')
 
 
 " laravelの設定
