@@ -10,14 +10,11 @@ repo = 'tpope/vim-fugitive'
 
 [[plugins]]
 repo = 'vim-airline/vim-airline'
-depends = ['vim-air-line', 'tagbar', 'vim-fugitive']
+depends = ['vim-airline-themes', 'tagbar', 'vim-fugitive']
 hook_add = '''
 if exists('g:nyaovim_version')
-  let g:airline_powerline_fonts = 0
   let g:airline_left_sep = ''
   let g:airline_right_sep = ''
-else
-  let g:airline_powerline_fonts = 1
 endif
 let g:airline#extensions#tabline#enabled = 1
 if !has('nvim')
@@ -68,3 +65,10 @@ merged = 0
 [[plugins]]
 repo = 'junegunn/fzf.vim'
 depends = ['junegunn/fzf']
+
+[[plugins]]
+repo = 'neomake/neomake'
+hook_add = '''
+  autocmd! BufWritePost * Neomake
+  let g:neomake_python_enabled_makers = ['flake8']
+'''

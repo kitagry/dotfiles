@@ -1,5 +1,6 @@
 [[plugins]]
 repo = "Shougo/deoplete.nvim"
+do = ":UpdateRemotePlugins"
 on_i = 1
 on_event = "InsertCharPre"
 hook_source = """

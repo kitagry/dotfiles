@@ -1,6 +1,3 @@
 [[plugins]]
 repo = "zchee/deoplete-jedi"
 on_ft = "python"
-hook_source = """
-  let g:python3_host_prog = '/Users/ryo/.pyenv/versions/anaconda3-4.3.1/bin//python'
-"""
