@@ -5,7 +5,11 @@ export PATH="/usr/local/lib/:/usr/local/texlive/2017/bin/x86_64-darwin/tlmgr:$PA
 export PATH="$HOME/.goenv/bin:$PATH"
 export PATH="$GOPATH/bin:$PATH"
 
+export GOROOT="/Users/ryo/.goenv/versions/1.9.2"
 export GOPATH="$HOME/go/"
+alias cdg="cd $GOPATH/src/github.com/kitagry/"
+
+export QT_HOMEBREW=true
 
 ###########################
 # unixコマンドのalias

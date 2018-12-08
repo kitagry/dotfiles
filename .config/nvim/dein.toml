@@ -38,7 +38,7 @@ hook_add = '''
 let g:quickrun_config = {
 \   'tex': {
 \       'command': 'latexmk',
-\       'exec': ['%c -gg -pdfdvi %s', 'open %s:r.pdf']
+\       'exec': ['%c -c -gg -pdfdvi %s', 'open %s:r.pdf']
 \   },
 \}
 '''
