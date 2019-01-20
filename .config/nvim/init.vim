@@ -36,23 +36,14 @@ if dein#load_state(s:dein_dir)
 
   let s:toml             = g:rc_dir . '/dein.toml'
   let s:lazy_toml        = g:rc_dir . '/dein_lazy.toml'
-  let s:go_toml          = g:rc_dir . '/dein_go.toml'
-  let s:tex_toml         = g:rc_dir . '/dein_tex.toml'
 
   " TOML を読み込み、キャッシュしておく
   if exists('g:nyaovim_version')
     call dein#load_toml('~/.config/nyaovim/dein.toml', {'lazy': 1})
   endif
 
-  if has('nvim')
-    call dein#load_toml(s:toml,          {'lazy': 0})
-    call dein#load_toml(s:lazy_toml,     {'lazy': 1})
-    call dein#load_toml(s:go_toml,       {'lazy': 1})
-    call dein#load_toml(s:tex_toml,      {'lazy': 0})
-  else
-    call dein#load_toml(s:toml,        {'lazy': 0})
-    call dein#load_toml(s:lazy_toml,   {'lazy': 1})
-  endif
+  call dein#load_toml(s:toml,          {'lazy': 0})
+  call dein#load_toml(s:lazy_toml,     {'lazy': 1})
 
   " 設定終了
   call dein#end()
