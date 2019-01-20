@@ -51,10 +51,6 @@ if [ -x "`which pyenv 2>/dev/null`" ]; then
   eval "$(pyenv init - --no-rehash)"
 fi
 
-if [ -x "`which goenv 2>/dev/null`" ]; then
-  eval "$(goenv init - --no-rehash)"
-fi
-
 export ZPLUG_HOME=/usr/local/opt/zplug
 source $ZPLUG_HOME/init.zsh
 

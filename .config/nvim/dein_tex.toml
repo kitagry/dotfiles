@@ -1,2 +1,3 @@
 [[plugins]]
 repo = 'lervag/vimtex'
+on_ft = 'tex'

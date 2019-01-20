@@ -1,3 +1,0 @@
-[[plugins]]
-repo = 'baabelfish/nvim-nim'
-on_ft = 'nim'

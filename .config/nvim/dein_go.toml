@@ -2,13 +2,13 @@
 repo = 'fatih/vim-go'
 on_ft = 'go'
 
-[[plugins]]
-repo = 'zchee/deoplete-go'
-build = 'make'
-on_ft = 'go'
-depends = ['deoplete.nvim']
-hook_source = '''
-  let g:deoplete#sources#go#gocode_binary = $GOPATH.'/bin/gocode'
-  let g:deoplete#sources#go#sort_class = ['func', 'package', 'type', 'var', 'const']
-  let g:deoplete#sources#go#package_dot = 1
-'''
+# [[plugins]]
+# repo = 'zchee/deoplete-go'
+# build = 'make'
+# on_ft = 'go'
+# depends = ['deoplete.nvim']
+# hook_source = '''
+#   let g:deoplete#sources#go#gocode_binary = $GOPATH.'/bin/gocode'
+#   let g:deoplete#sources#go#sort_class = ['func', 'package', 'type', 'var', 'const']
+#   let g:deoplete#sources#go#package_dot = 1
+# '''

@@ -1,28 +1,54 @@
+[[plugins]]
+repo = 'prabirshrestha/async.vim'
+
+[[plugins]]
+repo = 'prabirshrestha/vim-lsp'
+depends = ['async.vim']
+hook_add = '''
+if executable('golsp')
+    au User lsp_setup call lsp#register_server({
+        \ 'name': 'golsp',
+        \ 'cmd': {server_info->['golsp', '-mode', 'stdio']},
+        \ 'whitelist': ['go'],
+        \ })
+endif
+'''
+
+[[plugins]]
+repo = 'prabirshrestha/asyncomplete.vim'
+hook_add = '''
+let g:asyncomplete_log_file = expand('~/.config/nvim/dein/asyncomplete.log')
+let g:asyncomplete_auto_popup = 1
+let g:lsp_async_completion = 1
+let g:asyncomplete_remove_duplicates = 1
+source ~/.config/nvim/dein/repos/github.com/prabirshrestha/asyncomplete.vim/autoload/asyncomplete.vim
+'''
+
+[[plugins]]
+repo = 'prabirshrestha/asyncomplete-ultisnips.vim'
+depends = ['asyncomplete.vim']
+
+[[plugins]]
+repo = 'prabirshrestha/asyncomplete-lsp.vim'
+depends = ['vim-lsp', 'asyncomplete.vim']
+merged = 0
+hook_add = '''
+let g:lsp_log_verbose = 1
+let g:lsp_log_file = expand('~/.config/nvim/dein/vim-lsp.log')
+'''
+
 [[plugins]] # toml syntax
 repo = 'cespare/vim-toml'
 on_ft = 'toml'
-
-[[plugins]]
-repo = 'majutsushi/tagbar'
 
 [[plugins]]
 repo = 'tpope/vim-fugitive'
 
 [[plugins]]
 repo = 'vim-airline/vim-airline'
-depends = ['vim-air-line', 'tagbar', 'vim-fugitive']
 hook_add = '''
-if exists('g:nyaovim_version')
-  let g:airline_powerline_fonts = 0
-  let g:airline_left_sep = ''
-  let g:airline_right_sep = ''
-else
-  let g:airline_powerline_fonts = 1
-endif
+let g:airline_powerline_fonts = 1
 let g:airline#extensions#tabline#enabled = 1
-if !has('nvim')
-  let g:airline#extensions#whitespace#mixed_indent_algo = 2 " see :help airline-whitespace@en
-endif
 '''
 
 [[plugins]]
@@ -57,6 +83,7 @@ on_ft = 'vue'
 [[plugins]]
 repo = 'airblade/vim-gitgutter'
 
+# Gbrowseを出来るようにする
 [[plugins]]
 repo = 'tpope/vim-rhubarb'
 
@@ -68,3 +95,9 @@ merged = 0
 [[plugins]]
 repo = 'junegunn/fzf.vim'
 depends = ['junegunn/fzf']
+
+[[plugins]]
+repo = 'tpope/vim-commentary'
+
+[[plugins]]
+repo = 'tpope/vim-surround'

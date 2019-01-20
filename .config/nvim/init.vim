@@ -1,5 +1,5 @@
 " reset augroup
-augroup MyAutoCmd
+augroup vimrc
   autocmd!
 augroup END
 
@@ -36,15 +36,8 @@ if dein#load_state(s:dein_dir)
 
   let s:toml             = g:rc_dir . '/dein.toml'
   let s:lazy_toml        = g:rc_dir . '/dein_lazy.toml'
-  let s:cpp_toml         = g:rc_dir . '/dein_cpp.toml'
-  let s:python_toml      = g:rc_dir . '/dein_python.toml'
-  let s:ruby_toml        = g:rc_dir . '/dein_ruby.toml'
   let s:go_toml          = g:rc_dir . '/dein_go.toml'
   let s:tex_toml         = g:rc_dir . '/dein_tex.toml'
-  " let s:coq_toml         = g:rc_dir . '/dein_coq.toml'
-  let s:markdown_toml    = g:rc_dir . '/dein_markdown.toml'
-  " let s:nim_toml         = g:rc_dir . '/dein_nim.toml'
-  " let s:php_toml         = g:rc_dir . '/dein_php.toml'
 
   " TOML を読み込み、キャッシュしておく
   if exists('g:nyaovim_version')
@@ -54,19 +47,11 @@ if dein#load_state(s:dein_dir)
   if has('nvim')
     call dein#load_toml(s:toml,          {'lazy': 0})
     call dein#load_toml(s:lazy_toml,     {'lazy': 1})
-    call dein#load_toml(s:cpp_toml,      {'lazy': 1})
-    call dein#load_toml(s:python_toml,   {'lazy': 1})
-    call dein#load_toml(s:ruby_toml,     {'lazy': 1})
     call dein#load_toml(s:go_toml,       {'lazy': 1})
     call dein#load_toml(s:tex_toml,      {'lazy': 0})
-    " call dein#load_toml(s:coq_toml,      {'lazy': 1})
-    call dein#load_toml(s:markdown_toml, {'lazy': 1})
-    " call dein#load_toml(s:nim_toml,      {'lazy': 1})
-    " call dein#load_toml(s:php_toml,      {'lazy': 1})
   else
     call dein#load_toml(s:toml,        {'lazy': 0})
     call dein#load_toml(s:lazy_toml,   {'lazy': 1})
-    " call dein#load_toml(s:coq_toml,    {'lazy': 1})
   endif
 
   " 設定終了
@@ -103,9 +88,6 @@ set showcmd
 set ma
 " 選択したものを*で検索
 " vnoremap * "zy:let @/ = @z<CR>n
-" インクリメント、デクリメント
-nnoremap + <C-a>
-nnoremap - <C-x>
 " 括弧を閉じてくれるやつ
 inoremap { {}<Left>
 inoremap [ []<Left>
@@ -195,7 +177,6 @@ set background=dark
 colorscheme apprentice
 
 if has('nvim')
-  tnoremap <silent> <ESC> <C-\><C-n>
   tnoremap <silent> jj <C-\><C-n>
 endif
 
@@ -205,10 +186,6 @@ set nocompatible
 " matchitを使えるように
 set nocompatible
 runtime macros/matchit.vim
-
-" なぜか最初からロードされないもの
-source ~/.config/nvim/dein/repos/github.com/tpope/vim-surround/plugin/surround.vim
-source ~/.config/nvim/dein/repos/github.com/tpope/vim-commentary/plugin/commentary.vim
 
 nnoremap あ a
 nnoremap い i
