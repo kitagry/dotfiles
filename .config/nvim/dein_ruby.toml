@@ -1,8 +1,0 @@
-[[plugins]]
-repo = 'Shougo/deoplete-rct'
-on_ft = 'ruby'
-on_i = 1
-
-[[plugins]]
-repo = 'tpope/vim-rails'
-on_ft = 'ruby'

@@ -3,9 +3,13 @@ export PATH="/usr/local:$PATH"
 export PATH="$HOME/.nodebrew/current/bin:$PATH"
 export PATH="/usr/local/lib/:/usr/local/texlive/2017/bin/x86_64-darwin/tlmgr:$PATH"
 export PATH="$HOME/.goenv/bin:$PATH"
+export GOROOT="/usr/local/opt/go/libexec"
+export GOPATH="$HOME/go/"
+alias cdg="cd $GOPATH/src/github.com/kitagry/"
+
 export PATH="$GOPATH/bin:$PATH"
 
-export GOPATH="$HOME/go/"
+export QT_HOMEBREW=true
 
 ###########################
 # unixコマンドのalias
