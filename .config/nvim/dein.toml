@@ -107,3 +107,6 @@ repo = 'tpope/vim-commentary'
 
 [[plugins]]
 repo = 'tpope/vim-surround'
+
+[[plugins]]
+repo = 'w0rp/ale'
