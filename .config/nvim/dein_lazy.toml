@@ -1,22 +1,4 @@
 [[plugins]]
-repo = "Shougo/deoplete.nvim"
-on_i = 1
-on_event = "InsertCharPre"
-hook_source = """
-  let g:deoplete#enable_at_startup = 1
-  let g:deoplete#auto_complete_delay = 0
-  let g:deoplete#auto_complete_start_length = 1
-  let g:deoplete#enable_camel_case = 0
-  let g:deoplete#enable_ignore_case = 0
-  let g:deoplete#enable_refresh_always = 0
-  let g:deoplete#enable_smart_case = 1
-  let g:deoplete#file#enable_buffer_path = 1
-  let g:deoplete#max_list = 10000
-  set completeopt-=preview
-  " autocmd InsertLeave,CompleteDone * if pumvisible() == 0 | pclose | endif
-"""
-
-[[plugins]]
 repo = 'Shougo/neomru.vim'
 
 [[plugins]]
@@ -34,10 +16,6 @@ nmap <silent> <C-u><C-]> :<C-u>DeniteCursorWord grep<CR>  # 検索結果（カ�
 nmap <silent> <C-u><C-u> :<C-u>Denite file_mru<CR> # 最近開いたバッファ（neomru.vim依存）
 nmap <silent> <C-u><C-y> :<C-u>Denite neoyank<CR> # ヤンクの履歴（neoyank.vim依存）
 nmap <silent> <C-u><C-r> :<C-u>Denite -resume<CR> # 前回のDeniteバッファを再表示する
-nmap <silent> <C-u>; :<C-u>Denite -resume -immediately -select=+1<CR>
-nmap <silent> <C-u>- :<C-u>Denite -resume -immediately -select=-1<CR>
-nmap <silent> <C-u><C-d> :<C-u>call denite#start([{'name': 'file_rec', 'args': ['~/dotfiles']}])<CR>
-nnoremap ml :<C-u>call denite#start([{'name': 'file_rec', 'args': [g:memolist_path]}])<CR>
 '''
 hook_post_source = '''
 call denite#custom#var('file_rec', 'command', ['ag', '--follow', '--nocolor', '--nogroup', '-g', ''])
@@ -45,28 +23,51 @@ call denite#custom#var('grep', 'command', ['ag'])
 call denite#custom#var('grep', 'recursive_opts', [])
 call denite#custom#var('grep', 'pattern_opt', [])
 call denite#custom#var('grep', 'default_opts', ['--follow', '--no-group', '--no-color'])
-" 横割りオープンを`<C-k>`
-call denite#custom#map('insert', '<C-k>', '<denite:do_action:split>')
-" 縦割りオープンを`<C-h>`
-call denite#custom#map('insert', '<C-h>', '<denite:do_action:vsplit>')
+" 横割りオープンを`<C-s>`
+call denite#custom#map('_', '<C-s>', '<denite:do_action:split>')
+" 縦割りオープンを`<C-v>`
+call denite#custom#map('_', '<C-v>', '<denite:do_action:vsplit>')
 " タブオープンを`<C-t>`
-call denite#custom#map('insert', '<C-t>', '<denite:do_action:tabopen>')
+call denite#custom#map('_', '<C-t>', '<denite:do_action:tabopen>')
 '''
 
 [[plugins]]
-repo = 'scrooloose/syntastic'
-hook_source = '''
-  let g:syntastic_mode_map = {'mode': 'passive', 'active_filetypes': ['python', 'ruby']}
-  let g:syntastic_python_checkers = ['pyflakes', 'pep8']
-  let g:syntastic_ruby_checkers = ['rubocop']
-  let g:syntastic_check_on_open = 1
+repo = 'Shougo/defx.nvim'
+hook_add = '''
+autocmd FileType defx call s:defx_my_settings()
+function! s:defx_my_settings() abort
+  nnoremap <silent><buffer><expr> <CR>
+  \ defx#do_action('open')
+  nnoremap <silent><buffer><expr> c
+  \ defx#do_action('copy')
+  nnoremap <silent><buffer><expr> m
+  \ defx#do_action('move')
+  nnoremap <silent><buffer><expr> p
+  \ defx#do_action('paste')
+  nnoremap <silent><buffer><expr> <C-v>
+  \ defx#do_action('open', 'vsplit')
+  nnoremap <silent><buffer><expr> K
+  \ defx#do_action('new_directory')
+  nnoremap <silent><buffer><expr> N
+  \ defx#do_action('new_file')
+  nnoremap <silent><buffer><expr> .
+  \ defx#do_action('toggle_ignored_files')
+  nnoremap <silent><buffer><expr> d
+  \ defx#do_action('remove')
+  nnoremap <silent><buffer><expr> r
+  \ defx#do_action('rename')
+  nnoremap <silent><buffer><expr> yy
+  \ defx#do_action('yank_path')
+  nnoremap <silent><buffer><expr> h
+  \ defx#do_action('cd', ['..'])
+  nnoremap <silent><buffer><expr> ~
+  \ defx#do_action('cd')
+  nnoremap <silent><buffer><expr> q
+  \ defx#do_action('quit')
+endfunction
+nmap <silent> <C-u><C-d> :<C-u>Defx<CR>  # filetypeを変更します
+nmap <silent> <C-u><C-v> :<C-u>Defx -split='vertical'<CR>  # filetypeを変更します
 '''
-
-[[plugins]]
-repo = 'tpope/vim-commentary'
-
-[[plugins]]
-repo = 'tpope/vim-surround'
 
 # vim-surroundを.で繰り返せるようにする。
 [[plugins]]
@@ -74,7 +75,19 @@ repo = 'tpope/vim-repeat'
 hook_post_source = '''
   silent! call repeat#set("\<Plug>MyWonderfulMap", v:count)
 '''
-hook_add = '''
-  nmap B :Buffers<CR>
-  nmap t :Files
+
+[[plugins]]
+repo = 'neomake/neomake'
+on_ft = 'python'
+hook_source = '''
+autocmd! BufEnter,BufWritePost * Neomake
+let g:neomake_python_enabled_makers = ['python', 'flake8']
 '''
+
+[[plugins]]
+repo = 'fatih/vim-go'
+on_ft = 'go'
+
+[[plugins]]
+repo = 'lervag/vimtex'
+on_ft = 'tex'
