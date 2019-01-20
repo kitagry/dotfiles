@@ -77,14 +77,6 @@ hook_post_source = '''
 '''
 
 [[plugins]]
-repo = 'neomake/neomake'
-on_ft = 'python'
-hook_source = '''
-autocmd! BufEnter,BufWritePost * Neomake
-let g:neomake_python_enabled_makers = ['python', 'flake8']
-'''
-
-[[plugins]]
 repo = 'fatih/vim-go'
 on_ft = 'go'
 
