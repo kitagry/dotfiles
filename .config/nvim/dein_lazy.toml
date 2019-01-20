@@ -83,3 +83,11 @@ hook_source = '''
 autocmd! BufEnter,BufWritePost * Neomake
 let g:neomake_python_enabled_makers = ['python', 'flake8']
 '''
+
+[[plugins]]
+repo = 'fatih/vim-go'
+on_ft = 'go'
+
+[[plugins]]
+repo = 'lervag/vimtex'
+on_ft = 'tex'
