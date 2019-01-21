@@ -38,7 +38,20 @@ let g:asyncomplete_log_file = expand('~/.config/nvim/dein/asyncomplete.log')
 
 [[plugins]]
 repo = 'prabirshrestha/asyncomplete-ultisnips.vim'
-depends = ['asyncomplete.vim']
+depends = ['asyncomplete.vim', 'ultisnips']
+hook_add = '''
+if has('python3')
+    let g:UltiSnipsExpandTrigger="<c-e>"
+    call asyncomplete#register_source(asyncomplete#sources#ultisnips#get_source_options({
+        \ 'name': 'ultisnips',
+        \ 'whitelist': ['*'],
+        \ 'completor': function('asyncomplete#sources#ultisnips#completor'),
+        \ }))
+endif
+'''
+
+[[plugins]]
+repo = 'SirVer/ultisnips'
 
 [[plugins]]
 repo = 'prabirshrestha/asyncomplete-lsp.vim'
