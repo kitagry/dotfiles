@@ -1,6 +1,5 @@
 [[plugins]]
 repo = 'prabirshrestha/async.vim'
-
 [[plugins]]
 repo = 'prabirshrestha/vim-lsp'
 depends = ['async.vim']
@@ -71,16 +70,6 @@ let g:airline_theme='luna'
 '''
 
 [[plugins]]
-repo = 'thinca/vim-quickrun'
-hook_add = '''
-let g:quickrun_config = {
-\   'tex': {
-\       'command': 'latexmk',
-\       'exec': ['%c -c -gg -pdfdvi %s', 'open %s:r.pdf']
-\   }, \}
-'''
-
-[[plugins]]
 repo = 'chr4/nginx.vim'
 on_ft = 'nginx'
 
@@ -109,3 +98,6 @@ repo = 'tpope/vim-surround'
 
 [[plugins]]
 repo = 'w0rp/ale'
+
+[[plugins]]
+repo = 'JuliaEditorSupport/julia-vim'
