@@ -83,7 +83,3 @@ on_ft = 'go'
 [[plugins]]
 repo = 'lervag/vimtex'
 on_ft = 'tex'
-
-[[plugins]]
-repo = 'JuliaEditorSupport/julia-vim'
-on_ft = 'julia'
