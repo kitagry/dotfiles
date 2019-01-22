@@ -1,5 +1,0 @@
-[[plugins]]
-repo = 'lvht/phpcd.vim'
-on_ft = 'php'
-build = 'composer install'
-merged = '0'
