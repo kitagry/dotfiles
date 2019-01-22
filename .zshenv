@@ -14,7 +14,7 @@ export NVIM_PYTHON_LOG_FILE="$HOME/.config/nvim/logs/python.log"
 ###########################
 alias la="ls -a"
 alias ll="ls -la"
-########################### 
+###########################
 
 ###########################
 # gitコマンドのalias

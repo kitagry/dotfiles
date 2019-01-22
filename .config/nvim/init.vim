@@ -45,6 +45,7 @@ if dein#load_state(s:dein_dir)
   let s:markdown_toml    = g:rc_dir . '/dein_markdown.toml'
   " let s:nim_toml         = g:rc_dir . '/dein_nim.toml'
   " let s:php_toml         = g:rc_dir . '/dein_php.toml'
+  let s:julia_toml       = g:rc_dir . '/dein_julia.toml'
 
   " TOML を読み込み、キャッシュしておく
   if exists('g:nyaovim_version')
@@ -63,6 +64,7 @@ if dein#load_state(s:dein_dir)
     call dein#load_toml(s:markdown_toml, {'lazy': 1})
     " call dein#load_toml(s:nim_toml,      {'lazy': 1})
     " call dein#load_toml(s:php_toml,      {'lazy': 1})
+    call dein#load_toml(s:julia_toml,    {'lazy': 0})
   else
     call dein#load_toml(s:toml,        {'lazy': 0})
     call dein#load_toml(s:lazy_toml,   {'lazy': 1})
@@ -114,6 +116,9 @@ inoremap ( ()<Left>
 cnoremap <expr> %% getcmdtype() == ':' ? expand('%:h').'/' : '%%'
 " 置換の時に大活躍
 set inccommand=split
+" 保存時に余計なスペースを削除
+autocmd BufWritePre * :%s/\s\+$//ge
+
 
 " 見た目系
 " 行番号を表示
@@ -163,6 +168,7 @@ augroup fileTypeIndent
     autocmd BufNewFile,BufRead *.rb setlocal tabstop=2 softtabstop=2 shiftwidth=2
     autocmd BufNewFile,BufRead *.java setlocal tabstop=4 softtabstop=4 shiftwidth=4
     autocmd BufNewFile,BufRead *.php setlocal tabstop=4 softtabstop=4 shiftwidth=4
+    autocmd BufNewFile,BufRead *.jl setlocal tabstop=4 softtabstop=4 shiftwidth=4
 augroup END
 
 " 検索系
@@ -185,6 +191,7 @@ autocmd BufNewFile,BufRead .pryrc     setfiletype ruby
 autocmd BufNewFile,BufRead *.md       setfiletype markdown
 autocmd BufNewFile,BufRead *.slim     setfiletype slim
 autocmd BufNewFile,BufRead *.nim      setfiletype nim
+autocmd BufNewFile,BufRead *.jl       setfiletype julia
 
 autocmd FileType vue syntax sync fromstart
 autocmd BufRead,BufNewFile *.vue setlocal filetype=vue.html.javascript.css
@@ -198,9 +205,6 @@ if has('nvim')
   tnoremap <silent> <ESC> <C-\><C-n>
   tnoremap <silent> jj <C-\><C-n>
 endif
-
-" ファイルエクスプローラを設定
-set nocompatible
 
 " matchitを使えるように
 set nocompatible
@@ -216,7 +220,6 @@ nnoremap う u
 nnoremap お o
 nnoremap っｄ dd
 nnoremap っｙ yy
-
 
 " pythonのホストの登録
 let g:python_host_prog = expand('~/.pyenv/versions/2.7.15/bin/pip2')
