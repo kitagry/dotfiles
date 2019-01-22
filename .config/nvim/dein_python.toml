@@ -1,3 +1,0 @@
-[[plugins]]
-repo = "zchee/deoplete-jedi"
-on_ft = "python"

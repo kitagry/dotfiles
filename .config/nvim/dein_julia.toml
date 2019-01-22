@@ -1,3 +1,0 @@
-[[plugins]]
-repo = 'JuliaEditorSupport/julia-vim'
-on_ft = 'julia'
