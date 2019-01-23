@@ -12,6 +12,7 @@ export PATH="$GOPATH/bin:$PATH"
 export QT_HOMEBREW=true
 
 export NVIM_PYTHON_LOG_FILE="$HOME/.config/nvim/logs/python.log"
+export GO111MODULE=on
 
 ###########################
 # unixコマンドのalias
