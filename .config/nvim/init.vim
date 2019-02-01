@@ -78,12 +78,6 @@ set hidden
 set showcmd
 " E21: Cannot make changes, 'modifiable' is off こんなエラー出て来た
 set ma
-" 選択したものを*で検索
-" vnoremap * "zy:let @/ = @z<CR>n
-" 括弧を閉じてくれるやつ
-inoremap { {}<Left>
-inoremap [ []<Left>
-inoremap ( ()<Left>
 " '%%'でアクティブなバッファのディレクトリを開いてくれる
 cnoremap <expr> %% getcmdtype() == ':' ? expand('%:h').'/' : '%%'
 nnoremap <silent> [b :bprevious<CR>
