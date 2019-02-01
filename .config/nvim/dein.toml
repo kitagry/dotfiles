@@ -126,3 +126,6 @@ repo = 'tpope/vim-surround'
 
 [[plugins]]
 repo = 'w0rp/ale'
+
+[[plugins]]
+repo = 'cohama/lexima.vim'
