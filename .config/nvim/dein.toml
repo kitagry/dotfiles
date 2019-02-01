@@ -37,6 +37,8 @@ if executable('typescript-language-server')
         \ 'whitelist': ['typescript', 'typescript.tsx'],
         \ })
 endif
+
+nnoremap <silent> <C-]> :LspDefinition<CR>
 '''
 
 [[plugins]]
