@@ -59,8 +59,9 @@ filetype plugin indent on
 syntax enable
 
 " setting
-" mapleaderの登録
+" leaderの登録
 let mapleader = "\<space>"
+let maplocalleader = ","
 " escキーをjjに登録
 inoremap <silent> jj <ESC>
 "文字コードをUFT-8に設定
@@ -85,6 +86,10 @@ inoremap [ []<Left>
 inoremap ( ()<Left>
 " '%%'でアクティブなバッファのディレクトリを開いてくれる
 cnoremap <expr> %% getcmdtype() == ':' ? expand('%:h').'/' : '%%'
+nnoremap <silent> [b :bprevious<CR>
+nnoremap <silent> ]b :bnext<CR>
+nnoremap <silent> [B :bfirst<CR>
+nnoremap <silent> ]B :blast<CR>
 " 置換の時に大活躍
 set inccommand=split
 
@@ -159,8 +164,6 @@ autocmd BufNewFile,BufRead *.md       setfiletype markdown
 autocmd BufNewFile,BufRead *.slim     setfiletype slim
 autocmd BufNewFile,BufRead *.nim      setfiletype nim
 
-autocmd FileType vue syntax sync fromstart
-autocmd BufRead,BufNewFile *.vue setlocal filetype=vue.html.javascript.css
 " クリップボードにコピー
 set clipboard+=unnamed
 

@@ -7,8 +7,8 @@ depends = ['async.vim']
 hook_add = '''
 if executable('golsp')
     au User lsp_setup call lsp#register_server({
-        \ 'name': 'golsp',
-        \ 'cmd': {server_info->['golsp', '-mode', 'stdio']},
+        \ 'name': 'bingo',
+        \ 'cmd': {server_info->['bingo', '-mode', 'stdio']},
         \ 'whitelist': ['go'],
         \ })
 endif
@@ -26,6 +26,15 @@ if executable('docker-langserver')
         \ 'name': 'docker-langserver',
         \ 'cmd': {server_info->[&shell, &shellcmdflag, 'docker-langserver --stdio']},
         \ 'whitelist': ['dockerfile'],
+        \ })
+endif
+
+if executable('typescript-language-server')
+    au User lsp_setup call lsp#register_server({
+        \ 'name': 'typescript-language-server',
+        \ 'cmd': {server_info->[&shell, &shellcmdflag, 'typescript-language-server --stdio']},
+        \ 'root_uri':{server_info->lsp#utils#path_to_uri(lsp#utils#find_nearest_parent_file_directory(lsp#utils#get_buffer_path(), 'tsconfig.json'))},
+        \ 'whitelist': ['typescript', 'typescript.tsx'],
         \ })
 endif
 '''
@@ -52,6 +61,9 @@ endif
 
 [[plugins]]
 repo = 'SirVer/ultisnips'
+
+[[plugins]]
+repo = 'honza/vim-snippets'
 
 [[plugins]]
 repo = 'prabirshrestha/asyncomplete-lsp.vim'
@@ -84,17 +96,6 @@ let g:airline_theme='luna'
 '''
 
 [[plugins]]
-repo = 'thinca/vim-quickrun'
-hook_add = '''
-let g:quickrun_config = {
-\   'tex': {
-\       'command': 'latexmk',
-\       'exec': ['%c -c -gg -pdfdvi %s', 'open %s:r.pdf']
-\   },
-\}
-'''
-
-[[plugins]]
 repo = 'chr4/nginx.vim'
 on_ft = 'nginx'
 
@@ -103,7 +104,9 @@ repo = 'slim-template/vim-slim'
 
 [[plugins]]
 repo = 'posva/vim-vue'
-on_ft = 'vue'
+
+[[plugins]]
+repo = 'digitaltoad/vim-pug'
 
 [[plugins]]
 repo = 'airblade/vim-gitgutter'
