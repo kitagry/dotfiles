@@ -120,6 +120,11 @@ set pumheight=10
 set display=lastline
 " ヤンクの設定
 nnoremap Y y$
+" バッファ移動の設定
+nnoremap ]b :<C-u>bn<CR>
+nnoremap ]B :<C-u>bN<CR>
+nnoremap [b :<C-u>bp<CR>
+nnoremap [B :<C-u>bP<CR>
 
 syntax on
 
