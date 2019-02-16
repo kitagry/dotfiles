@@ -29,6 +29,15 @@ if executable('docker-langserver')
         \ })
 endif
 
+if executable('typescript-language-server')
+    au User lsp_setup call lsp#register_server({
+        \ 'name': 'typescript-language-server',
+        \ 'cmd': {server_info->[&shell, &shellcmdflag, 'typescript-language-server --stdio']},
+        \ 'root_uri':{server_info->lsp#utils#path_to_uri(lsp#utils#find_nearest_parent_file_directory(lsp#utils#get_buffer_path(), 'tsconfig.json'))},
+        \ 'whitelist': ['typescript', 'typescript.tsx'],
+        \ })
+endif
+
 nnoremap <silent> <C-]> :LspDefinition<CR>
 '''
 
@@ -58,6 +67,12 @@ if has('python3')
         \ }))
 endif
 '''
+
+[[plugins]]
+repo = 'SirVer/ultisnips'
+
+[[plugins]]
+repo = 'honza/vim-snippets'
 
 [[plugins]]
 repo = 'prabirshrestha/asyncomplete-lsp.vim'
@@ -98,7 +113,9 @@ repo = 'slim-template/vim-slim'
 
 [[plugins]]
 repo = 'posva/vim-vue'
-on_ft = 'vue'
+
+[[plugins]]
+repo = 'digitaltoad/vim-pug'
 
 [[plugins]]
 repo = 'airblade/vim-gitgutter'
@@ -120,4 +137,10 @@ repo = 'tpope/vim-surround'
 repo = 'w0rp/ale'
 
 [[plugins]]
+repo = 'cohama/lexima.vim'
+
+[[plugins]]
 repo = 'JuliaEditorSupport/julia-vim'
+
+[[plugins]]
+repo = 'leafgarland/typescript-vim'

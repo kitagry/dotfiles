@@ -2,12 +2,15 @@ export PATH="/usr/local/bin:/usr/local/sbin:/sbin/:$PATH"
 export PATH="/usr/local:$PATH"
 export PATH="$HOME/.nodebrew/current/bin:$PATH"
 export PATH="/usr/local/lib/:/usr/local/texlive/2017/bin/x86_64-darwin/tlmgr:$PATH"
-export PATH="$HOME/.goenv/bin:$PATH"
 export GOROOT="/usr/local/opt/go/libexec"
 export GOPATH="$HOME/go/"
+export GO111MODULE=on
+export JAVA_HOME="/Library/Java/JavaVirtualMachines/openjdk-11.0.2.jdk/Contents/Home"
+export PATH="$JAVA_HOME/bin:$PATH"
 alias cdg="cd $GOPATH/src/github.com/kitagry/"
 
 export PATH="$GOPATH/bin:$PATH"
+export NVIM_LISTEN_ADDRESS="/tmp/nvimsocket"
 
 export QT_HOMEBREW=true
 

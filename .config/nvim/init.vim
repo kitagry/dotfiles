@@ -59,8 +59,9 @@ filetype plugin indent on
 syntax enable
 
 " setting
-" mapleaderの登録
+" leaderの登録
 let mapleader = "\<space>"
+let maplocalleader = ","
 " escキーをjjに登録
 inoremap <silent> jj <ESC>
 "文字コードをUFT-8に設定
@@ -77,12 +78,6 @@ set hidden
 set showcmd
 " E21: Cannot make changes, 'modifiable' is off こんなエラー出て来た
 set ma
-" 選択したものを*で検索
-" vnoremap * "zy:let @/ = @z<CR>n
-" 括弧を閉じてくれるやつ
-inoremap { {}<Left>
-inoremap [ []<Left>
-inoremap ( ()<Left>
 " '%%'でアクティブなバッファのディレクトリを開いてくれる
 cnoremap <expr> %% getcmdtype() == ':' ? expand('%:h').'/' : '%%'
 " 置換の時に大活躍
@@ -101,11 +96,7 @@ set virtualedit=onemore
 " インデントはスマートインデント
 set smartindent
 set noautoindent
-" ビープ音を可視化
-set visualbell
-" 括弧入力時の対応する括弧を表示
-set showmatch
-set matchtime=1
+
 " ステータスラインを常に表示
 set laststatus=2
 " コマンドラインの補完
@@ -169,8 +160,6 @@ autocmd BufNewFile,BufRead *.slim     setfiletype slim
 autocmd BufNewFile,BufRead *.nim      setfiletype nim
 autocmd BufNewFile,BufRead *.jl       setfiletype julia
 
-autocmd FileType vue syntax sync fromstart
-autocmd BufRead,BufNewFile *.vue setlocal filetype=vue.html.javascript.css
 " クリップボードにコピー
 set clipboard+=unnamed
 
@@ -180,10 +169,6 @@ colorscheme apprentice
 if has('nvim')
   tnoremap <silent> jj <C-\><C-n>
 endif
-
-" matchitを使えるように
-set nocompatible
-runtime macros/matchit.vim
 
 nnoremap あ a
 nnoremap い i
@@ -195,12 +180,5 @@ nnoremap っｙ yy
 " pythonのホストの登録
 let g:python_host_prog = '/usr/local/bin/python'
 let g:python3_host_prog = '/usr/local/bin/python3'
-
-
-" laravelの設定
-let g:php_baselib       = 1
-let g:php_htmlInStrings = 1
-let g:php_noShortTags   = 1
-let g:php_sql_query     = 1
 
 let g:sql_type_default = 'mysql' " MySQLの場合
