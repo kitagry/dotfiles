@@ -38,13 +38,16 @@ if executable('typescript-language-server')
         \ })
 endif
 
+let g:lsp_diagnostics_enabled = 1
+let g:lsp_signs_enabled = 1
+let g:lsp_diagnostics_echo_cursor = 1
 nnoremap <silent> <C-]> :LspDefinition<CR>
 '''
 
 [[plugins]]
 repo = 'prabirshrestha/asyncomplete.vim'
 hook_add = '''
-let g:asyncomplete_log_file = expand('~/.config/nvim/dein/asyncomplete.log')
+let g:asyncomplete_log_file = expand('~/.config/nvim/logs/asyncomplete.log')
 '''
 
 [[plugins]]
@@ -69,18 +72,12 @@ endif
 '''
 
 [[plugins]]
-repo = 'SirVer/ultisnips'
-
-[[plugins]]
-repo = 'honza/vim-snippets'
-
-[[plugins]]
 repo = 'prabirshrestha/asyncomplete-lsp.vim'
 depends = ['vim-lsp', 'asyncomplete.vim']
 merged = 0
 hook_add = '''
 let g:lsp_log_verbose = 1
-let g:lsp_log_file = expand('~/.config/nvim/dein/vim-lsp.log')
+let g:lsp_log_file = expand('~/.config/nvim/logs/vim-lsp.log')
 '''
 
 [[plugins]] # toml syntax
@@ -132,9 +129,6 @@ repo = 'tpope/vim-commentary'
 
 [[plugins]]
 repo = 'tpope/vim-surround'
-
-[[plugins]]
-repo = 'w0rp/ale'
 
 [[plugins]]
 repo = 'cohama/lexima.vim'
