@@ -86,4 +86,9 @@ let g:go_def_mapping_enabled = 0
 
 [[plugins]]
 repo = 'lervag/vimtex'
-on_ft = 'tex'
+on_ft = ['tex', 'bib']
+hook_source = '''
+let g:vimtex_compiler_progname = 'nvr'
+let g:vimtex_view_general_viewer = '/Applications/Skim.app/Contents/SharedSupport/displayline'
+let g:vimtex_view_general_options = '@line @pdf @tex'
+'''
