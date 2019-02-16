@@ -86,6 +86,9 @@ nnoremap <silent> [B :bfirst<CR>
 nnoremap <silent> ]B :blast<CR>
 " 置換の時に大活躍
 set inccommand=split
+" 保存時に余計なスペースを削除
+autocmd BufWritePre * :%s/\s\+$//ge
+
 
 " 見た目系
 " 行番号を表示
@@ -116,6 +119,11 @@ set pumheight=10
 set display=lastline
 " ヤンクの設定
 nnoremap Y y$
+" バッファ移動の設定
+nnoremap ]b :<C-u>bn<CR>
+nnoremap ]B :<C-u>bN<CR>
+nnoremap [b :<C-u>bp<CR>
+nnoremap [B :<C-u>bP<CR>
 
 syntax on
 
@@ -135,6 +143,7 @@ augroup fileTypeIndent
     autocmd BufNewFile,BufRead *.rb setlocal tabstop=2 softtabstop=2 shiftwidth=2
     autocmd BufNewFile,BufRead *.java setlocal tabstop=4 softtabstop=4 shiftwidth=4
     autocmd BufNewFile,BufRead *.php setlocal tabstop=4 softtabstop=4 shiftwidth=4
+    autocmd BufNewFile,BufRead *.jl setlocal tabstop=4 softtabstop=4 shiftwidth=4
 augroup END
 
 " 検索系
@@ -157,6 +166,7 @@ autocmd BufNewFile,BufRead .pryrc     setfiletype ruby
 autocmd BufNewFile,BufRead *.md       setfiletype markdown
 autocmd BufNewFile,BufRead *.slim     setfiletype slim
 autocmd BufNewFile,BufRead *.nim      setfiletype nim
+autocmd BufNewFile,BufRead *.jl       setfiletype julia
 
 " クリップボードにコピー
 set clipboard+=unnamed
@@ -168,9 +178,6 @@ if has('nvim')
   tnoremap <silent> jj <C-\><C-n>
 endif
 
-" ファイルエクスプローラを設定
-set nocompatible
-
 " matchitを使えるように
 set nocompatible
 runtime macros/matchit.vim
@@ -181,7 +188,6 @@ nnoremap う u
 nnoremap お o
 nnoremap っｄ dd
 nnoremap っｙ yy
-
 
 " pythonのホストの登録
 let g:python_host_prog = '/usr/local/bin/python'
