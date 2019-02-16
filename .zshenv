@@ -13,12 +13,15 @@ export NVIM_LISTEN_ADDRESS="/tmp/nvimsocket"
 
 export QT_HOMEBREW=true
 
+export NVIM_PYTHON_LOG_FILE="$HOME/.config/nvim/logs/python.log"
+export GO111MODULE=on
+
 ###########################
 # unixコマンドのalias
 ###########################
 alias la="ls -a"
 alias ll="ls -la"
-########################### 
+###########################
 
 ###########################
 # gitコマンドのalias

@@ -1,6 +1,9 @@
 # 環境変数
 export LANG=ja_JP.UTF-8
 
+source $HOME/google-cloud-sdk/path.zsh.inc
+source $HOME/google-cloud-sdk/completion.zsh.inc
+
 # ヒストリの設定
 HISTFILE=~/.zsh_history
 HISTSIZE=10000
