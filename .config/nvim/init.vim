@@ -80,10 +80,6 @@ set showcmd
 set ma
 " '%%'でアクティブなバッファのディレクトリを開いてくれる
 cnoremap <expr> %% getcmdtype() == ':' ? expand('%:h').'/' : '%%'
-nnoremap <silent> [b :bprevious<CR>
-nnoremap <silent> ]b :bnext<CR>
-nnoremap <silent> [B :bfirst<CR>
-nnoremap <silent> ]B :blast<CR>
 " 置換の時に大活躍
 set inccommand=split
 " 保存時に余計なスペースを削除
@@ -100,11 +96,7 @@ set virtualedit=onemore
 " インデントはスマートインデント
 set smartindent
 set noautoindent
-" ビープ音を可視化
-set visualbell
-" 括弧入力時の対応する括弧を表示
-set showmatch
-set matchtime=1
+
 " ステータスラインを常に表示
 set laststatus=2
 " コマンドラインの補完
@@ -178,10 +170,6 @@ if has('nvim')
   tnoremap <silent> jj <C-\><C-n>
 endif
 
-" matchitを使えるように
-set nocompatible
-runtime macros/matchit.vim
-
 nnoremap あ a
 nnoremap い i
 nnoremap う u
@@ -192,12 +180,5 @@ nnoremap っｙ yy
 " pythonのホストの登録
 let g:python_host_prog = '/usr/local/bin/python'
 let g:python3_host_prog = '/usr/local/bin/python3'
-
-
-" laravelの設定
-let g:php_baselib       = 1
-let g:php_htmlInStrings = 1
-let g:php_noShortTags   = 1
-let g:php_sql_query     = 1
 
 let g:sql_type_default = 'mysql' " MySQLの場合

@@ -141,3 +141,6 @@ repo = 'cohama/lexima.vim'
 
 [[plugins]]
 repo = 'JuliaEditorSupport/julia-vim'
+
+[[plugins]]
+repo = 'leafgarland/typescript-vim'
