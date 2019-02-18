@@ -38,6 +38,25 @@ if executable('typescript-language-server')
         \ })
 endif
 
+if executable('julia')
+  au User lsp_setup call lsp#register_server({
+    \ 'name': 'julia',
+    \ 'whitelist': ['julia'],
+    \ 'cmd': {server_info->['julia', '--startup-file=no', '--history-file=no', '-e', '
+    \     using LanguageServer;
+    \     using Pkg;
+    \     import StaticLint;
+    \     import SymbolServer;
+    \     env_path = dirname(Pkg.Types.Context().env.project_file);
+    \     debug = false;
+    \
+    \     server = LanguageServer.LanguageServerInstance(stdin, stdout, debug, env_path, "", Dict());
+    \     server.runlinter = true;
+    \     run(server);
+    \ ']}
+    \ })
+endif
+
 let g:lsp_diagnostics_enabled = 1
 let g:lsp_signs_enabled = 1
 let g:lsp_diagnostics_echo_cursor = 1
