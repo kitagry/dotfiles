@@ -157,3 +157,6 @@ repo = 'JuliaEditorSupport/julia-vim'
 
 [[plugins]]
 repo = 'leafgarland/typescript-vim'
+
+[[plugins]]
+repo = 'peitalin/vim-jsx-typescript'
