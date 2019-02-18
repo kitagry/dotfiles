@@ -159,6 +159,7 @@ autocmd BufNewFile,BufRead *.md       setfiletype markdown
 autocmd BufNewFile,BufRead *.slim     setfiletype slim
 autocmd BufNewFile,BufRead *.nim      setfiletype nim
 autocmd BufNewFile,BufRead *.jl       setfiletype julia
+autocmd BufNewFile,BufRead *.tsx,*jsx setfiletype typescript.tsx
 
 " クリップボードにコピー
 set clipboard+=unnamed
