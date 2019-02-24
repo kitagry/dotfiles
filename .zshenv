@@ -4,8 +4,8 @@ export PATH="$HOME/.nodebrew/current/bin:$PATH"
 export PATH="/usr/local/lib/:/usr/local/texlive/2017/bin/x86_64-darwin/tlmgr:$PATH"
 export GOROOT="/usr/local/opt/go/libexec"
 export GOPATH="$HOME/go/"
-# export GO111MODULE=on
-export JAVA_HOME="/Library/Java/JavaVirtualMachines/openjdk-11.0.2.jdk/Contents/Home"
+export GO111MODULE=on
+export JAVA_HOME=`/usr/libexec/java_home -v 1.8`
 export PATH="$JAVA_HOME/bin:$PATH"
 alias cdg="cd $GOPATH/src/github.com/kitagry/"
 
