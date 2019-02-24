@@ -3,17 +3,12 @@ augroup vimrc
   autocmd!
 augroup END
 
+" ================================================== dein setting ==================================================
 " プラグインが実際にインストールされるディレクトリ
-if has('nvim')
-  let s:dein_dir = expand('~/.config/nvim/dein')
-else
-  let s:dein_dir = expand('~/.config/vim/dein')
-endif
+let s:dein_dir = expand('~/.config/dein')
 
-" dein.vim 本体
 let s:dein_repo_dir = s:dein_dir . '/repos/github.com/Shougo/dein.vim'
 
-" dein.vim がなければ github から落としてくる
 if &runtimepath !~# '/dein.vim'
   if !isdirectory(s:dein_repo_dir)
     execute '!git clone https://github.com/Shougo/dein.vim' s:dein_repo_dir
@@ -22,30 +17,16 @@ if &runtimepath !~# '/dein.vim'
   execute 'set runtimepath^=' . fnamemodify(s:dein_repo_dir, ':p')
 endif
 
-" 設定開始
 if dein#load_state(s:dein_dir)
   call dein#begin(s:dein_dir)
 
-  " プラグインリストを収めた TOML ファイル
-  " 予め TOML ファイル（後述）を用意しておく
-  if has('nvim')
-    let g:rc_dir = expand('~/.config/nvim')
-  else
-    let g:rc_dir = expand('~/.config/vim')
-  endif
+  let g:rc_dir = expand('~/.config/dein')
 
   let s:toml             = g:rc_dir . '/dein.toml'
   let s:lazy_toml        = g:rc_dir . '/dein_lazy.toml'
 
-  " TOML を読み込み、キャッシュしておく
-  if exists('g:nyaovim_version')
-    call dein#load_toml('~/.config/nyaovim/dein.toml', {'lazy': 1})
-  endif
-
   call dein#load_toml(s:toml,          {'lazy': 0})
   call dein#load_toml(s:lazy_toml,     {'lazy': 1})
-
-  " 設定終了
   call dein#end()
   call dein#save_state()
 endif
@@ -54,16 +35,16 @@ endif
 if dein#check_install()
   call dein#install()
 endif
+" ==================================================================================================================
+
+
+" ================================================== General Settings ==================================================
+let g:python_host_prog = '/usr/local/bin/python'
+let g:python3_host_prog = '/usr/local/bin/python3'
 
 filetype plugin indent on
 syntax enable
 
-" setting
-" leaderの登録
-let mapleader = "\<space>"
-let maplocalleader = ","
-" escキーをjjに登録
-inoremap <silent> jj <ESC>
 "文字コードをUFT-8に設定
 set fenc=utf-8
 " バックアップファイルを作らない
@@ -76,15 +57,8 @@ set autoread
 set hidden
 " 入力中のコマンドをステータスに表示する
 set showcmd
-" E21: Cannot make changes, 'modifiable' is off こんなエラー出て来た
-set ma
-" '%%'でアクティブなバッファのディレクトリを開いてくれる
-cnoremap <expr> %% getcmdtype() == ':' ? expand('%:h').'/' : '%%'
-" 置換の時に大活躍
-set inccommand=split
 " 保存時に余計なスペースを削除
 autocmd BufWritePre * :%s/\s\+$//ge
-
 
 " 見た目系
 " 行番号を表示
@@ -102,20 +76,10 @@ set laststatus=2
 " コマンドラインの補完
 set wildmenu
 set wildmode=full
-" 折り返し時に表示行単位での移動できるようにする
-nnoremap j gj
-nnoremap k gk
 " 補完メニューの高さ
 set pumheight=10
 " 長い行があった場合
 set display=lastline
-" ヤンクの設定
-nnoremap Y y$
-" バッファ移動の設定
-nnoremap ]b :bn<CR>
-nnoremap ]B :blast<CR>
-nnoremap [b :bp<CR>
-nnoremap [B :bfirst<CR>
 
 syntax on
 
@@ -138,6 +102,16 @@ augroup fileTypeIndent
     autocmd BufNewFile,BufRead *.jl setlocal tabstop=4 softtabstop=4 shiftwidth=4
 augroup END
 
+" ファイルの認識系
+autocmd BufNewFile,BufRead *.jbuilder setfiletype ruby
+autocmd BufNewFile,BufRead Guardfile  setfiletype ruby
+autocmd BufNewFile,BufRead .pryrc     setfiletype ruby
+autocmd BufNewFile,BufRead *.md       setfiletype markdown
+autocmd BufNewFile,BufRead *.slim     setfiletype slim
+autocmd BufNewFile,BufRead *.nim      setfiletype nim
+autocmd BufNewFile,BufRead *.jl       setfiletype julia
+autocmd BufNewFile,BufRead *.tsx,*jsx setfiletype typescript.tsx
+
 " 検索系
 " 検索文字列が小文字の場合は大文字小文字を区別なく検索する
 set ignorecase
@@ -151,15 +125,6 @@ set wrapscan
 set hlsearch
 " ESC連打でハイライト解除
 nmap <Esc><Esc> :nohlsearch<CR><Esc>
-" ファイルの認識系
-autocmd BufNewFile,BufRead *.jbuilder setfiletype ruby
-autocmd BufNewFile,BufRead Guardfile  setfiletype ruby
-autocmd BufNewFile,BufRead .pryrc     setfiletype ruby
-autocmd BufNewFile,BufRead *.md       setfiletype markdown
-autocmd BufNewFile,BufRead *.slim     setfiletype slim
-autocmd BufNewFile,BufRead *.nim      setfiletype nim
-autocmd BufNewFile,BufRead *.jl       setfiletype julia
-autocmd BufNewFile,BufRead *.tsx,*jsx setfiletype typescript.tsx
 
 " クリップボードにコピー
 set clipboard+=unnamed
@@ -167,19 +132,43 @@ set clipboard+=unnamed
 set background=dark
 colorscheme apprentice
 
+" 置換の時に大活躍
 if has('nvim')
-  tnoremap <silent> jj <C-\><C-n>
+  set inccommand=split
+else " vimの設定
+  " 挿入モード時に非点滅の縦棒タイプのカーソル
+  let &t_SI .= "\e[6 q"
+  " ノーマルモード時に非点滅のブロックタイプのカーソル
+  let &t_EI .= "\e[2 q"
+  " 置換モード時に非点滅の下線タイプのカーソル
+  let &t_SR .= "\e[4 q"
 endif
+" ==================================================================================================================
 
-nnoremap あ a
-nnoremap い i
-nnoremap う u
-nnoremap お o
-nnoremap っｄ dd
-nnoremap っｙ yy
 
-" pythonのホストの登録
-let g:python_host_prog = '/usr/local/bin/python'
-let g:python3_host_prog = '/usr/local/bin/python3'
+" ================================================== Key Mapping ==================================================
+" leaderの登録
+let mapleader = "\<space>"
+let maplocalleader = ","
 
-let g:sql_type_default = 'mysql' " MySQLの場合
+" ヤンクの設定
+nnoremap Y y$
+
+" バッファ移動の設定
+nnoremap ]b :bn<CR>
+nnoremap ]B :blast<CR>
+nnoremap [b :bp<CR>
+nnoremap [B :bfirst<CR>
+
+" 折り返し時に表示行単位での移動できるようにする
+nnoremap j gj
+nnoremap k gk
+
+" escキーをjjに登録
+inoremap <silent> jj <ESC>
+
+" '%%'でアクティブなバッファのディレクトリを開いてくれる
+cnoremap <expr> %% getcmdtype() == ':' ? expand('%:h').'/' : '%%'
+
+tnoremap <silent> jj <C-\><C-n>
+" ==================================================================================================================
