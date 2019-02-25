@@ -8,7 +8,7 @@ hook_add = '''
 if executable('bingo')
     au User lsp_setup call lsp#register_server({
         \ 'name': 'bingo',
-        \ 'cmd': {server_info->['bingo', '-mode', 'stdio', '--logfile', '/Users/ryo/.config/nvim/logs/bingo.log']},
+        \ 'cmd': {server_info->['bingo', '-mode', 'stdio', '--logfile', $HOME . '/.config/nvim/logs/bingo.log']},
         \ 'whitelist': ['go'],
         \ })
 endif
@@ -166,3 +166,6 @@ repo = 'thinca/vim-showtime'
 
 [[plugins]]
 repo = 'mattn/emmet-vim'
+
+[[plugins]]
+repo = 'romainl/Apprentice'
