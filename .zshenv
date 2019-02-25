@@ -51,3 +51,8 @@ alias redis-server='redis-server /usr/local/etc/redis.conf &'
 
 # awkをgawkにする
 alias awk="gawk"
+
+# mkdir and cd
+mkcd() {
+  mkdir -p "$@" && cd $_
+}
