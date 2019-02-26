@@ -8,31 +8,25 @@ repo = 'Shougo/neoyank.vim'
 repo = 'Shougo/denite.nvim'
 depends = ['neomru.vim', 'neoyank.vim']
 hook_add = '''
-nmap <silent> <C-u><C-t> :<C-u>Denite filetype<CR>  # filetypeを変更します
-nmap <silent> <C-u><C-p> :<C-u>Denite file_rec<CR>  # カレントディレクトリ以下のファイル
-nmap <silent> <C-u><C-l> :<C-u>Denite line<CR>  # 現在のファイルのラインを検索
-nmap <silent> <C-u><C-g> :<C-u>Denite grep<CR>  # カレントディレクトリの単語検索
-nmap <silent> <C-u><C-]> :<C-u>DeniteCursorWord grep<CR>  # 検索結果（カーソル以下の文字をインプットにする）
-nmap <silent> <C-u><C-u> :<C-u>Denite file_mru<CR> # 最近開いたバッファ（neomru.vim依存）
-nmap <silent> <C-u><C-y> :<C-u>Denite neoyank<CR> # ヤンクの履歴（neoyank.vim依存）
-nmap <silent> <C-u><C-r> :<C-u>Denite -resume<CR> # 前回のDeniteバッファを再表示する
+nmap <silent> <C-u><C-p> :<C-u>Denite file_rec<CR>  " カレントディレクトリ以下のファイル
+nmap <silent> <C-u><C-l> :<C-u>Denite line<CR>  " 現在のファイルのラインを検索
+nmap <silent> <C-u><C-g> :<C-u>Denite grep<CR>  " カレントディレクトリの単語検索
+nmap <silent> <C-u><C-]> :<C-u>DeniteCursorWord grep<CR>  " 検索結果（カーソル以下の文字をインプットにする）
+nmap <silent> <C-u><C-u> :<C-u>Denite file_mru<CR> " 最近開いたバッファ（neomru.vim依存）
+nmap <silent> <C-u><C-y> :<C-u>Denite neoyank<CR> " ヤンクの履歴（neoyank.vim依存）
+nmap <silent> <C-u><C-r> :<C-u>Denite -resume<CR> " 前回のDeniteバッファを再表示する
 '''
 hook_post_source = '''
-call denite#custom#var('file_rec', 'command', ['ag', '--follow', '--nocolor', '--nogroup', '-g', ''])
+call denite#custom#var('file_rec', 'command', ['ag', '--follow', '--nocolor', '--nogroup', '-g'])
 call denite#custom#var('grep', 'command', ['ag'])
 call denite#custom#var('grep', 'recursive_opts', [])
 call denite#custom#var('grep', 'pattern_opt', [])
 call denite#custom#var('grep', 'default_opts', ['--follow', '--no-group', '--no-color'])
-" 横割りオープンを`<C-s>`
-call denite#custom#map('_', '<C-s>', '<denite:do_action:split>')
-" 縦割りオープンを`<C-v>`
-call denite#custom#map('_', '<C-v>', '<denite:do_action:vsplit>')
-" タブオープンを`<C-t>`
-call denite#custom#map('_', '<C-t>', '<denite:do_action:tabopen>')
 '''
 
 [[plugins]]
 repo = 'Shougo/defx.nvim'
+depends = ['nvim-yarp', 'vim-hug-neovim-rpc']
 hook_add = '''
 autocmd FileType defx call s:defx_my_settings()
 function! s:defx_my_settings() abort
@@ -60,6 +54,8 @@ function! s:defx_my_settings() abort
   \ defx#do_action('yank_path')
   nnoremap <silent><buffer><expr> h
   \ defx#do_action('cd', ['..'])
+  nnoremap <silent><buffer><expr> l
+  \ defx#do_action('open')
   nnoremap <silent><buffer><expr> ~
   \ defx#do_action('cd')
   nnoremap <silent><buffer><expr> q
