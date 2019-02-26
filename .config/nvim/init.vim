@@ -20,13 +20,21 @@ endif
 if dein#load_state(s:dein_dir)
   call dein#begin(s:dein_dir)
 
+  if !has('nvim')
+    let g:vimrc_dir = expand($HOME . '/.config/vim')
+    let s:vim_lazy_toml  = g:vimrc_dir . '/dein_lazy.toml'
+
+    call dein#load_toml(s:vim_lazy_toml, {'lazy': 1})
+  endif
+
   let g:rc_dir = expand($HOME . '/.config/dein')
 
   let s:toml             = g:rc_dir . '/dein.toml'
   let s:lazy_toml        = g:rc_dir . '/dein_lazy.toml'
 
-  call dein#load_toml(s:toml,          {'lazy': 0})
-  call dein#load_toml(s:lazy_toml,     {'lazy': 1})
+  call dein#load_toml(s:toml,      {'lazy': 0})
+  call dein#load_toml(s:lazy_toml, {'lazy': 1})
+
   call dein#end()
   call dein#save_state()
 endif
@@ -60,9 +68,6 @@ set showcmd
 " 保存時に余計なスペースを削除
 autocmd BufWritePre * :%s/\s\+$//ge
 
-" 見た目系
-" 行番号を表示
-set number
 " 現在の行を強調表示
 set cursorline
 " 行末の1文字先までカーソルを移動できるように
@@ -131,6 +136,8 @@ set clipboard+=unnamed
 
 set background=dark
 colorscheme apprentice
+" Deniteのカラーがおかしい
+hi CursorLine guifg=#E19972
 
 " 置換の時に大活躍
 if has('nvim')
