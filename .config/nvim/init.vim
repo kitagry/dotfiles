@@ -53,9 +53,9 @@ if dein#load_state(s:dein_dir)
   call dein#add('peitalin/vim-jsx-typescript', {'on_ft': 'typescript.tsx', 'lazy': 1})
 
   " Git系
-  call dein#add('tpope/vim-fugitive', {'lazy': 1})
-  call dein#add('tpope/vim-rhubarb', {'lazy': 1})
-  call dein#add('airblade/vim-gitgutter', {'lazy': 1})
+  call dein#add('tpope/vim-fugitive')
+  call dein#add('tpope/vim-rhubarb')
+  call dein#add('airblade/vim-gitgutter')
 
   " 見た目系
   call dein#add('romainl/Apprentice')
@@ -63,7 +63,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('vim-airline/vim-airline-themes')
 
   " コマンド拡張系
-  call dein#add('cohama/lexima.vim', {'lazy': 1})
+  call dein#add('cohama/lexima.vim')
   call dein#add('tpope/vim-repeat')
   call dein#add('tpope/vim-surround')
   call dein#add('tpope/vim-commentary')
