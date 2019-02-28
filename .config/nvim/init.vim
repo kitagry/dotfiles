@@ -67,11 +67,8 @@ if dein#load_state(s:dein_dir)
   call dein#add('tpope/vim-repeat')
   call dein#add('tpope/vim-surround')
   call dein#add('tpope/vim-commentary')
-  call dein#add('alvan/vim-closetag')
-
-  " 試しに入れてみた
   call dein#add('mattn/emmet-vim')
-  call dein#add('thinca/vim-showtime', {'lazy': 1})
+  call dein#add('alvan/vim-closetag')
 
   call dein#end()
   call dein#save_state()
