@@ -69,7 +69,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('tpope/vim-commentary')
 
   " 試しに入れてみた
-  call dein#add('mattn/emmet-vim', {'lazy': 1})
+  call dein#add('mattn/emmet-vim')
   call dein#add('thinca/vim-showtime', {'lazy': 1})
 
   call dein#end()
