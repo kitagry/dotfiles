@@ -21,18 +21,18 @@ if dein#load_state(s:dein_dir)
   call dein#begin(s:dein_dir)
 
   " 補完系
-  call dein#add('prabirshrestha/async.vim', {'lazy': 1})
-  call dein#add('prabirshrestha/vim-lsp', {'lazy': 1})
-  call dein#add('prabirshrestha/asyncomplete.vim', {'lazy': 1})
-  call dein#add('prabirshrestha/asyncomplete-lsp.vim', {'lazy': 1})
-  call dein#add('prabirshrestha/asyncomplete-ultisnips.vim', {'lazy': 1})
-  call dein#add('honza/vim-snippets', {'lazy': 1})
-  call dein#add('SirVer/ultisnips', {'lazy': 1})
+  call dein#add('prabirshrestha/async.vim')
+  call dein#add('prabirshrestha/vim-lsp')
+  call dein#add('prabirshrestha/asyncomplete.vim')
+  call dein#add('prabirshrestha/asyncomplete-lsp.vim')
+  call dein#add('prabirshrestha/asyncomplete-ultisnips.vim')
+  call dein#add('honza/vim-snippets')
+  call dein#add('SirVer/ultisnips')
 
   " 移動系
   call dein#add('Shougo/neomru.vim', {'lazy': 1})
   call dein#add('Shougo/neoyank.vim', {'lazy': 1})
-  call dein#add('Shougo/denite.nvim', {'lazy': 1})
+  call dein#add('Shougo/denite.nvim')
 
   call dein#add('Shougo/defx.nvim', {'lazy': 1})
   if !has('nvim')
@@ -48,7 +48,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('chr4/nginx.vim', {'on_ft': 'nginx', 'lazy': 1})
   call dein#add('cespare/vim-toml', {'on_ft': 'toml', 'lazy': 1})
   call dein#add('slim-template/vim-slim', {'on_ft': 'slim', 'lazy': 1})
-  call dein#add('JuliaEditorSupport/julia-vim', {'lazy': 1})
+  call dein#add('JuliaEditorSupport/julia-vim')
   call dein#add('leafgarland/typescript-vim', {'on_ft': 'typescript', 'lazy': 1})
   call dein#add('peitalin/vim-jsx-typescript', {'on_ft': 'typescript.tsx', 'lazy': 1})
 
@@ -58,9 +58,9 @@ if dein#load_state(s:dein_dir)
   call dein#add('airblade/vim-gitgutter', {'lazy': 1})
 
   " 見た目系
-  call dein#add('romainl/Apprentice', {'lazy': 1})
-  call dein#add('vim-airline/vim-airline', {'lazy': 1})
-  call dein#add('vim-airline/vim-airline-themes', {'lazy': 1})
+  call dein#add('romainl/Apprentice')
+  call dein#add('vim-airline/vim-airline')
+  call dein#add('vim-airline/vim-airline-themes')
 
   " コマンド拡張系
   call dein#add('cohama/lexima.vim', {'lazy': 1})
