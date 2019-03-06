@@ -1,4 +1,7 @@
-" reset augroup
+set encoding=utf-8
+scriptencoding utf-8
+
+" vimrc内のautocmdを初期化
 augroup vimrc
   autocmd!
 augroup END
@@ -70,6 +73,9 @@ if dein#load_state(s:dein_dir)
   call dein#add('mattn/emmet-vim')
   call dein#add('alvan/vim-closetag')
 
+  call dein#add('mattn/qiita-vim')
+  call dein#add('mattn/webapi-vim')
+
   call dein#end()
   call dein#save_state()
 endif
@@ -80,17 +86,14 @@ if dein#check_install()
 endif
 " ==============================================================================================
 
-
 " ====================================== General Settings ======================================
 let g:python_host_prog = '/usr/local/bin/python'
 let g:python3_host_prog = '/usr/local/bin/python3'
 let g:log_files_dir = $HOME . '/.config/logs'
 
 filetype plugin indent on
-syntax enable
+syntax on
 
-"文字コードをUFT-8に設定
-set fenc=utf-8
 " バックアップファイルを作らない
 set nobackup
 " スワップファイルを作らない
@@ -122,7 +125,7 @@ set pumheight=10
 " 長い行があった場合
 set display=lastline
 
-syntax on
+source $VIMRUNTIME/macros/matchit.vim
 
 " Tab系
 " 不可視文字を可視化(タブが「▸-」と表示される)
@@ -135,23 +138,25 @@ set tabstop=2
 set shiftwidth=2
 
 augroup fileTypeIndent
-    autocmd!
-    autocmd BufNewFile,BufRead *.py   setlocal tabstop=4 softtabstop=4 shiftwidth=4
-    autocmd BufNewFile,BufRead *.rb   setlocal tabstop=2 softtabstop=2 shiftwidth=2
-    autocmd BufNewFile,BufRead *.jl   setlocal tabstop=4 softtabstop=4 shiftwidth=4
-    autocmd BufNewFile,BufRead *.php  setlocal tabstop=4 softtabstop=4 shiftwidth=4
-    autocmd BufNewFile,BufRead *.java setlocal tabstop=4 softtabstop=4 shiftwidth=4
+  autocmd!
+  autocmd BufNewFile,BufRead *.py   setlocal tabstop=4 softtabstop=4 shiftwidth=4
+  autocmd BufNewFile,BufRead *.rb   setlocal tabstop=2 softtabstop=2 shiftwidth=2
+  autocmd BufNewFile,BufRead *.jl   setlocal tabstop=4 softtabstop=4 shiftwidth=4
+  autocmd BufNewFile,BufRead *.php  setlocal tabstop=4 softtabstop=4 shiftwidth=4
+  autocmd BufNewFile,BufRead *.java setlocal tabstop=4 softtabstop=4 shiftwidth=4
 augroup END
 
 " ファイルの認識系
-autocmd BufNewFile,BufRead *.nim      setfiletype nim
-autocmd BufNewFile,BufRead *.slim     setfiletype slim
-autocmd BufNewFile,BufRead *.jbuilder setfiletype ruby
-autocmd BufNewFile,BufRead Guardfile  setfiletype ruby
-autocmd BufNewFile,BufRead .pryrc     setfiletype ruby
-autocmd BufNewFile,BufRead *.jl       setfiletype julia
-autocmd BufNewFile,BufRead *.md       setfiletype markdown
-autocmd BufNewFile,BufRead *.tsx,*jsx setfiletype typescript.tsx
+augroup setFileType
+  autocmd BufNewFile,BufRead *.nim      setfiletype nim
+  autocmd BufNewFile,BufRead *.slim     setfiletype slim
+  autocmd BufNewFile,BufRead *.jbuilder setfiletype ruby
+  autocmd BufNewFile,BufRead Guardfile  setfiletype ruby
+  autocmd BufNewFile,BufRead .pryrc     setfiletype ruby
+  autocmd BufNewFile,BufRead *.jl       setfiletype julia
+  autocmd BufNewFile,BufRead *.md       setfiletype markdown
+  autocmd BufNewFile,BufRead *.tsx,*jsx setfiletype typescript.tsx
+augroup end
 
 " 検索系
 " 検索文字列が小文字の場合は大文字小文字を区別なく検索する
@@ -165,7 +170,7 @@ set wrapscan
 " 検索語をハイライト表示
 set hlsearch
 " ESC連打でハイライト解除
-nmap <Esc><Esc> :nohlsearch<CR><Esc>
+nnoremap <Esc><Esc> :nohlsearch<CR><Esc>
 
 " クリップボードにコピー
 set clipboard+=unnamed
@@ -191,8 +196,8 @@ endif
 
 " ======================================== Key Mapping ========================================
 " leaderの登録
-let mapleader = "\<space>"
-let maplocalleader = ","
+let g:mapleader = "\<space>"
+let g:maplocalleader = ","
 
 " ヤンクの設定
 nnoremap Y y$
@@ -317,19 +322,19 @@ let g:airline#extensions#tabline#formatter = 'unique_tail'
 
 " =========================================== Denite ===========================================
 " カレントディレクトリ以下のファイル
-nmap <silent> <C-u><C-p> :<C-u>Denite file_rec<CR>
+nnoremap <silent> <C-u><C-p> :<C-u>Denite file_rec<CR>
 " 現在のファイルのラインを検索
-nmap <silent> <C-u><C-l> :<C-u>Denite line<CR>
+nnoremap <silent> <C-u><C-l> :<C-u>Denite line<CR>
 " カレントディレクトリの単語検索
-nmap <silent> <C-u><C-g> :<C-u>Denite grep<CR>
+nnoremap <silent> <C-u><C-g> :<C-u>Denite grep<CR>
 " 検索結果（カーソル以下の文字をインプットにする）
-nmap <silent> <C-u><C-]> :<C-u>DeniteCursorWord grep<CR>
+nnoremap <silent> <C-u><C-]> :<C-u>DeniteCursorWord grep<CR>
 " 最近開いたバッファ（neomru.vim依存）
-nmap <silent> <C-u><C-u> :<C-u>Denite file_mru<CR>
+nnoremap <silent> <C-u><C-u> :<C-u>Denite file_mru<CR>
 " ヤンクの履歴（neoyank.vim依存）
-nmap <silent> <C-u><C-y> :<C-u>Denite neoyank<CR>
+nnoremap <silent> <C-u><C-y> :<C-u>Denite neoyank<CR>
 " 前回のDeniteバッファを再表示する
-nmap <silent> <C-u><C-r> :<C-u>Denite -resume<CR>
+nnoremap <silent> <C-u><C-r> :<C-u>Denite -resume<CR>
 
 call denite#custom#var('file_rec', 'command', ['ag', '--follow', '--nocolor', '--nogroup', '-g'])
 call denite#custom#var('grep', 'command', ['ag'])
