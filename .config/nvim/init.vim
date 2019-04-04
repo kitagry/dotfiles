@@ -355,20 +355,23 @@ let g:airline#extensions#tabline#formatter = 'unique_tail'
 
 
 " =========================================== Denite ===========================================
+nnoremap [denite] <Nop>
+nmap     <Space>u [denite]
+
 " カレントディレクトリ以下のファイル
-nnoremap <silent> <C-u><C-p> :<C-u>Denite file_rec<CR>
+nnoremap <silent> [denite]p :<C-u>Denite file_rec<CR>
 " 現在のファイルのラインを検索
-nnoremap <silent> <C-u><C-l> :<C-u>Denite line<CR>
+nnoremap <silent> [denite]l :<C-u>Denite line<CR>
 " カレントディレクトリの単語検索
-nnoremap <silent> <C-u><C-g> :<C-u>Denite grep<CR>
+nnoremap <silent> [denite]g :<C-u>Denite grep -highlight-mode-insert=Search<CR>
 " 検索結果（カーソル以下の文字をインプットにする）
-nnoremap <silent> <C-u><C-]> :<C-u>DeniteCursorWord grep<CR>
+nnoremap <silent> [denite]] :<C-u>DeniteCursorWord grep<CR>
 " 最近開いたバッファ（neomru.vim依存）
-nnoremap <silent> <C-u><C-u> :<C-u>Denite file_mru<CR>
+nnoremap <silent> [denite]u :<C-u>Denite file_mru<CR>
 " ヤンクの履歴（neoyank.vim依存）
-nnoremap <silent> <C-u><C-y> :<C-u>Denite neoyank<CR>
+nnoremap <silent> [denite]y :<C-u>Denite neoyank<CR>
 " 前回のDeniteバッファを再表示する
-nnoremap <silent> <C-u><C-r> :<C-u>Denite -resume<CR>
+nnoremap <silent> [denite]r :<C-u>Denite -resume<CR>
 
 call denite#custom#var('file_rec', 'command', ['ag', '--follow', '--nocolor', '--nogroup', '-g'])
 call denite#custom#var('grep', 'command', ['ag'])
@@ -412,8 +415,16 @@ function! s:defx_my_settings() abort
   nnoremap <silent><buffer><expr> q
   \ defx#do_action('quit')
 endfunction
-nmap <silent> <C-u><C-d> :<C-u>Defx<CR>
-nmap <silent> <C-u><C-v> :<C-u>Defx -split='vertical'<CR>
+
+nnoremap [defx] <Nop>
+nmap     <Space>d [defx]
+nmap <silent> [defx]d :<C-u>Defx<CR>
+nmap <silent> [defx]v :<C-u>Defx -split='vertical'<CR>
+" ==============================================================================================
+
+
+" =================================== roxma/vim-hug-neovim-rpc =================================
+let $NVIM_PYTHON_LOG_FILE=$HOME . "/.config/logs/nvim_python_log_file"
 " ==============================================================================================
 
 
