@@ -12,9 +12,12 @@ alias cdg="cd $GOPATH/src/github.com/kitagry/"
 export PATH="$GOPATH/bin:$PATH"
 export NVIM_LISTEN_ADDRESS="/tmp/nvimsocket"
 
+export PATH="/usr/local/opt/llvm/bin:$PATH"
 export QT_HOMEBREW=true
 
 export NVIM_PYTHON_LOG_FILE="$HOME/.config/nvim/logs/python.log"
+
+export PATH="${HOME}/.cargo/bin:${PATH}"
 
 ###########################
 # unixコマンドのalias

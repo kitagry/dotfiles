@@ -44,6 +44,7 @@ if dein#load_state(s:dein_dir)
   endif
 
   " 言語系
+  call dein#add('cakebaker/scss-syntax.vim')
   call dein#add('fatih/vim-go', {'on_ft': 'go', 'lazy': 1})
   call dein#add('posva/vim-vue', {'on_ft': 'vue', 'lazy': 1})
   call dein#add('digitaltoad/vim-pug', {'on_ft': 'vue', 'lazy': 1})
@@ -75,6 +76,7 @@ if dein#load_state(s:dein_dir)
 
   call dein#add('mattn/qiita-vim')
   call dein#add('mattn/webapi-vim')
+  call dein#add('vim-scripts/progressbar-widget')
 
   call dein#end()
   call dein#save_state()
@@ -153,6 +155,7 @@ augroup setFileType
   autocmd BufNewFile,BufRead *.jbuilder setfiletype ruby
   autocmd BufNewFile,BufRead Guardfile  setfiletype ruby
   autocmd BufNewFile,BufRead .pryrc     setfiletype ruby
+  autocmd BufRead,BufNewFile *.scss     setfiletype sass
   autocmd BufNewFile,BufRead *.jl       setfiletype julia
   autocmd BufNewFile,BufRead *.md       setfiletype markdown
   autocmd BufNewFile,BufRead *.tsx,*jsx setfiletype typescript.tsx
@@ -219,21 +222,18 @@ inoremap <silent> jj <ESC>
 cnoremap <expr> %% getcmdtype() == ':' ? expand('%:h').'/' : '%%'
 
 tnoremap <silent> jj <C-\><C-n>
+
+inoremap <silent> <C-l> <C-o>l
 " ==============================================================================================
 
 
 " =========================================== vim-lsp ==========================================
-if executable('bingo')
-  au User lsp_setup call lsp#register_server({
-    \ 'name': 'bingo',
-    \ 'cmd': {server_info->[
-    \   'bingo',
-    \   '-mode',
-    \   'stdio',
-    \   '--logfile',
-    \   g:log_files_dir . '/bingo.log']},
-    \ 'whitelist': ['go'],
-    \ })
+if executable('gopls')
+    au User lsp_setup call lsp#register_server({
+        \ 'name': 'gopls',
+        \ 'cmd': {server_info->['gopls', '-mode', 'stdio']},
+        \ 'whitelist': ['go'],
+        \ })
 endif
 
 if executable('pyls')
@@ -282,6 +282,40 @@ if executable('julia')
     \     server.runlinter = true;
     \     run(server);
     \ ']}
+    \ })
+endif
+
+if executable('vls')
+  au User lsp_setup call lsp#register_server({
+    \ 'name': 'vue',
+    \ 'cmd': {server_info->['vls']},
+    \ 'whitelist': ['vue'],
+    \ })
+endif
+
+if executable('clangd')
+    au User lsp_setup call lsp#register_server({
+        \ 'name': 'clangd',
+        \ 'cmd': {server_info->['clangd']},
+        \ 'whitelist': ['c', 'cpp', 'objc', 'objcpp'],
+        \ })
+endif
+
+if executable('solargraph')
+    " gem install solargraph
+    au User lsp_setup call lsp#register_server({
+        \ 'name': 'solargraph',
+        \ 'cmd': {server_info->[&shell, &shellcmdflag, 'solargraph stdio']},
+        \ 'initialization_options': {"diagnostics": "true"},
+        \ 'whitelist': ['ruby'],
+        \ })
+endif
+
+if executable('rls')
+  au User lsp_setup call lsp#register_server({
+    \ 'name': 'rls',
+    \ 'cmd': {server_info->['rustup', 'run', 'stable', 'rls']},
+    \ 'whitelist': ['rust'],
     \ })
 endif
 
