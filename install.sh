@@ -16,6 +16,11 @@ do
 done
 
 cd ./${DOT_CONFIG_DIRECTORY}
+
+if [ ! -e $DOT_CONFIG_DIRECTORY ]; then
+    mkdir $DOT_CONFIG_DIRECTORY
+fi
+
 for file in `\find . -maxdepth 4 -type f`; do
     ln -snfv ${DOT_DIRECTORY}/${DOT_CONFIG_DIRECTORY}/${file:2} ${HOME}/${DOT_CONFIG_DIRECTORY}/${file:2}
 done
