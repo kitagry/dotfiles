@@ -47,6 +47,7 @@ export LSCOLORS=exfxcxdxbxegedabagacad
 export LS_COLORS='di=34:ln=35:so=32:pi=33:ex=31:bd=46;34:cd=43;34:su=41;30:sg=46;30:tw=42;30:ow=43;30'
 zstyle ':completion:*' list-colors 'di=34' 'ln=35' 'so=32' 'ex=31' 'bd=46;34' 'cd=43;34'
 
+################################## zplugの環境設定 #####################################
 case ${OSTYPE} in
   darwin*)
     export ZPLUG_HOME=/usr/local/opt/zplug
@@ -86,3 +87,6 @@ if [ -e $ZPLUG_HOME/init.zsh ]; then
 
   zplug load --verbose
 fi
+
+# ################################## ros2の環境設定  #####################################
+# source $HOME/ros2_install/ros2-osx/setup.zsh
