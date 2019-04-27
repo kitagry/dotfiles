@@ -17,9 +17,9 @@ done
 
 cd ./${DOT_CONFIG_DIRECTORY}
 
-if [ ! -e $DOT_CONFIG_DIRECTORY ]; then
-    mkdir $DOT_CONFIG_DIRECTORY
-fi
+for directory in `\find . -type d`; do
+  mkdir -p ${HOME}/${DOT_CONFIG_DIRECTORY}/${directory}
+done
 
 for file in `\find . -maxdepth 4 -type f`; do
     ln -snfv ${DOT_DIRECTORY}/${DOT_CONFIG_DIRECTORY}/${file:2} ${HOME}/${DOT_CONFIG_DIRECTORY}/${file:2}
