@@ -1,6 +1,11 @@
 # 環境変数
 export LANG=ja_JP.UTF-8
 
+if [ -d $HOME/google-cloud-sdk ]; then
+  source $HOME/google-cloud-sdk/path.zsh.inc
+  source $HOME/google-cloud-sdk/completion.zsh.inc
+fi
+
 # ヒストリの設定
 HISTFILE=~/.zsh_history
 HISTSIZE=10000
@@ -36,7 +41,6 @@ setopt no_beep
 # prompt
 autoload -Uz vcs_info
 setopt prompt_subst
-
 # lsに色を付ける
 export CLICOLOR=1
 export LSCOLORS=exfxcxdxbxegedabagacad
