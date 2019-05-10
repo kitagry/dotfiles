@@ -31,6 +31,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('prabirshrestha/asyncomplete-ultisnips.vim')
   call dein#add('honza/vim-snippets')
   call dein#add('SirVer/ultisnips')
+  call dein#add('mattn/efm-langserver')
 
   " 移動系
   call dein#add('Shougo/neomru.vim', {'lazy': 1})
@@ -319,6 +320,15 @@ if executable('rls')
     \ })
 endif
 
+" augroup LspEFM
+"   au!
+"   autocmd User lsp_setup call lsp#register_server({
+"       \ 'name': 'efm-langserver-go',
+"       \ 'cmd': {server_info->['efm-langserver', '-c='.$HOME.'/.config/efm-langserver/config.yaml']},
+"       \ 'whitelist': ['go'],
+"       \ })
+" augroup END
+
 let g:lsp_diagnostics_enabled = 1
 let g:lsp_signs_enabled = 1
 let g:lsp_diagnostics_echo_cursor = 1
@@ -417,9 +427,11 @@ function! s:defx_my_settings() abort
 endfunction
 
 nnoremap [defx] <Nop>
-nmap     <Space>d [defx]
+nmap <Space>d [defx]
 nmap <silent> [defx]d :<C-u>Defx<CR>
 nmap <silent> [defx]v :<C-u>Defx -split='vertical'<CR>
+nmap <silent> [defx]f :<C-u>Defx %%<CR>
+nmap <silent> [defx]h :<C-u>Defx -split='vertical' %%<CR>
 " ==============================================================================================
 
 
