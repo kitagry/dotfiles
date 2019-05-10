@@ -56,6 +56,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('JuliaEditorSupport/julia-vim')
   call dein#add('leafgarland/typescript-vim', {'on_ft': 'typescript', 'lazy': 1})
   call dein#add('peitalin/vim-jsx-typescript', {'on_ft': 'typescript.tsx', 'lazy': 1})
+  call dein#add('rust-lang/rust.vim', {'on_ft': 'rust', 'lazy': 1})
 
   " Git系
   call dein#add('tpope/vim-fugitive')
@@ -90,8 +91,14 @@ endif
 " ==============================================================================================
 
 " ====================================== General Settings ======================================
-let g:python_host_prog = '/usr/local/bin/python'
-let g:python3_host_prog = '/usr/local/bin/python3'
+if has('mac')
+  let g:python_host_prog = '/usr/local/bin/python'
+  let g:python3_host_prog = '/usr/local/bin/python3'
+else
+  let g:python_host_prog = '/usr/bin/python'
+  let g:python3_host_prog = '/usr/bin/python3'
+endif
+
 let g:log_files_dir = $HOME . '/.config/logs'
 
 filetype plugin indent on
@@ -160,6 +167,7 @@ augroup setFileType
   autocmd BufNewFile,BufRead *.jl       setfiletype julia
   autocmd BufNewFile,BufRead *.md       setfiletype markdown
   autocmd BufNewFile,BufRead *.tsx,*jsx setfiletype typescript.tsx
+  autocmd BufNewFile,BufRead *.launch   setfiletype xml
 augroup end
 
 " 検索系
@@ -232,7 +240,7 @@ inoremap <silent> <C-l> <C-o>l
 if executable('gopls')
     au User lsp_setup call lsp#register_server({
         \ 'name': 'gopls',
-        \ 'cmd': {server_info->['gopls', '-mode', 'stdio']},
+        \ 'cmd': {server_info->['gopls', '-mode', 'stdio', '-logfile', g:log_files_dir . '/gopls.log']},
         \ 'whitelist': ['go'],
         \ })
 endif
@@ -320,14 +328,39 @@ if executable('rls')
     \ })
 endif
 
-" augroup LspEFM
-"   au!
-"   autocmd User lsp_setup call lsp#register_server({
-"       \ 'name': 'efm-langserver-go',
-"       \ 'cmd': {server_info->['efm-langserver', '-c='.$HOME.'/.config/efm-langserver/config.yaml']},
-"       \ 'whitelist': ['go'],
-"       \ })
-" augroup END
+if executable('efm-langserver')
+  augroup LspEFM
+    au!
+    autocmd User lsp_setup call lsp#register_server({
+        \ 'name': 'efm-langserver',
+        \ 'cmd': {server_info->['efm-langserver', '-c='.$HOME.'/.config/efm-langserver/config.yaml', '-log='.g:log_files_dir.'/efm-langserver.log']},
+        \ 'whitelist': ['go'],
+        \ })
+  augroup END
+endif
+
+if executable('java') && filereadable(expand('~/lsp/eclipse.jdt.ls/plugins/org.eclipse.equinox.launcher_1.5.300.v20190213-1655.jar'))
+    au User lsp_setup call lsp#register_server({
+        \ 'name': 'eclipse.jdt.ls',
+        \ 'cmd': {server_info->[
+        \     'java',
+        \     '-Declipse.application=org.eclipse.jdt.ls.core.id1',
+        \     '-Dosgi.bundles.defaultStartLevel=4',
+        \     '-Declipse.product=org.eclipse.jdt.ls.core.product',
+        \     '-Dlog.level=ALL',
+        \     '-noverify',
+        \     '-Dfile.encoding=UTF-8',
+        \     '-Xmx1G',
+        \     '-jar',
+        \     expand('~/lsp/eclipse.jdt.ls/plugins/org.eclipse.equinox.launcher_1.5.300.v20190213-1655.jar'),
+        \     '-configuration',
+        \     expand('~/lsp/eclipse.jdt.ls/config_mac'),
+        \     '-data',
+        \     expand('~/lsp/eclipse.jdt.ls/workspace')
+        \ ]},
+        \ 'whitelist': ['java'],
+        \ })
+endif
 
 let g:lsp_diagnostics_enabled = 1
 let g:lsp_signs_enabled = 1
@@ -450,4 +483,8 @@ let g:go_def_mapping_enabled = 0
 let g:vimtex_compiler_progname = 'nvr'
 let g:vimtex_view_general_viewer = '/Applications/Skim.app/Contents/SharedSupport/displayline'
 let g:vimtex_view_general_options = '@line @pdf @tex'
+" ===============================================================================================
+
+" =========================================== rust.vim ===========================================
+let g:rustfmt_autosave = 1
 " ===============================================================================================
