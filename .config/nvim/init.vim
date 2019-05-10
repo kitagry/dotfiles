@@ -460,9 +460,11 @@ function! s:defx_my_settings() abort
 endfunction
 
 nnoremap [defx] <Nop>
-nmap     <Space>d [defx]
+nmap <Space>d [defx]
 nmap <silent> [defx]d :<C-u>Defx<CR>
 nmap <silent> [defx]v :<C-u>Defx -split='vertical'<CR>
+nmap <silent> [defx]f :<C-u>Defx %%<CR>
+nmap <silent> [defx]h :<C-u>Defx -split='vertical' %%<CR>
 " ==============================================================================================
 
 
