@@ -16,6 +16,7 @@ do
 done
 
 cd ./${DOT_CONFIG_DIRECTORY}
+
 for directory in `\find . -type d`; do
   mkdir -p ${HOME}/${DOT_CONFIG_DIRECTORY}/${directory}
 done
