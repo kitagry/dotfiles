@@ -76,10 +76,6 @@ if dein#load_state(s:dein_dir)
   call dein#add('mattn/emmet-vim')
   call dein#add('alvan/vim-closetag')
 
-  call dein#add('mattn/qiita-vim')
-  call dein#add('mattn/webapi-vim')
-  call dein#add('vim-scripts/progressbar-widget')
-
   call dein#end()
   call dein#save_state()
 endif
@@ -370,6 +366,12 @@ nnoremap <silent> ]e  :LspNextError<CR>
 nnoremap <silent> [e  :LspPreviousError<CR>
 nnoremap <silent> <C-]> :LspDefinition<CR>
 nnoremap <silent> <C-<> :LspTypeDefinition<CR>
+
+nnoremap [vim-lsp] <Nop>
+nmap     <Space>l [vim-lsp]
+
+nnoremap [vim-lsp]s :LspStatus<CR>
+nnoremap [vim-lsp]r :LspRename<CR>
 " ==============================================================================================
 
 

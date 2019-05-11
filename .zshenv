@@ -60,8 +60,8 @@ alias zshenv="vim ~/.zshenv"
 alias vimrc="vim ~/.vimrc"
 ###########################
 
-# viとnvimを紐づける
-alias vi="nvim"
+# viとvimを紐づける
+alias vi="vim"
 
 # redis-serverのあとターミナルが占拠されないようにする
 alias redis-server='redis-server /usr/local/etc/redis.conf &'
