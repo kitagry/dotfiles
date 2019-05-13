@@ -6,7 +6,7 @@ augroup vimrc
   autocmd!
 augroup END
 
-" ======================================== dein setting ========================================
+" dein setting {{{
 " プラグインが実際にインストールされるディレクトリ
 let s:dein_dir = expand('~/.config/dein')
 
@@ -84,9 +84,9 @@ endif
 if dein#check_install()
   call dein#install()
 endif
-" ==============================================================================================
+" }}}
 
-" ====================================== General Settings ======================================
+" General Settings {{{
 if has('mac')
   let g:python_host_prog = '/usr/local/bin/python'
   let g:python3_host_prog = '/usr/local/bin/python3'
@@ -166,6 +166,9 @@ augroup setFileType
   autocmd BufNewFile,BufRead *.launch   setfiletype xml
 augroup end
 
+" vimの折りたたみ機能を追加
+au FileType vim setlocal foldmethod=marker
+
 " 検索系
 " 検索文字列が小文字の場合は大文字小文字を区別なく検索する
 set ignorecase
@@ -199,10 +202,9 @@ else " vimの設定
   " 置換モード時に非点滅の下線タイプのカーソル
   let &t_SR .= "\e[4 q"
 endif
-" ==============================================================================================
+" }}}
 
-
-" ======================================== Key Mapping ========================================
+" Key Mapping {{{
 " leaderの登録
 let g:mapleader = "\<space>"
 let g:maplocalleader = ","
@@ -211,10 +213,14 @@ let g:maplocalleader = ","
 nnoremap Y y$
 
 " バッファ移動の設定
-nnoremap ]b :bn<CR>
+nnoremap ]b :bnext<CR>
 nnoremap ]B :blast<CR>
-nnoremap [b :bp<CR>
+nnoremap [b :bprevious<CR>
 nnoremap [B :bfirst<CR>
+
+" quickfix
+nnoremap ]q :cnext<CR>
+nnoremap [q :cprevious<CR>
 
 " 折り返し時に表示行単位での移動できるようにする
 nnoremap j gj
@@ -229,10 +235,10 @@ cnoremap <expr> %% getcmdtype() == ':' ? expand('%:h').'/' : '%%'
 tnoremap <silent> jj <C-\><C-n>
 
 inoremap <silent> <C-l> <C-o>l
-" ==============================================================================================
+" }}}
 
-
-" =========================================== vim-lsp ==========================================
+" vim-lsp {{{
+" + register lsp {{{
 if executable('gopls')
     au User lsp_setup call lsp#register_server({
         \ 'name': 'gopls',
@@ -358,6 +364,7 @@ if executable('java') && filereadable(expand('~/lsp/eclipse.jdt.ls/plugins/org.e
         \ 'whitelist': ['java'],
         \ })
 endif
+" }}}
 
 let g:lsp_diagnostics_enabled = 1
 let g:lsp_signs_enabled = 1
@@ -373,10 +380,10 @@ nmap     <Space>l [vim-lsp]
 
 nnoremap [vim-lsp]s :LspStatus<CR>
 nnoremap [vim-lsp]r :LspRename<CR>
-" ==============================================================================================
+nnoremap [vim-lsp]d :LspDocumentDiagnostics<CR>
+" }}}
 
-
-" ======================================== asyncomplete ========================================
+" asyncomplete {{{
 let g:lsp_log_verbose = 1
 let g:lsp_log_file = expand(g:log_files_dir . '/vim-lsp.log')
 let g:asyncomplete_log_file = expand(g:log_files_dir . '/asyncomplete.log')
@@ -389,18 +396,16 @@ if has('python3')
         \ 'completor': function('asyncomplete#sources#ultisnips#completor'),
         \ }))
 endif
-" ==============================================================================================
+" }}}
 
-
-" ======================================== vim-airline ========================================
+" vim-airline {{{
 let g:airline_theme='hybrid'
 let g:airline_powerline_fonts = 1
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#formatter = 'unique_tail'
-" ==============================================================================================
+" }}}
 
-
-" =========================================== Denite ===========================================
+" Denite {{{
 nnoremap [denite] <Nop>
 nmap     <Space>u [denite]
 
@@ -424,10 +429,9 @@ call denite#custom#var('grep', 'command', ['ag'])
 call denite#custom#var('grep', 'recursive_opts', [])
 call denite#custom#var('grep', 'pattern_opt', [])
 call denite#custom#var('grep', 'default_opts', ['--follow', '--no-group', '--no-color'])
-" ==============================================================================================
+" }}}
 
-
-" ============================================ Defx ============================================
+" Defx {{{
 autocmd FileType defx call s:defx_my_settings()
 function! s:defx_my_settings() abort
   nnoremap <silent><buffer><expr> <CR>
@@ -468,26 +472,23 @@ nmap <silent> [defx]d :<C-u>Defx<CR>
 nmap <silent> [defx]v :<C-u>Defx -split='vertical'<CR>
 nmap <silent> [defx]f :<C-u>Defx %%<CR>
 nmap <silent> [defx]h :<C-u>Defx -split='vertical' %%<CR>
-" ==============================================================================================
+" }}}
 
-
-" =================================== roxma/vim-hug-neovim-rpc =================================
+" roxma/vim-hug-neovim-rpc {{{
 let $NVIM_PYTHON_LOG_FILE=$HOME . "/.config/logs/nvim_python_log_file"
-" ==============================================================================================
+" }}}
 
-
-" =========================================== vim-go ===========================================
+" vim-go {{{
 let g:go_fmt_command = "goimports"
 let g:go_def_mapping_enabled = 0
-" ==============================================================================================
+" }}}
 
-
-" =========================================== vim-tex ===========================================
+" vim-tex {{{
 let g:vimtex_compiler_progname = 'nvr'
 let g:vimtex_view_general_viewer = '/Applications/Skim.app/Contents/SharedSupport/displayline'
 let g:vimtex_view_general_options = '@line @pdf @tex'
-" ===============================================================================================
+" }}}
 
-" =========================================== rust.vim ===========================================
+" rust.vim {{{
 let g:rustfmt_autosave = 1
-" ===============================================================================================
+" }}}
