@@ -250,6 +250,7 @@ if executable('pyls')
     \ 'name': 'pyls',
     \ 'cmd': {server_info->['pyls']},
     \ 'whitelist': ['python'],
+    \ 'workspace_config': {'pyls': {'configurationSources': ['flake8']}}
     \ })
 endif
 
