@@ -75,6 +75,10 @@ if dein#load_state(s:dein_dir)
   call dein#add('tpope/vim-commentary')
   call dein#add('mattn/emmet-vim')
   call dein#add('alvan/vim-closetag')
+  call dein#add('thinca/vim-quickrun')
+  call dein#add('wmvanvliet/jupyter-vim')
+  call dein#add('vim-jp/vimdoc-ja.git')
+  call dein#add('vim-scripts/Vim-R-plugin')
 
   call dein#end()
   call dein#save_state()
@@ -207,7 +211,7 @@ endif
 " Key Mapping {{{
 " leaderの登録
 let g:mapleader = "\<space>"
-let g:maplocalleader = ","
+let s:maplocalleader = ","
 
 " ヤンクの設定
 nnoremap Y y$
@@ -225,9 +229,6 @@ nnoremap [q :cprevious<CR>
 " 折り返し時に表示行単位での移動できるようにする
 nnoremap j gj
 nnoremap k gk
-
-" escキーをjjに登録
-inoremap <silent> jj <ESC>
 
 " '%%'でアクティブなバッファのディレクトリを開いてくれる
 cnoremap <expr> %% getcmdtype() == ':' ? expand('%:h').'/' : '%%'
@@ -331,16 +332,16 @@ if executable('rls')
     \ })
 endif
 
-if executable('efm-langserver')
-  augroup LspEFM
-    au!
-    autocmd User lsp_setup call lsp#register_server({
-        \ 'name': 'efm-langserver',
-        \ 'cmd': {server_info->['efm-langserver', '-c='.$HOME.'/.config/efm-langserver/config.yaml', '-log='.g:log_files_dir.'/efm-langserver.log']},
-        \ 'whitelist': ['go'],
-        \ })
-  augroup END
-endif
+" if executable('efm-langserver')
+"   augroup LspEFM
+"     au!
+"     autocmd User lsp_setup call lsp#register_server({
+"         \ 'name': 'efm-langserver',
+"         \ 'cmd': {server_info->['efm-langserver', '-c='.$HOME.'/.config/efm-langserver/config.yaml', '-log='.g:log_files_dir.'/efm-langserver.log']},
+"         \ 'whitelist': ['go'],
+"         \ })
+"   augroup END
+" endif
 
 if executable('java') && filereadable(expand('~/lsp/eclipse.jdt.ls/plugins/org.eclipse.equinox.launcher_1.5.300.v20190213-1655.jar'))
     au User lsp_setup call lsp#register_server({
@@ -363,6 +364,14 @@ if executable('java') && filereadable(expand('~/lsp/eclipse.jdt.ls/plugins/org.e
         \ ]},
         \ 'whitelist': ['java'],
         \ })
+endif
+
+if executable('R')
+  au User lsp_setup call lsp#register_server({
+    \ 'name': 'R-lsp',
+    \ 'cmd': {server_info->['R', '--slave', '-e', 'languageserver::run()']},
+    \ 'whitelist': ['R'],
+    \ })
 endif
 " }}}
 
@@ -491,4 +500,9 @@ let g:vimtex_view_general_options = '@line @pdf @tex'
 
 " rust.vim {{{
 let g:rustfmt_autosave = 1
+" }}}
+
+" vim-quickrun {{{
+" Leader + qでquickrunを閉じる
+nnoremap <Leader>q :<C-u>bw! \[quickrun\ output\]<CR>
 " }}}

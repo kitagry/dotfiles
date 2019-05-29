@@ -5,13 +5,11 @@ export PATH="/usr/local/lib/:/usr/local/texlive/2017/bin/x86_64-darwin/tlmgr:$PA
 export GOROOT="/usr/local/opt/go/libexec"
 export GOPATH="$HOME/go/"
 export GO111MODULE=on
-export JAVA_HOME=`/usr/libexec/java_home -v 1.11`
+export JAVA_HOME=`/usr/libexec/java_home -v 1.8`
 export PATH="$JAVA_HOME/bin:$PATH"
 
 export ANT_HOME="/usr/local/bin/ant/"
 export PATH="$PATH:$ANT_HOME/bin"
-
-alias cdg="cd $GOPATH/src/github.com/kitagry/"
 
 export PATH="$GOPATH/bin:$PATH"
 export NVIM_LISTEN_ADDRESS="/tmp/nvimsocket"
@@ -68,6 +66,11 @@ alias redis-server='redis-server /usr/local/etc/redis.conf &'
 
 # awkをgawkにする
 alias awk="gawk"
+
+# cdのよく行くところへのalias
+alias cdg="cd $GOPATH/src/github.com/kitagry/"
+alias cdk="cd $HOME/src/github.com/kitagry/"
+
 
 # mkdir and cd
 mkcd() {
