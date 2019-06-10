@@ -250,7 +250,7 @@ cnoremap <expr> %% getcmdtype() == ':' ? expand('%:h').'/' : '%%'
 
 tnoremap <silent> jj <C-\><C-n>
 
-inoremap <silent> <C-l> <C-o>l
+inoremap <silent> <C-l> <C-G>U<Right>
 " }}}
 
 " vim-lsp {{{
