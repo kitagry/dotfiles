@@ -83,7 +83,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('mattn/emmet-vim')
   call dein#add('alvan/vim-closetag')
   call dein#add('thinca/vim-quickrun')
-  call dein#add('wmvanvliet/jupyter-vim')
+  " call dein#add('wmvanvliet/jupyter-vim')
   call dein#add('vim-jp/vimdoc-ja.git')
 
   call dein#end()
@@ -563,9 +563,13 @@ let g:rustfmt_autosave = 1
 nnoremap <Leader>q :<C-u>bw! \[quickrun\ output\]<CR>
 " }}}
 
-" call popup_create(split(execute("smile"), "\n"),{
-"             \ 'maxheight': 150,
-"             \ 'maxwidth': 100,
-"             \ 'border': [1,1,1,1],
-"             \ 'moved': 'any',
-"             \ })
+function Smile()
+  call popup_create(split(execute("smile"), "\n"),{
+              \ 'maxheight': 150,
+              \ 'maxwidth': 100,
+              \ 'border': [1,1,1,1],
+              \ 'moved': 'any',
+              \ })
+endfunction
+
+command! Smile call Smile()
