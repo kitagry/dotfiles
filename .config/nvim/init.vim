@@ -251,6 +251,10 @@ cnoremap <expr> %% getcmdtype() == ':' ? expand('%:h').'/' : '%%'
 tnoremap <silent> jj <C-\><C-n>
 
 inoremap <silent> <C-l> <C-G>U<Right>
+inoremap <Left> <C-G>U<Left>
+inoremap <Right> <C-G>U<Right>
+
+autocmd FileType help nnoremap <buffer> q <C-w>c
 " }}}
 
 " vim-lsp {{{
