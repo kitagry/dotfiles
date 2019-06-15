@@ -83,8 +83,11 @@ if dein#load_state(s:dein_dir)
   call dein#add('mattn/emmet-vim')
   call dein#add('alvan/vim-closetag')
   call dein#add('thinca/vim-quickrun')
-  " call dein#add('wmvanvliet/jupyter-vim')
   call dein#add('vim-jp/vimdoc-ja.git')
+  call dein#add('gabrielelana/vim-markdown')
+  call dein#add('previm/previm')
+  call dein#add('kana/vim-textobj-user')
+  call dein#add('sgur/vim-textobj-parameter')
 
   call dein#end()
   call dein#save_state()
@@ -410,6 +413,7 @@ nmap     <Leader>l [vim-lsp]
 nnoremap [vim-lsp]s :LspStatus<CR>
 nnoremap [vim-lsp]r :LspRename<CR>
 nnoremap [vim-lsp]d :LspDocumentDiagnostics<CR>
+nnoremap [vim-lsp]h :LspHover<CR>
 " }}}
 
 " asyncomplete {{{
@@ -449,7 +453,7 @@ nnoremap [denite] <Nop>
 nmap     <Leader>u [denite]
 
 " カレントディレクトリ以下のファイル
-nnoremap <silent> [denite]p :<C-u>Denite file_rec<CR>
+nnoremap <silent> [denite]f :<C-u>Denite file/rec<CR>
 " 現在のファイルのラインを検索
 nnoremap <silent> [denite]l :<C-u>Denite line<CR>
 " カレントディレクトリの単語検索
@@ -550,6 +554,10 @@ let g:go_fmt_command = "goimports"
 let g:go_def_mapping_enabled = 0
 let g:go_code_completion_enabled = 0
 let g:go_jump_to_error = 0
+
+nnoremap [vim-go] <Nop>
+nmap <Leader>g [vim-go]
+nmap <silent> [vim-go]i :<C-u>GoImport<Space>
 " }}}
 
 " vim-tex {{{
@@ -567,6 +575,11 @@ let g:rustfmt_autosave = 1
 nnoremap <Leader>q :<C-u>bw! \[quickrun\ output\]<CR>
 " }}}
 
+" previm {{{
+let g:previm_open_cmd = 'open -a Google\ Chrome'
+let g:previm_enable_realtime = 1
+" }}}
+
 function Smile()
   call popup_create(split(execute("smile"), "\n"),{
               \ 'maxheight': 150,
@@ -577,3 +590,7 @@ function Smile()
 endfunction
 
 command! Smile call Smile()
+
+if filereadable( $HOME . "/.vimrc_local" )
+  source ~/.vimrc_local
+endif
