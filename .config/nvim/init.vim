@@ -111,7 +111,7 @@ endif
 let g:log_files_dir = $HOME . '/.config/logs'
 
 filetype plugin indent on
-syntax on
+syntax enable
 
 " バックアップファイルを作らない
 set nobackup
@@ -454,6 +454,8 @@ nmap     <Leader>u [denite]
 
 " カレントディレクトリ以下のファイル
 nnoremap <silent> [denite]f :<C-u>Denite file/rec<CR>
+nnoremap <silent> [denite]c :<C-u>Denite change<CR>
+nnoremap <silent> [denite]p :<C-u>Denite register<CR>
 " 現在のファイルのラインを検索
 nnoremap <silent> [denite]l :<C-u>Denite line<CR>
 " カレントディレクトリの単語検索
@@ -580,7 +582,7 @@ let g:previm_open_cmd = 'open -a Google\ Chrome'
 let g:previm_enable_realtime = 1
 " }}}
 
-function Smile()
+function! Smile() abort
   call popup_create(split(execute("smile"), "\n"),{
               \ 'maxheight': 150,
               \ 'maxwidth': 100,
