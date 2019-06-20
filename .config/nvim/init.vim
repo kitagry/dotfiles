@@ -24,6 +24,7 @@ if dein#load_state(s:dein_dir)
   call dein#begin(s:dein_dir)
 
   " 補完系
+  call dein#add('Shougo/dein.vim')
   call dein#add('prabirshrestha/async.vim')
   call dein#add('prabirshrestha/vim-lsp')
   if has('nvim')
@@ -34,11 +35,13 @@ if dein#load_state(s:dein_dir)
   else
     call dein#add('prabirshrestha/asyncomplete.vim')
     call dein#add('prabirshrestha/asyncomplete-lsp.vim')
-    call dein#add('prabirshrestha/asyncomplete-ultisnips.vim')
+    if has('python3')
+      call dein#add('prabirshrestha/asyncomplete-ultisnips.vim')
+      call dein#add('SirVer/ultisnips')
+    endif
   endif
 
   call dein#add('honza/vim-snippets')
-  call dein#add('SirVer/ultisnips')
   call dein#add('mattn/efm-langserver')
 
   " 移動系
@@ -64,7 +67,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('leafgarland/typescript-vim', {'on_ft': 'typescript', 'lazy': 1})
   call dein#add('peitalin/vim-jsx-typescript', {'on_ft': 'typescript.tsx', 'lazy': 1})
   call dein#add('rust-lang/rust.vim', {'on_ft': 'rust', 'lazy': 1})
-  call dein#add('vim-scripts/Vim-R-plugin')
+  call dein#add('jalvesaq/Nvim-R')
 
   " Git系
   call dein#add('tpope/vim-fugitive')
