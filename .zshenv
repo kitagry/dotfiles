@@ -67,7 +67,6 @@ alias awk="gawk"
 alias cdg="cd $GOPATH/src/github.com/kitagry/"
 alias cdk="cd $HOME/src/github.com/kitagry/"
 
-
 # mkdir and cd
 mkcd() {
   mkdir -p "$@" && cd $_
