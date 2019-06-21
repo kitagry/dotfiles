@@ -1,0 +1,30 @@
+snippet max "function for max"
+	func max(s ...${1:int}) $1 {
+		maxContent := s[0]
+		for _, el := range s {
+			if el > maxContent {
+				maxContent = el
+			}
+		}
+		return maxContent
+	}
+	${0}
+
+snippet min "function for min"
+	func min(s ...${1:int}) $1 {
+		minContent := s[0]
+		for _, el := range s {
+			if el < minContent {
+				minContent = el
+			}
+		}
+		return minContent
+	}
+	${0}
+
+snippet packm "snippet for main"
+	package main
+
+	func main() {
+		${1}
+	}${0}

@@ -5,13 +5,9 @@ export PATH="/usr/local/lib/:/usr/local/texlive/2017/bin/x86_64-darwin/tlmgr:$PA
 export GOROOT="/usr/local/opt/go/libexec"
 export GOPATH="$HOME/go/"
 export GO111MODULE=on
-export JAVA_HOME=`/usr/libexec/java_home -v 1.11`
-export PATH="$JAVA_HOME/bin:$PATH"
 
 export ANT_HOME="/usr/local/bin/ant/"
 export PATH="$PATH:$ANT_HOME/bin"
-
-alias cdg="cd $GOPATH/src/github.com/kitagry/"
 
 export PATH="$GOPATH/bin:$PATH"
 export NVIM_LISTEN_ADDRESS="/tmp/nvimsocket"
@@ -22,8 +18,6 @@ export QT_HOMEBREW=true
 export NVIM_PYTHON_LOG_FILE="$HOME/.config/nvim/logs/python.log"
 
 export PATH="${HOME}/.cargo/bin:${PATH}"
-
-export LIBRARY_PATH="${LIBRARY_PATH}:${HOME}/ros2_install/ros2-osx/lib/:${HOME}/ros2_install/ros2-osx/include/"
 
 ###########################
 # unixコマンドのalias
@@ -60,8 +54,8 @@ alias zshenv="vim ~/.zshenv"
 alias vimrc="vim ~/.vimrc"
 ###########################
 
-# viとnvimを紐づける
-alias vi="nvim"
+# viとvimを紐づける
+alias vi="vim"
 
 # redis-serverのあとターミナルが占拠されないようにする
 alias redis-server='redis-server /usr/local/etc/redis.conf &'
@@ -69,10 +63,13 @@ alias redis-server='redis-server /usr/local/etc/redis.conf &'
 # awkをgawkにする
 alias awk="gawk"
 
-alias catkin_make=catkin_make -DCMAKE_EXPORT_COMPILE_COMMANDS=1
-alias cm=catkin_make -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+# cdのよく行くところへのalias
+alias cdg="cd $GOPATH/src/github.com/kitagry/"
+alias cdk="cd $HOME/src/github.com/kitagry/"
 
 # mkdir and cd
 mkcd() {
   mkdir -p "$@" && cd $_
 }
+
+[ -f "$HOME/.zshenv.local" ] && source "$HOME/.zshenv.local"
