@@ -88,5 +88,4 @@ if [ -e $ZPLUG_HOME/init.zsh ]; then
   zplug load --verbose
 fi
 
-# ################################## ros2の環境設定  #####################################
-# source $HOME/ros2_install/ros2-osx/setup.zsh
+[ -f "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
