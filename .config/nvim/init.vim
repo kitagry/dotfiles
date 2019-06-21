@@ -96,7 +96,7 @@ if has('mac')
   let g:python3_host_prog = '/usr/local/bin/python3'
 else
   let g:python_host_prog = '/usr/bin/python'
-  let g:python3_host_prog = '/usr/bin/python3'
+  let g:python3_host_prog = '/usr/bin/python3.6'
 endif
 
 let g:log_files_dir = $HOME . '/.config/logs'
@@ -185,7 +185,11 @@ set hlsearch
 nnoremap <Esc><Esc> :nohlsearch<CR><Esc>
 
 " クリップボードにコピー
-set clipboard+=unnamed
+if has('mac')
+    set clipboard+=unnamed
+else
+    set clipboard=unnamedplus
+endif
 
 set background=dark
 colorscheme apprentice
@@ -194,14 +198,14 @@ hi CursorLine guifg=#E19972
 
 " 置換の時に大活躍
 if has('nvim')
-  set inccommand=split
-else " vimの設定
-  " 挿入モード時に非点滅の縦棒タイプのカーソル
-  let &t_SI .= "\e[6 q"
-  " ノーマルモード時に非点滅のブロックタイプのカーソル
-  let &t_EI .= "\e[2 q"
-  " 置換モード時に非点滅の下線タイプのカーソル
-  let &t_SR .= "\e[4 q"
+    set inccommand=split
+elseif has('mac')
+    " 挿入モード時に非点滅の縦棒タイプのカーソル
+    let &t_SI .= "\e[6 q"
+    " ノーマルモード時に非点滅のブロックタイプのカーソル
+    let &t_EI .= "\e[2 q"
+    " 置換モード時に非点滅の下線タイプのカーソル
+    let &t_SR .= "\e[4 q"
 endif
 " ==============================================================================================
 
