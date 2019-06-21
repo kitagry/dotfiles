@@ -69,6 +69,9 @@ alias redis-server='redis-server /usr/local/etc/redis.conf &'
 # awkをgawkにする
 alias awk="gawk"
 
+alias catkin_make=catkin_make -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+alias cm=catkin_make -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+
 # mkdir and cd
 mkcd() {
   mkdir -p "$@" && cd $_
