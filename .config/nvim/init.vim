@@ -589,6 +589,12 @@ let g:previm_open_cmd = 'open -a Google\ Chrome'
 let g:previm_enable_realtime = 1
 " }}}
 
+" vim-fugitive {{{
+nnoremap [fugitive] <Nop>
+nmap <Leader>f [fugitive]
+nmap <silent> [fugitive]d :<C-u>Gdiff<CR>
+" }}}
+
 function! Smile() abort
   call popup_create(split(execute("smile"), "\n"),{
               \ 'maxheight': 150,
