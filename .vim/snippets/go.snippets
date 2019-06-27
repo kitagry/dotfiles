@@ -28,3 +28,15 @@ snippet packm "snippet for main"
 	func main() {
 		${1}
 	}${0}
+
+snippet stack "stack"
+	type stack []${1:int}
+
+	func (s stack) Push(p $1) stack {
+		return append(s, p)
+	}
+
+	func (s stack) Pop(s $1) ($1, stack) {
+		return s[len(s)-1], s[:len(s)-1]
+	}
+	${0}
