@@ -265,6 +265,9 @@ inoremap <Left> <C-G>U<Left>
 inoremap <Right> <C-G>U<Right>
 
 autocmd FileType help nnoremap <buffer> q <C-w>c
+
+inoremap <BS> <Nop>
+inoremap <Del> <Nop>
 " }}}
 
 " vim-lsp {{{
@@ -563,6 +566,7 @@ let g:go_fmt_command = "goimports"
 let g:go_def_mapping_enabled = 0
 let g:go_code_completion_enabled = 0
 let g:go_jump_to_error = 0
+let g:go_template_autocreate = 1
 
 nnoremap [vim-go] <Nop>
 nmap <Leader>g [vim-go]
