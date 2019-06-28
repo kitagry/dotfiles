@@ -36,7 +36,58 @@ snippet stack "stack"
 		return append(s, p)
 	}
 
-	func (s stack) Pop(s $1) ($1, stack) {
+	func (s stack) Pop() ($1, stack) {
 		return s[len(s)-1], s[:len(s)-1]
+	}
+	${0}
+
+snippet queue "queue"
+	type queue []${1:int}
+
+	func (q queue) Push(p $1) queue {
+		return append(q, p)
+	}
+
+	func (q queue) Pop() ($1, queue) {
+		if len(q) == 1 {
+			return q[0], make(queue, 0)
+		}
+		return q[0], q[1:]
+	}
+
+snippet unionFind "Union find"
+	type unionTree struct {
+		el     int
+		parent *unionTree
+	}
+
+	func (u *unionTree) root() *unionTree {
+		if u.parent == nil {
+			return u
+		}
+
+		root := u.parent.root()
+		if root != u.parent {
+			u.parent = root
+		}
+		return root
+	}
+
+	func (u *unionTree) same(v *unionTree) bool {
+		return u.root() == v.root()
+	}
+
+	func (u *unionTree) unite(v *unionTree) {
+		uRoot := u.root()
+		vRoot := v.root()
+		if uRoot == vRoot {
+			return
+		}
+
+		if uRoot.el < vRoot.el {
+			vRoot.parent = uRoot
+		} else {
+			uRoot.parent = vRoot
+		}
 	}
 	${0}
