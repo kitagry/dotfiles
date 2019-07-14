@@ -56,7 +56,7 @@ if dein#load_state(s:dein_dir)
 
   " 言語系
   call dein#add('cakebaker/scss-syntax.vim')
-  call dein#add('fatih/vim-go', {'on_ft': 'go', 'lazy': 1})
+  call dein#add('fatih/vim-go', {'on_ft': 'go'})
   call dein#add('posva/vim-vue', {'on_ft': 'vue', 'lazy': 1})
   call dein#add('digitaltoad/vim-pug', {'on_ft': 'vue', 'lazy': 1})
   call dein#add('lervag/vimtex', {'on_ft': 'tex', 'lazy': 1})
@@ -87,7 +87,6 @@ if dein#load_state(s:dein_dir)
   call dein#add('alvan/vim-closetag')
   call dein#add('thinca/vim-quickrun')
   call dein#add('vim-jp/vimdoc-ja.git')
-  call dein#add('gabrielelana/vim-markdown')
   call dein#add('previm/previm')
   call dein#add('kana/vim-textobj-user')
   call dein#add('sgur/vim-textobj-parameter')
@@ -411,6 +410,7 @@ let g:lsp_diagnostics_enabled = 1
 let g:lsp_signs_enabled = 1
 let g:lsp_diagnostics_echo_cursor = 1
 let g:lsp_highlights_enabled = 0
+let g:lsp_preview_doubletap = 0
 
 nnoremap <silent> ]e  :LspNextError<CR>
 nnoremap <silent> [e  :LspPreviousError<CR>
@@ -591,6 +591,8 @@ nnoremap <Leader>q :<C-u>bw! \[quickrun\ output\]<CR>
 " previm {{{
 let g:previm_open_cmd = 'open -a Google\ Chrome'
 let g:previm_enable_realtime = 1
+let g:previm_disable_default_css = 1
+let g:previm_custom_css_path = '~/.vim/templates/previm/markdown.css'
 " }}}
 
 " vim-fugitive {{{
@@ -613,3 +615,14 @@ command! Smile call Smile()
 if filereadable( $HOME . "/.vimrc_local" )
   source ~/.vimrc_local
 endif
+
+function! Mdpdf() abort
+  if expand('%:e') != 'md'
+    return
+  endif
+  let l:command = 'mdpdf ' . expand('%:p')
+  call system(l:command)
+  call system('open ' . expand('%:r') . '.pdf')
+endfunction
+
+command! Mdpdf call Mdpdf()
