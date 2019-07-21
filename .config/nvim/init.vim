@@ -572,7 +572,7 @@ let g:go_template_autocreate = 1
 nnoremap [vim-go] <Nop>
 nmap <Leader>g [vim-go]
 nmap <silent> [vim-go]i :<C-u>GoImport<Space>
-nmap <silent> [vim-go]t :<C-u>GoTest<Space>
+nmap <silent> [vim-go]t :<C-u>GoTest<CR>
 " }}}
 
 " vim-tex {{{
