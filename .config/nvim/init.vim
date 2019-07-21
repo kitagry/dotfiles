@@ -90,6 +90,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('previm/previm')
   call dein#add('kana/vim-textobj-user')
   call dein#add('sgur/vim-textobj-parameter')
+  call dein#add('skywind3000/asyncrun.vim')
 
   call dein#end()
   call dein#save_state()
@@ -571,6 +572,7 @@ let g:go_template_autocreate = 1
 nnoremap [vim-go] <Nop>
 nmap <Leader>g [vim-go]
 nmap <silent> [vim-go]i :<C-u>GoImport<Space>
+nmap <silent> [vim-go]t :<C-u>GoTest<Space>
 " }}}
 
 " vim-tex {{{
@@ -616,13 +618,4 @@ if filereadable( $HOME . "/.vimrc_local" )
   source ~/.vimrc_local
 endif
 
-function! Mdpdf() abort
-  if expand('%:e') != 'md'
-    return
-  endif
-  let l:command = 'mdpdf ' . expand('%:p')
-  call system(l:command)
-  call system('open ' . expand('%:r') . '.pdf')
-endfunction
-
-command! Mdpdf call Mdpdf()
+command! Mdpdf :AsyncRun mdpdf "%" && open "%<.pdf"
