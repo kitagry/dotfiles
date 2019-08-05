@@ -89,3 +89,5 @@ if [ -e $ZPLUG_HOME/init.zsh ]; then
 fi
 
 [ -f "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh

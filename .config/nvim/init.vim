@@ -45,7 +45,9 @@ if dein#load_state(s:dein_dir)
   call dein#add('mattn/efm-langserver')
 
   " 移動系
-  call dein#add('Shougo/denite.nvim')
+  " call dein#add('Shougo/denite.nvim')
+  call dein#add('junegunn/fzf.vim')
+  call dein#add('junegunn/fzf', { 'build': './install --all', 'merged': 0 })
   call dein#add('Shougo/defx.nvim', {'lazy': 1})
   if has('nvim')
     call dein#add('ncm2/float-preview.nvim')
@@ -460,59 +462,59 @@ let g:airline#extensions#tabline#formatter = 'unique_tail'
 " }}}
 
 " Denite {{{
-nnoremap [denite] <Nop>
-nmap     <Leader>u [denite]
+" nnoremap [denite] <Nop>
+" nmap     <Leader>u [denite]
 
-" カレントディレクトリ以下のファイル
-nnoremap <silent> [denite]f :<C-u>Denite file/rec<CR>
-nnoremap <silent> [denite]c :<C-u>Denite change<CR>
-nnoremap <silent> [denite]p :<C-u>Denite register<CR>
-" 現在のファイルのラインを検索
-nnoremap <silent> [denite]l :<C-u>Denite line<CR>
-" カレントディレクトリの単語検索
-nnoremap <silent> [denite]g :<C-u>Denite grep<CR>
-" 検索結果（カーソル以下の文字をインプットにする）
-nnoremap <silent> [denite]] :<C-u>DeniteCursorWord grep<CR>
-" 前回のDeniteバッファを再表示する
-nnoremap <silent> [denite]r :<C-u>Denite -resume<CR>
+" " カレントディレクトリ以下のファイル
+" nnoremap <silent> [denite]f :<C-u>Denite file/rec<CR>
+" nnoremap <silent> [denite]c :<C-u>Denite change<CR>
+" nnoremap <silent> [denite]p :<C-u>Denite register<CR>
+" " 現在のファイルのラインを検索
+" nnoremap <silent> [denite]l :<C-u>Denite line<CR>
+" " カレントディレクトリの単語検索
+" nnoremap <silent> [denite]g :<C-u>Denite grep<CR>
+" " 検索結果（カーソル以下の文字をインプットにする）
+" nnoremap <silent> [denite]] :<C-u>DeniteCursorWord grep<CR>
+" " 前回のDeniteバッファを再表示する
+" nnoremap <silent> [denite]r :<C-u>Denite -resume<CR>
 
-call denite#custom#var('file_rec', 'command', ['ag', '--follow', '--nocolor', '--nogroup', '-g'])
-call denite#custom#var('grep', 'command', ['ag'])
-call denite#custom#var('grep', 'recursive_opts', [])
-call denite#custom#var('grep', 'pattern_opt', [])
-call denite#custom#var('grep', 'default_opts', ['--follow', '--no-group', '--hidden'])
+" call denite#custom#var('file_rec', 'command', ['ag', '--follow', '--nocolor', '--nogroup', '-g'])
+" call denite#custom#var('grep', 'command', ['ag'])
+" call denite#custom#var('grep', 'recursive_opts', [])
+" call denite#custom#var('grep', 'pattern_opt', [])
+" call denite#custom#var('grep', 'default_opts', ['--follow', '--no-group', '--hidden'])
 
-autocmd FileType denite call s:denite_my_settings()
-function! s:denite_my_settings() abort
-  nnoremap <silent><buffer><expr> <CR>
-  \ denite#do_map('do_action')
-  nnoremap <silent><buffer><expr> d
-  \ denite#do_map('do_action', 'delete')
-  nnoremap <silent><buffer><expr> p
-  \ denite#do_map('do_action', 'preview')
-  nnoremap <silent><buffer><expr> q
-  \ denite#do_map('quit')
-  nnoremap <silent><buffer><expr> i
-  \ denite#do_map('open_filter_buffer')
-  nnoremap <silent><buffer><expr> l
-  \ denite#do_map('do_action')
-  nnoremap <silent><buffer><expr> <Space>
-  \ denite#do_map('toggle_select').'j'
-endfunction
+" autocmd FileType denite call s:denite_my_settings()
+" function! s:denite_my_settings() abort
+"   nnoremap <silent><buffer><expr> <CR>
+"   \ denite#do_map('do_action')
+"   nnoremap <silent><buffer><expr> d
+"   \ denite#do_map('do_action', 'delete')
+"   nnoremap <silent><buffer><expr> p
+"   \ denite#do_map('do_action', 'preview')
+"   nnoremap <silent><buffer><expr> q
+"   \ denite#do_map('quit')
+"   nnoremap <silent><buffer><expr> i
+"   \ denite#do_map('open_filter_buffer')
+"   nnoremap <silent><buffer><expr> l
+"   \ denite#do_map('do_action')
+"   nnoremap <silent><buffer><expr> <Space>
+"   \ denite#do_map('toggle_select').'j'
+" endfunction
 
-if has('nvim')
-  let s:denite_win_width_percent = 0.85
-  let s:denite_win_height_percent = 0.7
+" if has('nvim')
+"   let s:denite_win_width_percent = 0.85
+"   let s:denite_win_height_percent = 0.7
 
-  " Change denite default options
-  call denite#custom#option('default', {
-      \ 'split': 'floating',
-      \ 'winwidth': float2nr(&columns * s:denite_win_width_percent),
-      \ 'wincol': float2nr((&columns - (&columns * s:denite_win_width_percent)) / 2),
-      \ 'winheight': float2nr(&lines * s:denite_win_height_percent),
-      \ 'winrow': float2nr((&lines - (&lines * s:denite_win_height_percent)) / 2),
-      \ })
-endif
+"   " Change denite default options
+"   call denite#custom#option('default', {
+"       \ 'split': 'floating',
+"       \ 'winwidth': float2nr(&columns * s:denite_win_width_percent),
+"       \ 'wincol': float2nr((&columns - (&columns * s:denite_win_width_percent)) / 2),
+"       \ 'winheight': float2nr(&lines * s:denite_win_height_percent),
+"       \ 'winrow': float2nr((&lines - (&lines * s:denite_win_height_percent)) / 2),
+"       \ })
+" endif
 " }}}
 
 " Defx {{{
@@ -558,6 +560,13 @@ nmap <silent> [defx]f :<C-u>Defx %%<CR>
 nmap <silent> [defx]h :<C-u>Defx -split='vertical' %%<CR>
 " }}}
 
+" fzf {{{
+nnoremap [fzf] <Nop>
+nmap <Leader>f [fzf]
+nmap <silent> [fzf]f :<C-u>Files<CR>
+nmap <silent> [fzf]c :<C-u>Files %%<CR>
+" }}}
+
 " roxma/vim-hug-neovim-rpc {{{
 let $NVIM_PYTHON_LOG_FILE=$HOME . "/.config/logs/nvim_python_log_file"
 " }}}
@@ -598,9 +607,9 @@ let g:previm_custom_css_path = '~/.vim/templates/previm/markdown.css'
 " }}}
 
 " vim-fugitive {{{
-nnoremap [fugitive] <Nop>
-nmap <Leader>f [fugitive]
-nmap <silent> [fugitive]d :<C-u>Gdiff<CR>
+" nnoremap [fugitive] <Nop>
+" nmap <Leader>g [fugitive]
+" nmap <silent> [fugitive]d :<C-u>Gdiff<CR>
 " }}}
 
 function! Smile() abort
@@ -618,4 +627,13 @@ if filereadable( $HOME . "/.vimrc_local" )
   source ~/.vimrc_local
 endif
 
-command! Mdpdf :AsyncRun mdpdf "%" && open "%<.pdf"
+function! Mdpdf() abort
+  echo filereadable( expand('%:h') . '/mdpdf.css' )
+  if filereadable( expand('%:h') . '/mdpdf.css' )
+    execute ':AsyncRun mdpdf --style=' . expand('%:h') . '/mdpdf.css "%" && open "%<.pdf"'
+  else
+    execute ':AsyncRun mdpdf "%" && open "%<.pdf"'
+  endif
+endfunction
+
+command! Mdpdf call Mdpdf()
