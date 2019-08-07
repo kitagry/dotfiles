@@ -213,6 +213,9 @@ colorscheme apprentice
 " Deniteのカラーがおかしい
 hi CursorLine guifg=#E19972
 
+" vimgrepで自動でQuickfixを開く
+autocmd QuickFixCmdPost *grep* cwindow 10
+
 " 置換の時に大活躍
 if has('nvim')
     set inccommand=split
@@ -243,6 +246,8 @@ nnoremap [B :bfirst<CR>
 " quickfix
 nnoremap ]q :cnext<CR>
 nnoremap [q :cprevious<CR>
+nnoremap ]Q :<C-u>cfirst<CR>
+nnoremap [Q :<C-u>clast<CR>
 
 " 折り返し時に表示行単位での移動できるようにする
 nnoremap j gj
@@ -267,6 +272,7 @@ inoremap <Left> <C-G>U<Left>
 inoremap <Right> <C-G>U<Right>
 
 autocmd FileType help nnoremap <buffer> q <C-w>c
+autocmd FileType qf nnoremap <buffer> q :<C-u>cclose<CR>
 
 inoremap <BS> <Nop>
 inoremap <Del> <Nop>
