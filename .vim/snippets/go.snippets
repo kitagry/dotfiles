@@ -91,3 +91,60 @@ snippet unionFind "Union find"
 		}
 	}
 	${0}
+
+snippet scanner "create scanner"
+	sc := bufio.NewScanner(os.Stdin)
+	${0}
+
+snippet scanInt "scan integer"
+	sc.Scan()
+	${1:N}, _ := strconv.Atoi(sc.Text())
+	${0}
+
+snippet atcoder-test "create test for atcoder"
+	import (
+		"bufio"
+		"io/ioutil"
+		"os"
+		"testing"
+	)
+
+	func TestMain(t *testing.T) {
+		file, err := os.Open("test.txt")
+		if err != nil {
+			t.Error("File is not found.")
+		}
+		defer file.Close()
+
+		sc := bufio.NewScanner(file)
+		testDatas := make([][]string, 0)
+		for sc.Scan() {
+			input := sc.Text() + "\n"
+			for sc.Scan() && sc.Text() != "" {
+				input += sc.Text() + "\n"
+			}
+
+			output := ""
+			for sc.Scan() && sc.Text() != "" {
+				output += sc.Text() + "\n"
+			}
+
+			testDatas = append(testDatas, []string{input, output})
+		}
+
+		for _, data := range testDatas {
+			inr, inw, _ := os.Pipe()
+			outr, outw, _ := os.Pipe()
+			os.Stdin = inr
+			os.Stdout = outw
+			inw.Write([]byte(data[0]))
+			inw.Close()
+			main()
+			outw.Close()
+			outbuf, _ := ioutil.ReadAll(outr)
+			if string(outbuf) != data[1] {
+				t.Errorf("標準入力が\n%s\nのときに%s (正解は%s)", data[0], string(outbuf), data[1])
+			}
+		}
+	}
+	${0}
