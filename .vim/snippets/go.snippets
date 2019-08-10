@@ -59,6 +59,15 @@ snippet unionFind "Union find"
 	type unionTree struct {
 		el     int
 		parent *unionTree
+		count  int
+	}
+
+	func newUnionTree(el int) unionTree {
+		return unionTree{
+			el:     el,
+			parent: nil,
+			count:  1,
+		}
 	}
 
 	func (u *unionTree) root() *unionTree {
@@ -73,28 +82,38 @@ snippet unionFind "Union find"
 		return root
 	}
 
-	func (u *unionTree) same(v *unionTree) bool {
+	func same(u *unionTree, v *unionTree) bool {
 		return u.root() == v.root()
 	}
 
-	func (u *unionTree) unite(v *unionTree) {
+	func unite(u *unionTree, v *unionTree) bool {
 		uRoot := u.root()
 		vRoot := v.root()
 		if uRoot == vRoot {
-			return
+			return false
 		}
 
 		if uRoot.el < vRoot.el {
 			vRoot.parent = uRoot
+			uRoot.count += vRoot.count
 		} else {
 			uRoot.parent = vRoot
+			vRoot.count += uRoot.count
 		}
+		return true
+	}
+
+	func size(u *unionTree) int {
+		return u.root().count
 	}
 	${0}
 
 snippet scanner "create scanner"
-	sc := bufio.NewScanner(os.Stdin)
-	${0}
+	sc := bufio.NewScanner(os.Stdin)${0}
+
+snippet scanLong "scan long text"
+	buf := make([]byte, 1e5+1)
+	sc.Buffer(buf, 1e5+1)${0}
 
 snippet scanInt "scan integer"
 	sc.Scan()
