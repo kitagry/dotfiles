@@ -55,6 +55,53 @@ snippet queue "queue"
 		return q[0], q[1:]
 	}
 
+snippet priorityQueue "priority Queue"
+	type priorityQueue []${1:int}
+
+	func (q priorityQueue) Push(p $1) priorityQueue {
+		tmp := append(priorityQueue{p}, q...)
+		tmp.heapify()
+		return tmp
+	}
+
+	func (q priorityQueue) Pop() ($1, priorityQueue) {
+		if len(q) == 1 {
+			return q[0], make(priorityQueue, 0)
+		}
+		return q[0], q[1:]
+	}
+
+	func (h priorityQueue) Less(i, j int) bool {
+		return ${2}
+	}
+
+	func (h priorityQueue) heapify() {
+		i := 0
+		for i < len(h)/2 {
+			if len(h) == i*2+2 && !h.Less(i, i*2+1) {
+				tmp := h[i]
+				h[i] = h[i*2+1]
+				h[i*2+1] = tmp
+				break
+			} else if len(h) > i*2+2 && (!h.Less(i, i*2+1) || !h.Less(i, i*2+2)) {
+				if h.Less(i*2+1, i*2+2) {
+					tmp := h[i]
+					h[i] = h[i*2+1]
+					h[i*2+1] = tmp
+					i = i*2 + 1
+				} else {
+					tmp := h[i]
+					h[i] = h[i*2+2]
+					h[i*2+2] = tmp
+					i = i*2 + 2
+				}
+			} else {
+				break
+			}
+		}
+	}
+	${0}
+
 snippet unionFind "Union find"
 	type unionTree struct {
 		el     int
@@ -165,5 +212,15 @@ snippet atcoder-test "create test for atcoder"
 				t.Errorf("標準入力が\n%s\nのときに%s (正解は%s)", data[0], string(outbuf), data[1])
 			}
 		}
+	}
+	${0}
+
+snippet pow "pow"
+	func pow(n, m int) (result int) {
+		result = 1
+		for i := 0; i < m; i++ {
+			result *= n
+		}
+		return
 	}
 	${0}

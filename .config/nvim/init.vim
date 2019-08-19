@@ -571,6 +571,8 @@ nnoremap [fzf] <Nop>
 nmap <Leader>f [fzf]
 nmap <silent> [fzf]f :<C-u>Files<CR>
 nmap <silent> [fzf]c :<C-u>Files %%<CR>
+nmap <silent> [fzf]g :<C-u>Ag<CR>
+nmap <silent> [fzf]] :<C-u>Ag <C-r><C-w><CR>
 " }}}
 
 " roxma/vim-hug-neovim-rpc {{{
