@@ -224,3 +224,17 @@ snippet pow "pow"
 		return
 	}
 	${0}
+
+snippet sort "sort interface"
+	func (s ${1}) Len() int {
+		return ${2:len(s)}
+	}
+
+	func (s $1) Less(i, j int) bool {
+		${3}
+	}
+
+	func (s $1) Swap(i, j int) {
+		${4:s[i], s[j] = s[j], s[i]}
+	}
+	${0}
