@@ -531,6 +531,10 @@ nmap <silent> [gopher]c :<C-u>GoCoverage toggle<CR>
 nmap <silent> [gopher]l :wa<CR>:compiler golint<CR>:silent make!<CR>:redraw!<CR>:cwindow 10<CR>
 nmap <silent> [gopher]t :wa<CR>:compiler gotest<CR>:silent make!<CR>:redraw!<CR>:cwindow 10<CR>
 
+let g:gopher_map = {
+      \ '_nmap_prefix': ',',
+      \ }
+
 augroup my_gopher
     au!
 
