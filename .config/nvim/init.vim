@@ -57,7 +57,7 @@ if dein#load_state(s:dein_dir)
 
   " 言語系
   call dein#add('cakebaker/scss-syntax.vim')
-  call dein#add('fatih/vim-go', {'on_ft': 'go'})
+  call dein#add('arp242/gopher.vim', {'on_ft': 'go'})
   call dein#add('posva/vim-vue', {'on_ft': 'vue', 'lazy': 1})
   call dein#add('digitaltoad/vim-pug', {'on_ft': 'vue', 'lazy': 1})
   call dein#add('lervag/vimtex', {'on_ft': 'tex', 'lazy': 1})
@@ -419,6 +419,7 @@ let g:lsp_signs_enabled = 1
 let g:lsp_diagnostics_echo_cursor = 1
 let g:lsp_highlights_enabled = 0
 let g:lsp_preview_doubletap = 0
+let g:lsp_preview_float = 1
 
 nnoremap <silent> ]e  :LspNextError<CR>
 nnoremap <silent> [e  :LspPreviousError<CR>
@@ -522,17 +523,22 @@ nmap <silent> [fzf]] :<C-u>Ag <C-r><C-w><CR>
 let $NVIM_PYTHON_LOG_FILE=$HOME . "/.config/logs/nvim_python_log_file"
 " }}}
 
-" vim-go {{{
-let g:go_fmt_command = "goimports"
-let g:go_def_mapping_enabled = 0
-let g:go_code_completion_enabled = 0
-let g:go_jump_to_error = 0
-let g:go_template_autocreate = 1
+" gopher.vim {{{
+nnoremap [gopher] <Nop>
+nmap <Leader>g [gopher]
+nmap <silent> [gopher]i :<C-u>GoImport<Space>
+nmap <silent> [gopher]c :<C-u>GoCoverage toggle<CR>
+nmap <silent> [gopher]l :wa<CR>:compiler golint<CR>:silent make!<CR>:redraw!<CR>:cwindow 10<CR>
+nmap <silent> [gopher]t :wa<CR>:compiler gotest<CR>:silent make!<CR>:redraw!<CR>:cwindow 10<CR>
 
-nnoremap [vim-go] <Nop>
-nmap <Leader>g [vim-go]
-nmap <silent> [vim-go]i :<C-u>GoImport<Space>
-nmap <silent> [vim-go]t :<C-u>GoTest<CR>
+augroup my_gopher
+    au!
+
+    autocmd BufWritePre *.go
+                \  let s:save = winsaveview()
+                \| exe 'keepjumps %!goimports 2>/dev/null || cat /dev/stdin'
+                \| call winrestview(s:save)
+augroup end
 " }}}
 
 " vim-tex {{{
