@@ -55,10 +55,66 @@ snippet queue "queue"
 		return q[0], q[1:]
 	}
 
+snippet priorityQueue "priority Queue"
+	type priorityQueue []${1:int}
+
+	func (q priorityQueue) Push(p $1) priorityQueue {
+		tmp := append(priorityQueue{p}, q...)
+		tmp.heapify()
+		return tmp
+	}
+
+	func (q priorityQueue) Pop() ($1, priorityQueue) {
+		if len(q) == 1 {
+			return q[0], make(priorityQueue, 0)
+		}
+		return q[0], q[1:]
+	}
+
+	func (h priorityQueue) Less(i, j int) bool {
+		return ${2}
+	}
+
+	func (h priorityQueue) heapify() {
+		i := 0
+		for i < len(h)/2 {
+			if len(h) == i*2+2 && !h.Less(i, i*2+1) {
+				tmp := h[i]
+				h[i] = h[i*2+1]
+				h[i*2+1] = tmp
+				break
+			} else if len(h) > i*2+2 && (!h.Less(i, i*2+1) || !h.Less(i, i*2+2)) {
+				if h.Less(i*2+1, i*2+2) {
+					tmp := h[i]
+					h[i] = h[i*2+1]
+					h[i*2+1] = tmp
+					i = i*2 + 1
+				} else {
+					tmp := h[i]
+					h[i] = h[i*2+2]
+					h[i*2+2] = tmp
+					i = i*2 + 2
+				}
+			} else {
+				break
+			}
+		}
+	}
+	${0}
+
 snippet unionFind "Union find"
 	type unionTree struct {
 		el     int
 		parent *unionTree
+		count  int
+	}
+
+	func newUnionTree(el int) unionTree {
+		return unionTree{
+			el:     el,
+			parent: nil,
+			count:  1,
+		}
 	}
 
 	func (u *unionTree) root() *unionTree {
@@ -73,28 +129,38 @@ snippet unionFind "Union find"
 		return root
 	}
 
-	func (u *unionTree) same(v *unionTree) bool {
+	func same(u *unionTree, v *unionTree) bool {
 		return u.root() == v.root()
 	}
 
-	func (u *unionTree) unite(v *unionTree) {
+	func unite(u *unionTree, v *unionTree) bool {
 		uRoot := u.root()
 		vRoot := v.root()
 		if uRoot == vRoot {
-			return
+			return false
 		}
 
 		if uRoot.el < vRoot.el {
 			vRoot.parent = uRoot
+			uRoot.count += vRoot.count
 		} else {
 			uRoot.parent = vRoot
+			vRoot.count += uRoot.count
 		}
+		return true
+	}
+
+	func size(u *unionTree) int {
+		return u.root().count
 	}
 	${0}
 
 snippet scanner "create scanner"
-	sc := bufio.NewScanner(os.Stdin)
-	${0}
+	sc := bufio.NewScanner(os.Stdin)${0}
+
+snippet scanLong "scan long text"
+	buf := make([]byte, 1e5+1)
+	sc.Buffer(buf, 1e5+1)${0}
 
 snippet scanInt "scan integer"
 	sc.Scan()
@@ -146,5 +212,29 @@ snippet atcoder-test "create test for atcoder"
 				t.Errorf("標準入力が\n%s\nのときに%s (正解は%s)", data[0], string(outbuf), data[1])
 			}
 		}
+	}
+	${0}
+
+snippet pow "pow"
+	func pow(n, m int) (result int) {
+		result = 1
+		for i := 0; i < m; i++ {
+			result *= n
+		}
+		return
+	}
+	${0}
+
+snippet sort "sort interface"
+	func (s ${1}) Len() int {
+		return ${2:len(s)}
+	}
+
+	func (s $1) Less(i, j int) bool {
+		${3}
+	}
+
+	func (s $1) Swap(i, j int) {
+		${4:s[i], s[j] = s[j], s[i]}
 	}
 	${0}
