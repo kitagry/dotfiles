@@ -64,8 +64,7 @@ alias redis-server='redis-server /usr/local/etc/redis.conf &'
 alias awk="gawk"
 
 # cdのよく行くところへのalias
-alias cdg="cd $GOPATH/src/github.com/kitagry/"
-alias cdk="cd $HOME/src/github.com/kitagry/"
+alias g='cd $(ghq root)/$(ghq list | fzf)'
 
 # mkdir and cd
 mkcd() {
