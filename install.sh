@@ -14,7 +14,7 @@ if !(type "/usr/local/bin/zsh" > /dev/null 2>&1); then
   zsh
 fi
 
-declare -a INSTALL_PLUGINS=('vim fzf ghq')
+declare -a INSTALL_PLUGINS=('vim go fzf ghq')
 for item in $INSTALL_PLUGINS
 do
   if !(type $item > /dev/null 2>&1); then
