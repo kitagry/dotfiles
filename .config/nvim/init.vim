@@ -92,6 +92,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('kana/vim-textobj-user')
   call dein#add('sgur/vim-textobj-parameter')
   call dein#add('skywind3000/asyncrun.vim')
+  call dein#add('tyru/open-browser.vim')
 
   call dein#end()
   call dein#save_state()
@@ -244,9 +245,14 @@ nnoremap [B :bfirst<CR>
 
 " quickfix
 nnoremap ]q :cnext<CR>
+nnoremap ]Q :<C-u>clast<CR>
+nnoremap [Q :<C-u>cfirst<CR>
 nnoremap [q :cprevious<CR>
-nnoremap ]Q :<C-u>cfirst<CR>
-nnoremap [Q :<C-u>clast<CR>
+
+nnoremap ]t :tabnext<CR>
+nnoremap ]T :tablast<CR>
+nnoremap [t :tabprevious<CR>
+nnoremap [T :tabfirst<CR>
 
 " 折り返し時に表示行単位での移動できるようにする
 nnoremap j gj
@@ -370,6 +376,33 @@ if executable('rls')
     \ 'whitelist': ['rust'],
     \ })
 endif
+
+" if executable('yaml-language-server')
+"   let settings = json_decode('
+"         \ {
+"         \   "yaml": {
+"         \     "compiletion": true,
+"         \     "hover": true,
+"         \     "validate": true,
+"         \     "schemas": {
+"         \       "Kubernetes": "/*"
+"         \     },
+"         \     "format": {
+"         \       "enable": true
+"         \     }
+"         \   },
+"         \   "http": {
+"         \     "proxyStrictSSL": true
+"         \   }
+"         \ }')
+
+"   au User lsp_setup call lsp#register_server({
+"         \ 'name': 'yaml-language-server',
+"         \ 'cmd': {server_info->['yaml-language-server', '--stdio']},
+"         \ 'workspace_config': {'settings': settings},
+"         \ 'whitelist': ['yaml', 'yml'],
+"         \ })
+" endif
 
 " if executable('efm-langserver')
 "   augroup LspEFM
@@ -573,6 +606,12 @@ let g:previm_custom_css_path = '~/.vim/templates/previm/markdown.css'
 " nmap <silent> [fugitive]d :<C-u>Gdiff<CR>
 " }}}
 
+" open-browser {{{
+let g:netrw_nogx = 1
+nmap gx <Plug>(openbrowser-search)
+vmap gx <Plug>(openbrowser-search)
+" }}}
+
 function! Smile() abort
   call popup_create(split(execute("smile"), "\n"),{
               \ 'maxheight': 150,
@@ -598,3 +637,18 @@ function! Mdpdf() abort
 endfunction
 
 command! Mdpdf call Mdpdf()
+
+function! MeiNoBaka() abort
+  let s:lines = readfile($HOME . '/Downloads/sample.drcs', '')
+  let s:winid = popup_create(s:lines, {
+              \ 'maxheight': 150,
+              \ 'maxwidth': 100,
+              \ 'border': [1,1,1,1],
+              \ 'moved': 'any',
+              \ })
+  call setbufvar(winbufnr(s:winid), '&filetype', 'drcs')
+endfunction
+
+autocmd BufRead *.drcs set filetype=drcs
+" " Vimであいまいな幅の文字の論理幅を1にします
+" set ambiwidth=single
