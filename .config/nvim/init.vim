@@ -94,6 +94,8 @@ if dein#load_state(s:dein_dir)
   call dein#add('skywind3000/asyncrun.vim')
   call dein#add('tyru/open-browser.vim')
 
+  call dein#add('itchyny/calendar.vim')
+
   call dein#end()
   call dein#save_state()
 endif
@@ -469,29 +471,19 @@ nnoremap [vim-lsp]h :LspHover<CR>
 " }}}
 
 " asyncomplete {{{
-if !has('nvim')
-  let g:lsp_log_verbose = 1
-  let g:lsp_log_file = expand(g:log_files_dir . '/vim-lsp.log')
-  let g:asyncomplete_log_file = expand(g:log_files_dir . '/asyncomplete.log')
+let g:lsp_log_verbose = 1
+let g:lsp_log_file = expand(g:log_files_dir . '/vim-lsp.log')
+let g:asyncomplete_log_file = expand(g:log_files_dir . '/asyncomplete.log')
 
-  if has('python3')
-      let g:UltiSnipsExpandTrigger="<c-e>"
-      call asyncomplete#register_source(asyncomplete#sources#ultisnips#get_source_options({
-          \ 'name': 'ultisnips',
-          \ 'whitelist': ['*'],
-          \ 'completor': function('asyncomplete#sources#ultisnips#completor'),
-          \ }))
-  endif
+if has('python3')
+    let g:UltiSnipsExpandTrigger="<c-e>"
+    call asyncomplete#register_source(asyncomplete#sources#ultisnips#get_source_options({
+        \ 'name': 'ultisnips',
+        \ 'whitelist': ['*'],
+        \ 'completor': function('asyncomplete#sources#ultisnips#completor'),
+        \ }))
 endif
 " }}}
-
-" deoplete {{{
-if has('nvim')
-  let g:deoplete#enable_at_startup = 1
-  let g:float_preview#docked = 0
-  set completeopt-=preview
-endif
-"}}}
 
 " vim-airline {{{
 let g:airline_theme='hybrid'
@@ -601,9 +593,9 @@ let g:previm_custom_css_path = '~/.vim/templates/previm/markdown.css'
 " }}}
 
 " vim-fugitive {{{
-" nnoremap [fugitive] <Nop>
-" nmap <Leader>g [fugitive]
-" nmap <silent> [fugitive]d :<C-u>Gdiff<CR>
+nnoremap [fugitive] <Nop>
+nmap <Leader>i [fugitive]
+nmap <silent> [fugitive]d :<C-u>Gdiff<CR>
 " }}}
 
 " open-browser {{{
@@ -612,19 +604,14 @@ nmap gx <Plug>(openbrowser-search)
 vmap gx <Plug>(openbrowser-search)
 " }}}
 
-function! Smile() abort
-  call popup_create(split(execute("smile"), "\n"),{
-              \ 'maxheight': 150,
-              \ 'maxwidth': 100,
-              \ 'border': [1,1,1,1],
-              \ 'moved': 'any',
-              \ })
-endfunction
+" calendar.vim {{{
+let g:calendar_google_calendar = 1
+let g:calendar_google_task = 1
+" }}}
 
-command! Smile call Smile()
-
-if filereadable( $HOME . "/.vimrc_local" )
-  source ~/.vimrc_local
+let s:vimrc_local = $HOME . "/.vimrc_local"
+if filereadable( s:vimrc_local )
+  execute "source " . s:vimrc_local
 endif
 
 function! Mdpdf() abort
@@ -637,18 +624,3 @@ function! Mdpdf() abort
 endfunction
 
 command! Mdpdf call Mdpdf()
-
-function! MeiNoBaka() abort
-  let s:lines = readfile($HOME . '/Downloads/sample.drcs', '')
-  let s:winid = popup_create(s:lines, {
-              \ 'maxheight': 150,
-              \ 'maxwidth': 100,
-              \ 'border': [1,1,1,1],
-              \ 'moved': 'any',
-              \ })
-  call setbufvar(winbufnr(s:winid), '&filetype', 'drcs')
-endfunction
-
-autocmd BufRead *.drcs set filetype=drcs
-" " Vimであいまいな幅の文字の論理幅を1にします
-" set ambiwidth=single
