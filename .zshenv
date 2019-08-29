@@ -65,6 +65,7 @@ alias awk="gawk"
 
 # cdのよく行くところへのalias
 alias g='cd $(ghq root)/$(ghq list | fzf)'
+alias gopen='git remote get-url origin | xargs open'
 
 # mkdir and cd
 mkcd() {
