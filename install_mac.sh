@@ -7,10 +7,10 @@ if !(type "brew" > /dev/null 2>&1); then
   /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 fi
 
-if !(type "/usr/local/bin/zsh" > /dev/null 2>&1); then
+if !(type "$(brew config | grep HOMEBREW_REPOSITORY | cut -d ' ' -f 2)/bin/zsh" > /dev/null 2>&1); then
   brew install zsh
-  echo "/usr/local/bin/zsh" > /etc/shells
-  chsh -s /usr/local/bin/zsh
+  echo "$(brew config | grep HOMEBREW_REPOSITORY | cut -d ' ' -f 2)/bin/zsh" > /etc/shells
+  chsh -s "$(brew config | grep HOMEBREW_REPOSITORY | cut -d ' ' -f 2)/bin/zsh"
   zsh
 fi
 
