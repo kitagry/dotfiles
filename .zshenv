@@ -110,6 +110,7 @@ alias awk="gawk"
 # cdのよく行くところへのalias
 alias cdg='cd $(ghq root)/github.com/kitagry'
 alias g='cd $(ghq root)/$(ghq list | fzf)'
+alias gopen='git remote get-url origin | xargs open'
 
 # mkdir and cd
 mkcd() {
