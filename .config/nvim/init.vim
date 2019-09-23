@@ -56,19 +56,20 @@ if dein#load_state(s:dein_dir)
   endif
 
   " 言語系
-  call dein#add('cakebaker/scss-syntax.vim')
+  " call dein#add('cakebaker/scss-syntax.vim')
   call dein#add('arp242/gopher.vim', {'on_ft': 'go'})
-  call dein#add('posva/vim-vue', {'on_ft': 'vue', 'lazy': 1})
-  call dein#add('digitaltoad/vim-pug', {'on_ft': 'vue', 'lazy': 1})
-  call dein#add('lervag/vimtex', {'on_ft': 'tex', 'lazy': 1})
-  call dein#add('chr4/nginx.vim', {'on_ft': 'nginx', 'lazy': 1})
-  call dein#add('cespare/vim-toml', {'on_ft': 'toml', 'lazy': 1})
-  call dein#add('slim-template/vim-slim', {'on_ft': 'slim', 'lazy': 1})
-  call dein#add('JuliaEditorSupport/julia-vim')
-  call dein#add('leafgarland/typescript-vim', {'on_ft': 'typescript', 'lazy': 1})
-  call dein#add('peitalin/vim-jsx-typescript', {'on_ft': 'typescript.tsx', 'lazy': 1})
-  call dein#add('rust-lang/rust.vim', {'on_ft': 'rust', 'lazy': 1})
+  " call dein#add('posva/vim-vue', {'on_ft': 'vue', 'lazy': 1})
+  " call dein#add('digitaltoad/vim-pug', {'on_ft': 'vue', 'lazy': 1})
+  " call dein#add('lervag/vimtex', {'on_ft': 'tex', 'lazy': 1})
+  " call dein#add('chr4/nginx.vim', {'on_ft': 'nginx', 'lazy': 1})
+  " call dein#add('cespare/vim-toml', {'on_ft': 'toml', 'lazy': 1})
+  " call dein#add('slim-template/vim-slim', {'on_ft': 'slim', 'lazy': 1})
+  " call dein#add('JuliaEditorSupport/julia-vim')
+  " call dein#add('leafgarland/typescript-vim', {'on_ft': 'typescript', 'lazy': 1})
+  " call dein#add('peitalin/vim-jsx-typescript', {'on_ft': 'typescript.tsx', 'lazy': 1})
+  " call dein#add('rust-lang/rust.vim', {'on_ft': 'rust', 'lazy': 1})
   call dein#add('jalvesaq/Nvim-R')
+  call dein#add('sheerun/vim-polyglot')
 
   " Git系
   call dein#add('tpope/vim-fugitive')
@@ -93,8 +94,6 @@ if dein#load_state(s:dein_dir)
   call dein#add('sgur/vim-textobj-parameter')
   call dein#add('skywind3000/asyncrun.vim')
   call dein#add('tyru/open-browser.vim')
-
-  call dein#add('itchyny/calendar.vim')
 
   call dein#end()
   call dein#save_state()
@@ -229,6 +228,9 @@ elseif has('mac')
     " 置換モード時に非点滅の下線タイプのカーソル
     let &t_SR .= "\e[4 q"
 endif
+
+" javaを保存時にコンパイルする
+autocmd BufWritePost *.java :!javac %
 " }}}
 
 " Key Mapping {{{
@@ -592,10 +594,9 @@ let g:previm_disable_default_css = 1
 let g:previm_custom_css_path = '~/.vim/templates/previm/markdown.css'
 " }}}
 
-" vim-fugitive {{{
-nnoremap [fugitive] <Nop>
-nmap <Leader>i [fugitive]
-nmap <silent> [fugitive]d :<C-u>Gdiff<CR>
+" open-browser.vim {{{
+nmap gx <Plug>(openbrowser-open)
+vmap gx <Plug>(openbrowser-open)
 " }}}
 
 " open-browser {{{
