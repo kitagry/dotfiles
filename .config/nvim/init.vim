@@ -249,9 +249,14 @@ nnoremap [B :bfirst<CR>
 
 " quickfix
 nnoremap ]q :cnext<CR>
+nnoremap ]Q :<C-u>clast<CR>
+nnoremap [Q :<C-u>cfirst<CR>
 nnoremap [q :cprevious<CR>
-nnoremap ]Q :<C-u>cfirst<CR>
-nnoremap [Q :<C-u>clast<CR>
+
+nnoremap ]t :tabnext<CR>
+nnoremap ]T :tablast<CR>
+nnoremap [t :tabprevious<CR>
+nnoremap [T :tabfirst<CR>
 
 " 折り返し時に表示行単位での移動できるようにする
 nnoremap j gj
@@ -376,6 +381,33 @@ if executable('rls')
     \ })
 endif
 
+" if executable('yaml-language-server')
+"   let settings = json_decode('
+"         \ {
+"         \   "yaml": {
+"         \     "compiletion": true,
+"         \     "hover": true,
+"         \     "validate": true,
+"         \     "schemas": {
+"         \       "Kubernetes": "/*"
+"         \     },
+"         \     "format": {
+"         \       "enable": true
+"         \     }
+"         \   },
+"         \   "http": {
+"         \     "proxyStrictSSL": true
+"         \   }
+"         \ }')
+
+"   au User lsp_setup call lsp#register_server({
+"         \ 'name': 'yaml-language-server',
+"         \ 'cmd': {server_info->['yaml-language-server', '--stdio']},
+"         \ 'workspace_config': {'settings': settings},
+"         \ 'whitelist': ['yaml', 'yml'],
+"         \ })
+" endif
+
 " if executable('efm-langserver')
 "   augroup LspEFM
 "     au!
@@ -441,29 +473,19 @@ nnoremap [vim-lsp]h :LspHover<CR>
 " }}}
 
 " asyncomplete {{{
-if !has('nvim')
-  let g:lsp_log_verbose = 1
-  let g:lsp_log_file = expand(g:log_files_dir . '/vim-lsp.log')
-  let g:asyncomplete_log_file = expand(g:log_files_dir . '/asyncomplete.log')
+let g:lsp_log_verbose = 1
+let g:lsp_log_file = expand(g:log_files_dir . '/vim-lsp.log')
+let g:asyncomplete_log_file = expand(g:log_files_dir . '/asyncomplete.log')
 
-  if has('python3')
-      let g:UltiSnipsExpandTrigger="<c-e>"
-      call asyncomplete#register_source(asyncomplete#sources#ultisnips#get_source_options({
-          \ 'name': 'ultisnips',
-          \ 'whitelist': ['*'],
-          \ 'completor': function('asyncomplete#sources#ultisnips#completor'),
-          \ }))
-  endif
+if has('python3')
+    let g:UltiSnipsExpandTrigger="<c-e>"
+    call asyncomplete#register_source(asyncomplete#sources#ultisnips#get_source_options({
+        \ 'name': 'ultisnips',
+        \ 'whitelist': ['*'],
+        \ 'completor': function('asyncomplete#sources#ultisnips#completor'),
+        \ }))
 endif
 " }}}
-
-" deoplete {{{
-if has('nvim')
-  let g:deoplete#enable_at_startup = 1
-  let g:float_preview#docked = 0
-  set completeopt-=preview
-endif
-"}}}
 
 " vim-airline {{{
 let g:airline_theme='hybrid'
@@ -537,7 +559,7 @@ nmap <silent> [gopher]l :wa<CR>:compiler golint<CR>:silent make!<CR>:redraw!<CR>
 nmap <silent> [gopher]t :wa<CR>:compiler gotest<CR>:silent make!<CR>:redraw!<CR>:cwindow 10<CR>
 
 let g:gopher_map = {
-      \ '_nmap_prefix': ',',
+      \ '_nmap_prefix': '<C-k>',
       \ }
 
 augroup my_gopher
@@ -577,19 +599,20 @@ nmap gx <Plug>(openbrowser-open)
 vmap gx <Plug>(openbrowser-open)
 " }}}
 
-function! Smile() abort
-  call popup_create(split(execute("smile"), "\n"),{
-              \ 'maxheight': 150,
-              \ 'maxwidth': 100,
-              \ 'border': [1,1,1,1],
-              \ 'moved': 'any',
-              \ })
-endfunction
+" open-browser {{{
+let g:netrw_nogx = 1
+nmap gx <Plug>(openbrowser-search)
+vmap gx <Plug>(openbrowser-search)
+" }}}
 
-command! Smile call Smile()
+" calendar.vim {{{
+let g:calendar_google_calendar = 1
+let g:calendar_google_task = 1
+" }}}
 
-if filereadable( $HOME . "/.vimrc_local" )
-  source ~/.vimrc_local
+let s:vimrc_local = $HOME . "/.vimrc_local"
+if filereadable( s:vimrc_local )
+  execute "source " . s:vimrc_local
 endif
 
 function! Mdpdf() abort

@@ -2,6 +2,10 @@
 
 set -eu
 
+if [ "$(uname)" == "Darwin" ];then
+  source ./install_mac.sh
+fi
+
 DOT_DIRECTORY=${PWD}
 declare -a DIRECTORIES=('.config .vim')
 DOT_CONFIG_DIRECTORY=".config"
