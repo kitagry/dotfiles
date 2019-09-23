@@ -1,6 +1,5 @@
 # 環境変数
 export LANG=ja_JP.UTF-8
-
 if [ -d $HOME/google-cloud-sdk ]; then
   source $HOME/google-cloud-sdk/path.zsh.inc
   source $HOME/google-cloud-sdk/completion.zsh.inc
@@ -91,3 +90,8 @@ fi
 [ -f "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+## kubernetes completes
+if [ $commands[kubectl] ]; then
+  source <(kubectl completion zsh)
+fi

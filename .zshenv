@@ -47,6 +47,50 @@ alias dcr="docker-compose run --rm"
 ###########################
 
 ###########################
+# kubernetesコマンドのalias
+###########################
+alias k='kubectl'
+alias kc='kubectx'
+alias kn='kubens'
+
+kustomize_build() {
+  kustomize_file_path=$(find . -name kustomization.yaml -o -name kustomization.yml -o -name Kustomization -type f | fzf)
+  if [ $kustomize_file_path ]; then
+    kustomize build $(dirname $kustomize_file_path)
+  fi
+}
+alias kb='kustomize_build'
+
+kubectl_command_f() {
+  yaml_file=$(find . -name \*.yaml -o -name \*.yml | fzf)
+  if [ $yaml_file ]; then
+    kubectl $1 -f $yaml_file
+  fi
+}
+
+alias kaf='kubectl_command_f apply'
+alias kdf='kubectl_command_f delete'
+alias kai='kubectl apply -f -'
+alias kdi='kubectl delete -f -'
+
+kubectl_log() {
+  target_pod=$(kubectl get pods | sed -e '1d' | cut -d ' ' -f 1 | fzf)
+  if [ $target_pod ]; then
+    kubectl logs $target_pod
+  fi
+}
+alias klog='kubectl_log'
+
+kubectl_describe() {
+  target=$(kubectl get $1 | sed -e '1d' | cut -d ' ' -f 1 | fzf)
+  if [ $target ]; then
+    kubectl describe $1 $target
+  fi
+}
+alias kdes='kubectl_describe'
+###########################
+
+###########################
 # 便利系
 ###########################
 alias zshrc="vim ~/.zshrc"
@@ -64,6 +108,7 @@ alias redis-server='redis-server /usr/local/etc/redis.conf &'
 alias awk="gawk"
 
 # cdのよく行くところへのalias
+alias cdg='cd $(ghq root)/github.com/kitagry'
 alias g='cd $(ghq root)/$(ghq list | fzf)'
 
 # mkdir and cd
