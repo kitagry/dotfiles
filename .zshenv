@@ -84,7 +84,14 @@ alias kdr='kubectl_command_get delete'
 kubectl_log() {
   target_pod=$(kubectl get pods | sed -e '1d' | cut -d ' ' -f 1 | fzf)
   if [ $target_pod ]; then
-    kubectl logs $target_pod $1
+    result=$(kubectl logs $target_pod $1 |& xargs echo)
+    if [ "`echo $result | grep 'a container name must be specified for'`" ]; then
+      target_container=$(echo $result | cut -d '[' -f 2 | cut -d ']' -f1 | tr ' ' '\n' | fzf)
+      kubectl logs $target_pod $target_container
+    else
+      # TODO: NOT RERUN COMMAND
+      kubectl logs $target_pod $1
+    fi
   fi
 }
 alias klog='kubectl_log'
