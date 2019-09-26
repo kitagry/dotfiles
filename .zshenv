@@ -68,15 +68,23 @@ kubectl_command_f() {
   fi
 }
 
+kubectl_command_get() {
+  resource=$(kubectl get $2 | sed -e '1d' | cut -d ' ' -f 1 | fzf)
+  if [ $resource ]; then
+    kubectl $1 $2 $resource
+  fi
+}
+
 alias kaf='kubectl_command_f apply'
 alias kdf='kubectl_command_f delete'
 alias kai='kubectl apply -f -'
 alias kdi='kubectl delete -f -'
+alias kdr='kubectl_command_get delete'
 
 kubectl_log() {
   target_pod=$(kubectl get pods | sed -e '1d' | cut -d ' ' -f 1 | fzf)
   if [ $target_pod ]; then
-    kubectl logs $target_pod
+    kubectl logs $target_pod $1
   fi
 }
 alias klog='kubectl_log'
@@ -88,6 +96,14 @@ kubectl_describe() {
   fi
 }
 alias kdes='kubectl_describe'
+
+kubectl_stern() {
+  target_pod=$(kubectl get pods | sed -e '1d' | cut -d ' ' -f 1 | fzf)
+  if [ $target_pod ]; then
+    stern $target_pod
+  fi
+}
+alias kstern='kubectl_stern'
 ###########################
 
 ###########################

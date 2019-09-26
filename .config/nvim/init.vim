@@ -34,6 +34,7 @@ if dein#load_state(s:dein_dir)
     call dein#add('Shougo/neosnippet-snippets')
   else
     call dein#add('prabirshrestha/asyncomplete.vim')
+    call dein#add('prabirshrestha/asyncomplete-buffer.vim')
     call dein#add('prabirshrestha/asyncomplete-lsp.vim')
     if has('python3')
       call dein#add('prabirshrestha/asyncomplete-ultisnips.vim')
@@ -476,6 +477,15 @@ nnoremap [vim-lsp]h :LspHover<CR>
 let g:lsp_log_verbose = 1
 let g:lsp_log_file = expand(g:log_files_dir . '/vim-lsp.log')
 let g:asyncomplete_log_file = expand(g:log_files_dir . '/asyncomplete.log')
+
+call asyncomplete#register_source(asyncomplete#sources#buffer#get_source_options({
+    \ 'name': 'buffer',
+    \ 'whitelist': ['*'],
+    \ 'completor': function('asyncomplete#sources#buffer#completor'),
+    \ 'config': {
+    \    'max_buffer_size': 5000000,
+    \  },
+    \ }))
 
 if has('python3')
     let g:UltiSnipsExpandTrigger="<c-e>"
