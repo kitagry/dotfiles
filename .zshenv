@@ -6,9 +6,6 @@ export GOROOT="/usr/local/opt/go/libexec"
 export GOPATH="$HOME/go/"
 export GO111MODULE=on
 
-export ANT_HOME="/usr/local/bin/ant/"
-export PATH="$PATH:$ANT_HOME/bin"
-
 export PATH="$GOPATH/bin:$PATH"
 export NVIM_LISTEN_ADDRESS="/tmp/nvimsocket"
 
@@ -17,7 +14,7 @@ export QT_HOMEBREW=true
 
 export NVIM_PYTHON_LOG_FILE="$HOME/.config/nvim/logs/python.log"
 
-export PATH="${HOME}/.cargo/bin:${PATH}"
+export PATH="$HOME/.cargo/bin:$PATH"
 
 ###########################
 # unixコマンドのalias
@@ -29,12 +26,9 @@ alias ll="ls -la"
 ###########################
 # gitコマンドのalias
 ###########################
-# alias gb="git branch"
-alias gc="git checkout"
 alias gs="git status"
-alias gcm="git checkout master"
 alias gpom="git pull origin master"
-alias gcb="git checkout -b"
+alias gcb="git switch -c"
 alias gbda="git branch --merged | grep -v '*' | xargs -I % git branch -d %"
 ###########################
 
@@ -69,9 +63,30 @@ kubectl_command_f() {
 }
 
 kubectl_command_get() {
-  resource=$(kubectl get $2 | sed -e '1d' | cut -d ' ' -f 1 | fzf)
+  if [ $2 ]; then
+    resource=$2
+  else
+    resource=$(echo "pods\ndeployment\njob\ncronjob" | fzf)
+  fi
+
+  resource_name=$(kubectl get $resource | sed -e '1d' | fzf | cut -d ' ' -f 1)
+  if [ $resource_name ]; then
+    kubectl $1 $resource $resource_name
+  fi
+}
+
+kubectl_delete_all() {
+  if [ $1 ]; then
+    resource=$1
+  else
+    resource=$(echo "pods\ndeployment\njob\ncronjob" | fzf)
+  fi
+
   if [ $resource ]; then
-    kubectl $1 $2 $resource
+    echo -e "You really delete all \e[31;1m${resource}\e[m?(Y/n): "
+    if read -q; then
+      kubectl delete $(kubectl get $resource -o name)
+    fi
   fi
 }
 
@@ -80,11 +95,12 @@ alias kdf='kubectl_command_f delete'
 alias kai='kubectl apply -f -'
 alias kdi='kubectl delete -f -'
 alias kdr='kubectl_command_get delete'
+alias kda='kubectl_delete_all'
 
 kubectl_log() {
-  target_pod=$(kubectl get pods | sed -e '1d' | cut -d ' ' -f 1 | fzf)
+  target_pod=$(kubectl get pods | sed -e '1d' | fzf | cut -d ' ' -f 1)
   if [ $target_pod ]; then
-    result=$(kubectl logs $target_pod $1 |& xargs echo)
+    result="$(kubectl logs $target_pod $1 |& xargs echo)"
     if [ "`echo $result | grep 'a container name must be specified for'`" ]; then
       target_container=$(echo $result | cut -d '[' -f 2 | cut -d ']' -f1 | tr ' ' '\n' | fzf)
       kubectl logs $target_pod $target_container
@@ -97,15 +113,23 @@ kubectl_log() {
 alias klog='kubectl_log'
 
 kubectl_describe() {
-  target=$(kubectl get $1 | sed -e '1d' | cut -d ' ' -f 1 | fzf)
-  if [ $target ]; then
-    kubectl describe $1 $target
+  if [ $1 ]; then
+    resource=$1
+  else
+    resource=$(echo "pods\ndeployment\nservice" | fzf)
+  fi
+
+  if [ $resource ]; then
+    target=$(kubectl get $resource | sed -e '1d' | fzf | cut -d ' ' -f 1)
+    if [ $target ]; then
+      kubectl describe $resource $target
+    fi
   fi
 }
 alias kdes='kubectl_describe'
 
 kubectl_stern() {
-  target_pod=$(kubectl get pods | sed -e '1d' | cut -d ' ' -f 1 | fzf)
+  target_pod=$(kubectl get pods | sed -e '1d' | fzf | cut -d ' ' -f 1)
   if [ $target_pod ]; then
     stern $target_pod
   fi
@@ -133,7 +157,6 @@ alias awk="gawk"
 # cdのよく行くところへのalias
 alias cdg='cd $(ghq root)/github.com/kitagry'
 alias g='cd $(ghq root)/$(ghq list | fzf)'
-alias gopen='git remote get-url origin | xargs open'
 
 # mkdir and cd
 mkcd() {
