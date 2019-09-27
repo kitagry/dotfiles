@@ -609,12 +609,6 @@ nmap gx <Plug>(openbrowser-open)
 vmap gx <Plug>(openbrowser-open)
 " }}}
 
-" open-browser {{{
-let g:netrw_nogx = 1
-nmap gx <Plug>(openbrowser-search)
-vmap gx <Plug>(openbrowser-search)
-" }}}
-
 " calendar.vim {{{
 let g:calendar_google_calendar = 1
 let g:calendar_google_task = 1
