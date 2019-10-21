@@ -146,7 +146,18 @@ alias vimrc="vim ~/.vimrc"
 ###########################
 
 # viとvimを紐づける
-alias vi="vim"
+vi() {
+  if [ $1 ]; then
+    count=$(ls $* | wc -l)
+    if [ $count -gt 1 ]; then
+      vim -O2 $*
+    else
+      vim $*
+    fi
+  else
+    vim
+  fi
+}
 
 # redis-serverのあとターミナルが占拠されないようにする
 alias redis-server='redis-server /usr/local/etc/redis.conf &'

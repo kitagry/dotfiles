@@ -61,21 +61,22 @@ if dein#load_state(s:dein_dir)
   call dein#add('arp242/gopher.vim', {'on_ft': 'go'})
   " call dein#add('posva/vim-vue', {'on_ft': 'vue', 'lazy': 1})
   " call dein#add('digitaltoad/vim-pug', {'on_ft': 'vue', 'lazy': 1})
-  " call dein#add('lervag/vimtex', {'on_ft': 'tex', 'lazy': 1})
+  call dein#add('lervag/vimtex', {'on_ft': 'tex', 'lazy': 1})
   " call dein#add('chr4/nginx.vim', {'on_ft': 'nginx', 'lazy': 1})
   " call dein#add('cespare/vim-toml', {'on_ft': 'toml', 'lazy': 1})
   " call dein#add('slim-template/vim-slim', {'on_ft': 'slim', 'lazy': 1})
-  " call dein#add('JuliaEditorSupport/julia-vim')
+  call dein#add('JuliaEditorSupport/julia-vim')
   " call dein#add('leafgarland/typescript-vim', {'on_ft': 'typescript', 'lazy': 1})
   " call dein#add('peitalin/vim-jsx-typescript', {'on_ft': 'typescript.tsx', 'lazy': 1})
   " call dein#add('rust-lang/rust.vim', {'on_ft': 'rust', 'lazy': 1})
-  call dein#add('jalvesaq/Nvim-R')
+  " call dein#add('jalvesaq/Nvim-R')
   call dein#add('sheerun/vim-polyglot')
 
   " Git系
   call dein#add('tpope/vim-fugitive')
   call dein#add('tpope/vim-rhubarb')
   call dein#add('airblade/vim-gitgutter')
+  call dein#add('lambdalisue/gina.vim')
 
   " 見た目系
   call dein#add('romainl/Apprentice')
@@ -95,6 +96,8 @@ if dein#load_state(s:dein_dir)
   call dein#add('sgur/vim-textobj-parameter')
   call dein#add('skywind3000/asyncrun.vim')
   call dein#add('tyru/open-browser.vim')
+  call dein#add('mattn/sonictemplate-vim')
+  call dein#add('skanehira/translate.vim')
 
   call dein#end()
   call dein#save_state()
@@ -595,6 +598,27 @@ let g:rustfmt_autosave = 1
 " vim-quickrun {{{
 " Leader + qでquickrunを閉じる
 nnoremap <Leader>q :<C-u>bw! \[quickrun\ output\]<CR>
+
+let g:quickrun_config = {}
+let g:quickrun_config['tex'] = {
+\ 'command' : 'latexmk',
+\ 'outputter' : 'error',
+\ 'outputter/error/success' : 'null',
+\ 'outputter/error/error' : 'quickfix',
+\ 'srcfile' : expand("%"),
+\ 'cmdopt': '-pdfdvi',
+\ 'hook/sweep/files' : [
+\                      '%S:p:r.aux',
+\                      '%S:p:r.bbl',
+\                      '%S:p:r.blg',
+\                      '%S:p:r.dvi',
+\                      '%S:p:r.fdb_latexmk',
+\                      '%S:p:r.fls',
+\                      '%S:p:r.log',
+\                      '%S:p:r.out'
+\                      ],
+\ 'exec': '%c %o %a %s',
+\}
 " }}}
 
 " previm {{{
