@@ -66,6 +66,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('tpope/vim-fugitive')
   call dein#add('tpope/vim-rhubarb')
   call dein#add('airblade/vim-gitgutter')
+  call dein#add('lambdalisue/gina.vim')
 
   " 見た目系
   call dein#add('romainl/Apprentice')
@@ -86,6 +87,8 @@ if dein#load_state(s:dein_dir)
   call dein#add('skywind3000/asyncrun.vim')
   call dein#add('tyru/open-browser.vim')
   call dein#add('lambdalisue/gina.vim')
+  call dein#add('mattn/sonictemplate-vim')
+  call dein#add('skanehira/translate.vim')
 
   call dein#end()
   call dein#save_state()
@@ -586,6 +589,27 @@ let g:rustfmt_autosave = 1
 " vim-quickrun {{{
 " Leader + qでquickrunを閉じる
 nnoremap <Leader>q :<C-u>bw! \[quickrun\ output\]<CR>
+
+let g:quickrun_config = {}
+let g:quickrun_config['tex'] = {
+\ 'command' : 'latexmk',
+\ 'outputter' : 'error',
+\ 'outputter/error/success' : 'null',
+\ 'outputter/error/error' : 'quickfix',
+\ 'srcfile' : expand("%"),
+\ 'cmdopt': '-pdfdvi',
+\ 'hook/sweep/files' : [
+\                      '%S:p:r.aux',
+\                      '%S:p:r.bbl',
+\                      '%S:p:r.blg',
+\                      '%S:p:r.dvi',
+\                      '%S:p:r.fdb_latexmk',
+\                      '%S:p:r.fls',
+\                      '%S:p:r.log',
+\                      '%S:p:r.out'
+\                      ],
+\ 'exec': '%c %o %a %s',
+\}
 " }}}
 
 " previm {{{
