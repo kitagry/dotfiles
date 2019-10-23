@@ -1,6 +1,5 @@
 export PATH="/usr/local/bin:/usr/local/sbin:/sbin/:$PATH"
 export PATH="/usr/local:$PATH"
-export PATH="$HOME/.nodebrew/current/bin:$PATH"
 export PATH="/usr/local/lib/:/usr/local/texlive/2017/bin/x86_64-darwin/tlmgr:$PATH"
 export GOROOT="/usr/local/opt/go/libexec"
 export GOPATH="$HOME/go/"

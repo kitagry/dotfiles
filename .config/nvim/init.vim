@@ -57,19 +57,9 @@ if dein#load_state(s:dein_dir)
   endif
 
   " 言語系
-  " call dein#add('cakebaker/scss-syntax.vim')
   call dein#add('arp242/gopher.vim', {'on_ft': 'go'})
-  " call dein#add('posva/vim-vue', {'on_ft': 'vue', 'lazy': 1})
-  " call dein#add('digitaltoad/vim-pug', {'on_ft': 'vue', 'lazy': 1})
   call dein#add('lervag/vimtex', {'on_ft': 'tex', 'lazy': 1})
-  " call dein#add('chr4/nginx.vim', {'on_ft': 'nginx', 'lazy': 1})
-  " call dein#add('cespare/vim-toml', {'on_ft': 'toml', 'lazy': 1})
-  " call dein#add('slim-template/vim-slim', {'on_ft': 'slim', 'lazy': 1})
-  call dein#add('JuliaEditorSupport/julia-vim')
-  " call dein#add('leafgarland/typescript-vim', {'on_ft': 'typescript', 'lazy': 1})
-  " call dein#add('peitalin/vim-jsx-typescript', {'on_ft': 'typescript.tsx', 'lazy': 1})
-  " call dein#add('rust-lang/rust.vim', {'on_ft': 'rust', 'lazy': 1})
-  " call dein#add('jalvesaq/Nvim-R')
+  call dein#add('jalvesaq/Nvim-R')
   call dein#add('sheerun/vim-polyglot')
 
   " Git系
@@ -96,6 +86,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('sgur/vim-textobj-parameter')
   call dein#add('skywind3000/asyncrun.vim')
   call dein#add('tyru/open-browser.vim')
+  call dein#add('lambdalisue/gina.vim')
   call dein#add('mattn/sonictemplate-vim')
   call dein#add('skanehira/translate.vim')
 
