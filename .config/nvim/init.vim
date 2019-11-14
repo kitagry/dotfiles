@@ -36,6 +36,7 @@ if dein#load_state(s:dein_dir)
     call dein#add('prabirshrestha/asyncomplete.vim')
     call dein#add('prabirshrestha/asyncomplete-buffer.vim')
     call dein#add('prabirshrestha/asyncomplete-lsp.vim')
+    call dein#add('machakann/asyncomplete-ezfilter.vim')
     if has('python3')
       call dein#add('prabirshrestha/asyncomplete-ultisnips.vim')
       call dein#add('SirVer/ultisnips')
@@ -286,15 +287,19 @@ inoremap <Del> <Nop>
 " + register lsp {{{
 if executable('gopls')
     au User lsp_setup call lsp#register_server({
-        \ 'name': 'gopls',
-        \ 'cmd': {server_info->['gopls', '-mode', 'stdio', '-logfile', g:log_files_dir . '/gopls.log']},
+        \ 'name': 'go',
+        \ 'cmd': {server_info->['gopls']},
         \ 'whitelist': ['go'],
+        \ 'workspace_config': {'gopls': {
+        \     'usePlaceholders': v:true,
+        \     'completeUnimported': v:true,
+        \   }},
         \ })
 endif
 
 if executable('pyls')
   au User lsp_setup call lsp#register_server({
-    \ 'name': 'pyls',
+    \ 'name': 'python',
     \ 'cmd': {server_info->['pyls']},
     \ 'whitelist': ['python'],
     \ 'workspace_config': {'pyls': {'configurationSources': ['flake8']}}
@@ -303,7 +308,7 @@ endif
 
 if executable('docker-langserver')
   au User lsp_setup call lsp#register_server({
-    \ 'name': 'docker-langserver',
+    \ 'name': 'docker',
     \ 'cmd': {server_info->[&shell, &shellcmdflag, 'docker-langserver --stdio']},
     \ 'whitelist': ['dockerfile'],
     \ })
@@ -311,7 +316,7 @@ endif
 
 if executable('typescript-language-server')
   au User lsp_setup call lsp#register_server({
-    \ 'name': 'typescript-language-server',
+    \ 'name': 'typescript',
     \ 'cmd': {server_info->[&shell, &shellcmdflag, 'typescript-language-server --stdio']},
     \ 'root_uri':{
     \   server_info->lsp#utils#path_to_uri(
@@ -352,7 +357,7 @@ endif
 
 if executable('clangd')
     au User lsp_setup call lsp#register_server({
-        \ 'name': 'clangd',
+        \ 'name': 'c, cpp',
         \ 'cmd': {server_info->['clangd']},
         \ 'whitelist': ['c', 'cpp', 'objc', 'objcpp'],
         \ })
@@ -361,7 +366,7 @@ endif
 if executable('solargraph')
     " gem install solargraph
     au User lsp_setup call lsp#register_server({
-        \ 'name': 'solargraph',
+        \ 'name': 'ruby',
         \ 'cmd': {server_info->[&shell, &shellcmdflag, 'solargraph stdio']},
         \ 'initialization_options': {"diagnostics": "true"},
         \ 'whitelist': ['ruby'],
@@ -370,7 +375,7 @@ endif
 
 if executable('rls')
   au User lsp_setup call lsp#register_server({
-    \ 'name': 'rls',
+    \ 'name': 'rust',
     \ 'cmd': {server_info->['rustup', 'run', 'stable', 'rls']},
     \ 'whitelist': ['rust'],
     \ })
@@ -416,7 +421,7 @@ endif
 
 if executable('java') && filereadable(expand('~/lsp/eclipse.jdt.ls/plugins/org.eclipse.equinox.launcher_1.5.300.v20190213-1655.jar'))
     au User lsp_setup call lsp#register_server({
-        \ 'name': 'eclipse.jdt.ls',
+        \ 'name': 'java',
         \ 'cmd': {server_info->[
         \     'java',
         \     '-Declipse.application=org.eclipse.jdt.ls.core.id1',
@@ -439,7 +444,7 @@ endif
 
 if executable('R')
   au User lsp_setup call lsp#register_server({
-    \ 'name': 'R-lsp',
+    \ 'name': 'R',
     \ 'cmd': {server_info->['R', '--slave', '-e', 'languageserver::run()']},
     \ 'whitelist': ['R'],
     \ })
@@ -464,6 +469,7 @@ nmap     <Leader>l [vim-lsp]
 nnoremap [vim-lsp]s :LspStatus<CR>
 nnoremap [vim-lsp]r :LspRename<CR>
 nnoremap [vim-lsp]d :LspDocumentDiagnostics<CR>
+nnoremap [vim-lsp]f :LspDocumentFormat<CR>
 nnoremap [vim-lsp]h :LspHover<CR>
 " }}}
 
@@ -489,6 +495,17 @@ if has('python3')
         \ 'completor': function('asyncomplete#sources#ultisnips#completor'),
         \ }))
 endif
+
+function! s:fuzzy(lhs, rhs) abort
+  return a:lhs =~ join(map(split(a:rhs, '\zs'), "printf('[\\x%02x].*', char2nr(v:val))"), '')
+endfunction
+
+let g:asyncomplete_preprocessor =
+  \ [function('asyncomplete#preprocessor#ezfilter#filter')]
+
+let g:asyncomplete#preprocessor#ezfilter#config = {}
+let g:asyncomplete#preprocessor#ezfilter#config['*'] =
+  \ {ctx, items -> filter(items, 's:fuzzy(v:val.word, ctx.base) != 0')}
 " }}}
 
 " vim-airline {{{
@@ -546,6 +563,7 @@ nnoremap [fzf] <Nop>
 nmap <Leader>f [fzf]
 nmap <silent> [fzf]f :<C-u>Files<CR>
 nmap <silent> [fzf]c :<C-u>Files %%<CR>
+nmap <silent> [fzf]m :<C-u>Marks<CR>
 nmap <silent> [fzf]g :<C-u>Ag<CR>
 nmap <silent> [fzf]] :<C-u>Ag <C-r><C-w><CR>
 " }}}
