@@ -44,7 +44,6 @@ if dein#load_state(s:dein_dir)
   endif
 
   call dein#add('honza/vim-snippets')
-  call dein#add('mattn/efm-langserver')
 
   " 移動系
   call dein#add('junegunn/fzf.vim')
