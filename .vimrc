@@ -179,6 +179,7 @@ augroup setFileType
   autocmd BufNewFile,BufRead *.md       setfiletype markdown
   autocmd BufNewFile,BufRead *.tsx,*jsx setfiletype typescript.tsx
   autocmd BufNewFile,BufRead *.launch   setfiletype xml
+  autocmd BufNewFile,BufRead *.html.*   setfiletype html
 augroup end
 
 " vimの折りたたみ機能を追加
@@ -408,16 +409,16 @@ endif
 "         \ })
 " endif
 
-" if executable('efm-langserver')
-"   augroup LspEFM
-"     au!
-"     autocmd User lsp_setup call lsp#register_server({
-"         \ 'name': 'efm-langserver',
-"         \ 'cmd': {server_info->['efm-langserver', '-c='.$HOME.'/.config/efm-langserver/config.yaml', '-log='.g:log_files_dir.'/efm-langserver.log']},
-"         \ 'whitelist': ['go'],
-"         \ })
-"   augroup END
-" endif
+if executable('efm-langserver')
+  augroup LspEFM
+    au!
+    autocmd User lsp_setup call lsp#register_server({
+        \ 'name': 'efm-langserver',
+        \ 'cmd': {server_info->['efm-langserver', '-c='.$HOME.'/.config/efm-langserver/config.yaml', '-log='.g:log_files_dir.'/efm-langserver.log']},
+        \ 'whitelist': ['go'],
+        \ })
+  augroup END
+endif
 
 if executable('java') && filereadable(expand('~/lsp/eclipse.jdt.ls/plugins/org.eclipse.equinox.launcher_1.5.300.v20190213-1655.jar'))
     au User lsp_setup call lsp#register_server({
@@ -496,16 +497,17 @@ if has('python3')
         \ }))
 endif
 
-function! s:fuzzy(lhs, rhs) abort
-  return a:lhs =~ join(map(split(a:rhs, '\zs'), "printf('[\\x%02x].*', char2nr(v:val))"), '')
-endfunction
+" MEMO: fuzzyに検索するためのコード。ちょっと邪魔なので一旦無効。
+" function! s:fuzzy(lhs, rhs) abort
+"   return a:lhs =~ join(map(split(a:rhs, '\zs'), "printf('[\\x%02x].*', char2nr(v:val))"), '')
+" endfunction
 
-let g:asyncomplete_preprocessor =
-  \ [function('asyncomplete#preprocessor#ezfilter#filter')]
+" let g:asyncomplete_preprocessor =
+"   \ [function('asyncomplete#preprocessor#ezfilter#filter')]
 
-let g:asyncomplete#preprocessor#ezfilter#config = {}
-let g:asyncomplete#preprocessor#ezfilter#config['*'] =
-  \ {ctx, items -> filter(items, 's:fuzzy(v:val.word, ctx.base) != 0')}
+" let g:asyncomplete#preprocessor#ezfilter#config = {}
+" let g:asyncomplete#preprocessor#ezfilter#config['*'] =
+"   \ {ctx, items -> filter(items, 's:fuzzy(v:val.word, ctx.base) != 0')}
 " }}}
 
 " vim-airline {{{
