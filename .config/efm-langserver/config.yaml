@@ -1,3 +1,5 @@
 languages:
   go:
     lint-command: 'golint -set_exit_status=1'
+    lint-formats:
+      - '%f:%l:%c:%m'
