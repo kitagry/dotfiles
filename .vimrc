@@ -70,8 +70,7 @@ if dein#load_state(s:dein_dir)
 
   " 見た目系
   call dein#add('romainl/Apprentice')
-  call dein#add('vim-airline/vim-airline')
-  call dein#add('vim-airline/vim-airline-themes')
+  call dein#add('itchyny/lightline.vim')
 
   " コマンド拡張系
   call dein#add('cohama/lexima.vim')
@@ -89,6 +88,11 @@ if dein#load_state(s:dein_dir)
   call dein#add('lambdalisue/gina.vim')
   call dein#add('mattn/sonictemplate-vim')
   call dein#add('skanehira/translate.vim')
+
+  call dein#add('kana/vim-operator-user')
+  call dein#add('haya14busa/vim-operator-flashy', {
+  \ 'depends': 'vim-operator-user'
+  \ })
 
   call dein#end()
   call dein#save_state()
@@ -457,6 +461,7 @@ let g:lsp_diagnostics_echo_cursor = 1
 let g:lsp_highlights_enabled = 0
 let g:lsp_preview_doubletap = 0
 let g:lsp_preview_float = 1
+let g:lsp_text_edit_enabled = 0
 
 nnoremap <silent> ]e  :LspNextError<CR>
 nnoremap <silent> [e  :LspPreviousError<CR>
@@ -471,6 +476,9 @@ nnoremap [vim-lsp]r :LspRename<CR>
 nnoremap [vim-lsp]d :LspDocumentDiagnostics<CR>
 nnoremap [vim-lsp]f :LspDocumentFormat<CR>
 nnoremap [vim-lsp]h :LspHover<CR>
+
+" stop efm-langserver
+nnoremap [vim-lsp]t :call lsp#stop_server('efm-langserver')<CR>
 " }}}
 
 " asyncomplete {{{
@@ -646,6 +654,13 @@ vmap gx <Plug>(openbrowser-open)
 " calendar.vim {{{
 let g:calendar_google_calendar = 1
 let g:calendar_google_task = 1
+" }}}
+
+" flasy.vim {{{
+map y <Plug>(operator-flashy)
+nmap Y <Plug>(operator-flashy)$
+hi Flashy term=bold ctermbg=0 guibg=#AA354A
+let g:operator#flashy#flash_time = 200
 " }}}
 
 let s:vimrc_local = $HOME . "/.vimrc_local"

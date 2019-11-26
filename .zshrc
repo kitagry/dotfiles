@@ -62,7 +62,6 @@ if [ -e $ZPLUG_HOME/init.zsh ]; then
   # zplug
   zplug 'zplug/zplug', hook-build:'zplug --self-manage'
 
-  zplug "junegunn/fzf-bin", as:command, rename-to:"fzf", from:gh-r
   zplug "b4b4r07/enhancd", use:init.sh
   export ENHANCD_FILTER=fzf
 
