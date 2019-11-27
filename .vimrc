@@ -70,6 +70,7 @@ if dein#load_state(s:dein_dir)
 
   " 見た目系
   call dein#add('romainl/Apprentice')
+  call dein#add('gkapfham/vim-vitamin-onec')
   call dein#add('itchyny/lightline.vim')
 
   " コマンド拡張系
@@ -211,12 +212,13 @@ else
 endif
 
 set background=dark
-colorscheme apprentice
+colorscheme vitaminonec
+
 " Deniteのカラーがおかしい
 hi CursorLine guifg=#E19972
 
 " vimgrepで自動でQuickfixを開く
-autocmd QuickFixCmdPost *grep* cwindow 10
+autocmd QuickFixCmdPost *grep*,make cwindow 10
 
 " 置換の時に大活躍
 if has('nvim')
@@ -518,11 +520,17 @@ endif
 "   \ {ctx, items -> filter(items, 's:fuzzy(v:val.word, ctx.base) != 0')}
 " }}}
 
-" vim-airline {{{
-let g:airline_theme='hybrid'
-let g:airline_powerline_fonts = 1
-let g:airline#extensions#tabline#enabled = 1
-let g:airline#extensions#tabline#formatter = 'unique_tail'
+" lightline {{{
+let g:lightline = {
+      \ 'colorscheme': 'wombat',
+      \ 'active': {
+      \   'left': [ [ 'mode', 'paste' ],
+      \             [ 'gitbranch', 'readonly', 'filename', 'modified' ] ]
+      \ },
+      \ 'component_function': {
+      \   'gitbranch': 'fugitive#head'
+      \ },
+      \ }
 " }}}
 
 " Defx {{{
