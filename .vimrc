@@ -72,6 +72,8 @@ if dein#load_state(s:dein_dir)
   call dein#add('romainl/Apprentice')
   call dein#add('gkapfham/vim-vitamin-onec')
   call dein#add('itchyny/lightline.vim')
+  call dein#add('taohexxx/lightline-buffer')
+  call dein#add('ryanoasis/vim-devicons')
 
   " コマンド拡張系
   call dein#add('cohama/lexima.vim')
@@ -95,6 +97,8 @@ if dein#load_state(s:dein_dir)
   call dein#add('haya14busa/vim-operator-flashy', {
   \ 'depends': 'vim-operator-user'
   \ })
+
+  call dein#add('vim-scripts/todo-txt.vim')
 
   call dein#end()
   call dein#save_state()
@@ -233,13 +237,13 @@ elseif has('mac')
 endif
 
 " javaを保存時にコンパイルする
-autocmd BufWritePost *.java :!javac %
+autocmd BufWritePost *.java :!javac *.java
 " }}}
 
 " Key Mapping {{{
 " leaderの登録
 let g:mapleader = "\<space>"
-let s:maplocalleader = ","
+au FileType todo let maplocalleader = ","
 
 " ヤンクの設定
 nnoremap Y y$
@@ -521,6 +525,8 @@ endif
 " }}}
 
 " lightline {{{
+set hidden  " allow buffer switching without saving
+set showtabline=2  " always show tabline
 let g:lightline = {
       \ 'colorscheme': 'wombat',
       \ 'active': {
@@ -528,9 +534,31 @@ let g:lightline = {
       \             [ 'gitbranch', 'readonly', 'filename', 'modified' ] ]
       \ },
       \ 'component_function': {
-      \   'gitbranch': 'fugitive#head'
+      \   'gitbranch': 'fugitive#head',
+      \   'bufferinfo': 'lightline#buffer#bufferinfo',
       \ },
-      \ }
+      \ 'tabline': {
+      \   'left': [ [ 'bufferinfo' ],
+      \             [ 'separator' ],
+      \             [ 'bufferbefore', 'buffercurrent', 'bufferafter' ], ],
+      \   'right': [ [ 'close' ], ],
+      \ },
+      \ 'component_expand': {
+      \   'buffercurrent': 'lightline#buffer#buffercurrent',
+      \   'bufferbefore': 'lightline#buffer#bufferbefore',
+      \   'bufferafter': 'lightline#buffer#bufferafter',
+      \ },
+      \ 'component_type': {
+      \   'buffercurrent': 'tabsel',
+      \   'bufferbefore': 'raw',
+      \   'bufferafter': 'raw',
+      \ },
+      \ 'component': {
+      \   'separator': '',
+      \ },
+    \ }
+
+let g:lightline_buffer_enable_devicons = 1
 " }}}
 
 " Defx {{{
@@ -620,6 +648,7 @@ let g:vimtex_view_general_options = '@line @pdf @tex'
 
 " rust.vim {{{
 let g:rustfmt_autosave = 1
+let g:rust_fold = 1
 " }}}
 
 " vim-quickrun {{{
