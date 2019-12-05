@@ -238,6 +238,10 @@ endif
 
 " javaを保存時にコンパイルする
 autocmd BufWritePost *.java :!javac *.java
+
+" yamlの時はvertical highlight
+autocmd BufReadPost * set nocursorcolumn
+autocmd BufReadPost *.yaml set cursorcolumn
 " }}}
 
 " Key Mapping {{{
