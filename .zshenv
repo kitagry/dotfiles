@@ -166,7 +166,12 @@ alias awk="gawk"
 
 # cdのよく行くところへのalias
 alias cdg='cd $(ghq root)/github.com/kitagry'
-alias g='cd $(ghq root)/$(ghq list | fzf --preview "bat --color=always --style=header,grid --line-range :80 $(ghq root)/{}/README.*")'
+g() {
+  src=$(ghq list | fzf --preview "bat --color=always --style=header,grid --line-range :80 $(ghq root)/{}/README.*")
+  if [ $src ]; then
+    cd $(ghq root)/$src
+  fi
+}
 
 # mkdir and cd
 mkcd() {
