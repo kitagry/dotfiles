@@ -396,32 +396,26 @@ if executable('rls')
     \ })
 endif
 
-" if executable('yaml-language-server')
-"   let settings = json_decode('
-"         \ {
-"         \   "yaml": {
-"         \     "compiletion": true,
-"         \     "hover": true,
-"         \     "validate": true,
-"         \     "schemas": {
-"         \       "Kubernetes": "/*"
-"         \     },
-"         \     "format": {
-"         \       "enable": true
-"         \     }
-"         \   },
-"         \   "http": {
-"         \     "proxyStrictSSL": true
-"         \   }
-"         \ }')
-
-"   au User lsp_setup call lsp#register_server({
-"         \ 'name': 'yaml-language-server',
-"         \ 'cmd': {server_info->['yaml-language-server', '--stdio']},
-"         \ 'workspace_config': {'settings': settings},
-"         \ 'whitelist': ['yaml', 'yml'],
-"         \ })
-" endif
+if executable('yaml-language-server')
+  au User lsp_setup call lsp#register_server({
+        \ 'name': 'yaml-language-server',
+        \ 'cmd': {server_info->['yaml-language-server', '--stdio']},
+        \ 'whitelist': ['yaml', 'yml'],
+        \ 'workspace_config': {
+        \   'yaml': {
+        \     'completion': v:true,
+        \     'hover': v:true,
+        \     'validate': v:true,
+        \     'schemas': {
+        \       'Kubernetes': '/*'
+        \     },
+        \   },
+        \   'http': {
+        \     'proxyStrictSSL': v:true,
+        \   },
+        \ },
+        \ })
+endif
 
 if executable('efm-langserver')
   augroup LspEFM
