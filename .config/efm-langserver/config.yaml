@@ -1,5 +1,6 @@
 languages:
   go:
-    lint-command: 'golint -set_exit_status=1'
+    lint-command: 'golint'
+    lint-ignore-exit-code: true
     lint-formats:
       - '%f:%l:%c:%m'
