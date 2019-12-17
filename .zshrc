@@ -46,45 +46,24 @@ export LSCOLORS=exfxcxdxbxegedabagacad
 export LS_COLORS='di=34:ln=35:so=32:pi=33:ex=31:bd=46;34:cd=43;34:su=41;30:sg=46;30:tw=42;30:ow=43;30'
 zstyle ':completion:*' list-colors 'di=34' 'ln=35' 'so=32' 'ex=31' 'bd=46;34' 'cd=43;34'
 
-################################## zplugの環境設定 #####################################
-case ${OSTYPE} in
-  darwin*)
-    export ZPLUG_HOME=/usr/local/opt/zplug
-    ;;
-  linux*)
-    export ZPLUG_HOME=~/.zplug
-    ;;
-esac
+### Added by Zplugin's installer
+source "$HOME/.zplugin/bin/zplugin.zsh"
+autoload -Uz _zplugin
+(( ${+_comps} )) && _comps[zplugin]=_zplugin
 
-if [ -e $ZPLUG_HOME/init.zsh ]; then
-  source $ZPLUG_HOME/init.zsh
+zplugin light b4b4r07/enhancd
+export ENHANCD_FILTER=fzf
 
-  # zplug
-  zplug 'zplug/zplug', hook-build:'zplug --self-manage'
+zplugin light zsh-users/zsh-autosuggestions
+zplugin light zsh-users/zsh-syntax-highlighting
 
-  zplug "b4b4r07/enhancd", use:init.sh
-  export ENHANCD_FILTER=fzf
+zplugin ice pick"async.zsh" src"pure.zsh"
+zplugin light sindresorhus/pure
 
-  zplug "zsh-users/zsh-syntax-highlighting"
-
-  zplug "mafredri/zsh-async", from:github
-  zplug "sindresorhus/pure", use:pure.zsh, from:github, as:theme
-
-  zplug "zsh-users/zaw", from:github
-  if zplug check zsh-users/zaw; then
-    bindkey '^R' zaw-history
-    bindkey '^B' zaw-git-branches
-  fi
-
-  if ! zplug check --verbose; then
-    printf 'Install? [y/N]: '
-    if read -q; then
-      echo; zplug install
-    fi
-  fi
-
-  zplug load --verbose
-fi
+zplugin ice from"gh"
+zplugin light zsh-users/zaw
+bindkey '^R' zaw-history
+bindkey '^B' zaw-git-branches
 
 [ -f "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
 

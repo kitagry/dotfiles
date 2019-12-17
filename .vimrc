@@ -216,7 +216,7 @@ else
 endif
 
 set background=dark
-colorscheme vitaminonec
+colorscheme apprentice
 
 " Deniteのカラーがおかしい
 hi CursorLine guifg=#E19972
@@ -339,7 +339,7 @@ if executable('typescript-language-server')
     \        lsp#utils#get_buffer_path(),
     \        'tsconfig.json')
     \ )},
-    \ 'whitelist': ['typescript', 'typescript.tsx'],
+    \ 'whitelist': ['typescript', 'typescript.tsx', 'typescriptreact'],
     \ })
 endif
 
@@ -458,6 +458,14 @@ if executable('R')
     \ 'whitelist': ['R'],
     \ })
 endif
+
+" if executable('kube-langserver')
+"   au User lsp_setup call lsp#register_server({
+"     \ 'name': 'kube-langserver',
+"     \ 'cmd': {server_info->['kube-langserver', '-log='.g:log_files_dir.'/kube-langserver.log']},
+"     \ 'whitelist': ['yaml'],
+"     \ })
+" endif
 " }}}
 
 let g:lsp_diagnostics_enabled = 1
@@ -476,6 +484,7 @@ nnoremap <silent> <C-<> :LspTypeDefinition<CR>
 nnoremap [vim-lsp] <Nop>
 nmap     <Leader>l [vim-lsp]
 
+nnoremap [vim-lsp]v :vsp<CR>:LspDefinition<CR>
 nnoremap [vim-lsp]s :LspStatus<CR>
 nnoremap [vim-lsp]r :LspRename<CR>
 nnoremap [vim-lsp]d :LspDocumentDiagnostics<CR>
