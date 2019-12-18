@@ -67,8 +67,6 @@ bindkey '^B' zaw-git-branches
 
 [ -f "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
 
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-
 ## kubernetes completes
 if [ $commands[kubectl] ]; then
   source <(kubectl completion zsh)
