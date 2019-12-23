@@ -612,13 +612,14 @@ nmap <silent> [defx]h :<C-u>Defx -split='vertical' %%<CR>
 " }}}
 
 " fzf {{{
+"
 nnoremap [fzf] <Nop>
 nmap <Leader>f [fzf]
 nmap <silent> [fzf]f :<C-u>Files<CR>
 nmap <silent> [fzf]c :<C-u>Files %%<CR>
 nmap <silent> [fzf]m :<C-u>Marks<CR>
-nmap <silent> [fzf]g :<C-u>Ag<CR>
-nmap <silent> [fzf]] :<C-u>Ag <C-r><C-w><CR>
+nmap <silent> [fzf]g :<C-u>call fzf#vim#ag('', {'options': '--bind ctrl-a:select-all,ctrl-d:deselect-all'})<CR>
+nmap <silent> [fzf]] :<C-u>call fzf#vim#ag('<C-r><C-w>', {'options': '--bind ctrl-a:select-all,ctrl-d:deselect-all'})<CR>
 " }}}
 
 " roxma/vim-hug-neovim-rpc {{{
