@@ -57,7 +57,7 @@ if dein#load_state(s:dein_dir)
   endif
 
   " 言語系
-  call dein#add('arp242/gopher.vim', {'on_ft': 'go'})
+  call dein#add('mattn/vim-goimports', {'on_ft': 'go'})
   call dein#add('lervag/vimtex', {'on_ft': 'tex', 'lazy': 1})
   call dein#add('jalvesaq/Nvim-R')
   call dein#add('sheerun/vim-polyglot')
@@ -623,28 +623,6 @@ nmap <silent> [fzf]] :<C-u>Ag <C-r><C-w><CR>
 
 " roxma/vim-hug-neovim-rpc {{{
 let $NVIM_PYTHON_LOG_FILE=$HOME . "/.config/logs/nvim_python_log_file"
-" }}}
-
-" gopher.vim {{{
-nnoremap [gopher] <Nop>
-nmap <Leader>g [gopher]
-nmap <silent> [gopher]i :<C-u>GoImport<Space>
-nmap <silent> [gopher]c :<C-u>GoCoverage toggle<CR>
-nmap <silent> [gopher]l :wa<CR>:compiler golint<CR>:silent make!<CR>:redraw!<CR>:cwindow 10<CR>
-nmap <silent> [gopher]t :wa<CR>:compiler gotest<CR>:silent make!<CR>:redraw!<CR>:cwindow 10<CR>
-
-let g:gopher_map = {
-      \ '_nmap_prefix': '<C-k>',
-      \ }
-
-augroup my_gopher
-    au!
-
-    autocmd BufWritePre *.go
-                \  let s:save = winsaveview()
-                \| exe 'keepjumps %!goimports 2>/dev/null || cat /dev/stdin'
-                \| call winrestview(s:save)
-augroup end
 " }}}
 
 " vim-tex {{{
