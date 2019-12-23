@@ -55,6 +55,7 @@ zplugin light b4b4r07/enhancd
 export ENHANCD_FILTER=fzf
 
 zplugin light zsh-users/zsh-autosuggestions
+bindkey '^l' forward-char
 zplugin light zsh-users/zsh-syntax-highlighting
 
 zplugin ice pick"async.zsh" src"pure.zsh"
