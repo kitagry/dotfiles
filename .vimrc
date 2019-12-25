@@ -315,7 +315,7 @@ endif
 if executable('pyls')
   au User lsp_setup call lsp#register_server({
     \ 'name': 'python',
-    \ 'cmd': {server_info->['pyls']},
+    \ 'cmd': {server_info->['python3', '-m', 'pyls']},
     \ 'whitelist': ['python'],
     \ 'workspace_config': {'pyls': {'configurationSources': ['flake8']}}
     \ })
