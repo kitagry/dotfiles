@@ -58,6 +58,9 @@ if dein#load_state(s:dein_dir)
 
   " 言語系
   call dein#add('mattn/vim-goimports', {'on_ft': 'go'})
+  call dein#add('mattn/vim-goimpl', {'on_ft': 'go'})
+  call dein#add('mattn/vim-goaddtags', {'on_ft': 'go'})
+  call dein#add('kitagry/vim-gotest', {'on_ft': 'go'})
   call dein#add('lervag/vimtex', {'on_ft': 'tex', 'lazy': 1})
   call dein#add('jalvesaq/Nvim-R')
   call dein#add('sheerun/vim-polyglot')
@@ -105,9 +108,10 @@ if dein#load_state(s:dein_dir)
 endif
 
 " もし、未インストールものものがあったらインストール
-if dein#check_install()
-  call dein#install()
-endif
+augroup PluginInstall
+  autocmd!
+  autocmd VimEnter * if dein#check_install() | call dein#install() | endif
+augroup END
 " }}}
 
 " General Settings {{{
@@ -169,6 +173,7 @@ set shiftwidth=2
 
 augroup fileTypeIndent
   autocmd!
+  autocmd BufNewFile,BufRead *.go   setlocal noexpandtab
   autocmd BufNewFile,BufRead *.py   setlocal tabstop=4 softtabstop=4 shiftwidth=4
   autocmd BufNewFile,BufRead *.rb   setlocal tabstop=2 softtabstop=2 shiftwidth=2
   autocmd BufNewFile,BufRead *.jl   setlocal tabstop=4 softtabstop=4 shiftwidth=4
@@ -240,8 +245,7 @@ endif
 autocmd BufWritePost *.java :!javac *.java
 
 " yamlの時はvertical highlight
-autocmd BufReadPost * set nocursorcolumn
-autocmd BufReadPost *.yaml set cursorcolumn
+autocmd FileType yaml setlocal cursorcolumn
 " }}}
 
 " Key Mapping {{{
@@ -341,6 +345,13 @@ if executable('typescript-language-server')
     \ )},
     \ 'whitelist': ['typescript', 'typescript.tsx', 'typescriptreact'],
     \ })
+
+    au User lsp_setup call lsp#register_server({
+      \ 'name': 'javascript',
+      \ 'cmd': { server_info->[&shell, &shellcmdflag, 'typescript-language-server --stdio']},
+      \ 'root_uri': { server_info->lsp#utils#path_to_uri(lsp#utils#find_nearest_parent_directory(lsp#utils#get_buffer_path(), '.git/..'))},
+      \ 'whitelist': ['javascript', 'javascript.jsx', 'javascriptreact']
+      \ })
 endif
 
 if executable('julia')
@@ -423,7 +434,7 @@ if executable('efm-langserver')
     autocmd User lsp_setup call lsp#register_server({
         \ 'name': 'efm-langserver',
         \ 'cmd': {server_info->['efm-langserver', '-c='.$HOME.'/.config/efm-langserver/config.yaml', '-log='.g:log_files_dir.'/efm-langserver.log']},
-        \ 'whitelist': ['go'],
+        \ 'whitelist': ['go', 'vim'],
         \ })
   augroup END
 endif
@@ -686,6 +697,18 @@ nmap Y <Plug>(operator-flashy)$
 hi Flashy term=bold ctermbg=0 guibg=#AA354A
 let g:operator#flashy#flash_time = 200
 " }}}
+
+" setting-go {{{
+augroup goshortcut
+  autocmd!
+  nnoremap [go] <Nop>
+  nmap <Leader>g [go]
+
+  nnoremap [go]t :GoTest<CR>
+  nnoremap [go]i :GoImport
+  nnoremap [go]p :GoImpl
+augroup end
+"}}}
 
 let s:vimrc_local = $HOME . "/.vimrc_local"
 if filereadable( s:vimrc_local )
