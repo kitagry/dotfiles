@@ -4,3 +4,7 @@ languages:
     lint-ignore-exit-code: true
     lint-formats:
       - '%f:%l:%c:%m'
+
+  vim:
+    lint-command: 'vint -'
+    lint-stdin: true
