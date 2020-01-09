@@ -59,11 +59,13 @@ zplugin light b4b4r07/enhancd
 export ENHANCD_FILTER=fzf
 
 zplugin light zsh-users/zsh-autosuggestions
-bindkey '^l' forward-char
+bindkey '^l' autosuggest-accept
 zplugin light zsh-users/zsh-syntax-highlighting
 
 zplugin ice pick"async.zsh" src"pure.zsh"
 zplugin light sindresorhus/pure
+export PURE_GIT_PULL=1
+export PURE_GIT_UNTRACKED_DIRTY=1
 
 zplugin ice from"gh"
 zplugin light zsh-users/zaw

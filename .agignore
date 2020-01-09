@@ -20,3 +20,7 @@ node_modules
 *.egg-info
 
 target
+*.lock
+package-lock.json
+go.sum
+__pycache__
