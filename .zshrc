@@ -78,3 +78,5 @@ bindkey '^B' zaw-git-branches
 if [ $commands[kubectl] ]; then
   source <(kubectl completion zsh)
 fi
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
