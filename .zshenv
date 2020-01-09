@@ -1,3 +1,5 @@
+export LANG=ja_JP.UTF-8
+export LC_TYPE=ja_JP.UTF-8
 export PATH="/usr/local/bin:/usr/local/sbin:/sbin/:$PATH"
 export PATH="/usr/local:$PATH"
 export PATH="/usr/local/lib/:/usr/local/texlive/2017/bin/x86_64-darwin/tlmgr:$PATH"
@@ -167,9 +169,10 @@ alias awk="gawk"
 # cdのよく行くところへのalias
 alias cdg='cd $(ghq root)/github.com/kitagry'
 g() {
-  src=$(ghq list | fzf --preview "bat --color=always --style=header,grid --line-range :80 $(ghq root)/{}/README.*")
-  if [ $src ]; then
-    cd $(ghq root)/$src
+  local src=$(ghq list | fzf --preview "bat --color=always --style=header,grid --line-range :80 $(ghq root)/{}/README.*")
+  if [ -n "$src" ]; then
+    repo=$(ghq list --full-path --exact $src)
+    cd $repo
   fi
 }
 
