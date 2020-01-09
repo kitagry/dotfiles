@@ -173,12 +173,12 @@ set shiftwidth=2
 
 augroup fileTypeIndent
   autocmd!
-  autocmd BufNewFile,BufRead *.go   setlocal noexpandtab
   autocmd BufNewFile,BufRead *.py   setlocal tabstop=4 softtabstop=4 shiftwidth=4
   autocmd BufNewFile,BufRead *.rb   setlocal tabstop=2 softtabstop=2 shiftwidth=2
   autocmd BufNewFile,BufRead *.jl   setlocal tabstop=4 softtabstop=4 shiftwidth=4
   autocmd BufNewFile,BufRead *.php  setlocal tabstop=4 softtabstop=4 shiftwidth=4
   autocmd BufNewFile,BufRead *.java setlocal tabstop=4 softtabstop=4 shiftwidth=4
+  autocmd BufNewFile,BufRead *.go   setlocal noexpandtab
 augroup END
 
 " ファイルの認識系
@@ -319,7 +319,7 @@ endif
 if executable('pyls')
   au User lsp_setup call lsp#register_server({
     \ 'name': 'python',
-    \ 'cmd': {server_info->['pyls']},
+    \ 'cmd': {server_info->['python3', '-m', 'pyls']},
     \ 'whitelist': ['python'],
     \ 'workspace_config': {'pyls': {'configurationSources': ['flake8']}}
     \ })
@@ -487,20 +487,20 @@ let g:lsp_preview_doubletap = 0
 let g:lsp_preview_float = 1
 let g:lsp_text_edit_enabled = 0
 
-nnoremap <silent> ]e  :LspNextError<CR>
-nnoremap <silent> [e  :LspPreviousError<CR>
-nnoremap <silent> <C-]> :LspDefinition<CR>
-nnoremap <silent> <C-<> :LspTypeDefinition<CR>
+nmap <silent> ]e  <plug>(lsp-next-error)
+nmap <silent> [e  <plug>(lsp-previous-error)
+nmap <silent> <C-]> <plug>(lsp-definition)
+nmap <silent> <C-<> <plug>(lsp-type-definition)
 
 nnoremap [vim-lsp] <Nop>
 nmap     <Leader>l [vim-lsp]
 
-nnoremap [vim-lsp]v :vsp<CR>:LspDefinition<CR>
-nnoremap [vim-lsp]s :LspStatus<CR>
-nnoremap [vim-lsp]r :LspRename<CR>
-nnoremap [vim-lsp]d :LspDocumentDiagnostics<CR>
-nnoremap [vim-lsp]f :LspDocumentFormat<CR>
-nnoremap [vim-lsp]h :LspHover<CR>
+nmap [vim-lsp]v :vsp<CR><plug>(lsp-definition)
+nmap [vim-lsp]s <plug>(lsp-status)
+nmap [vim-lsp]r <plug>(lsp-rename)
+nmap [vim-lsp]d <plug>(lsp-document-diagnostics)
+nmap [vim-lsp]f <plug>(lsp-document-format)
+nmap [vim-lsp]h <plug>(lsp-hover)
 
 " stop efm-langserver
 nnoremap [vim-lsp]t :call lsp#stop_server('efm-langserver')<CR>
