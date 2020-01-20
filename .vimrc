@@ -27,27 +27,13 @@ if dein#load_state(s:dein_dir)
   call dein#add('Shougo/dein.vim')
   call dein#add('prabirshrestha/async.vim')
   call dein#add('prabirshrestha/vim-lsp')
-  if has('nvim')
-    call dein#add('Shougo/deoplete.nvim')
-    call dein#add('lighttiger2505/deoplete-vim-lsp')
-    call dein#add('Shougo/neosnippet.vim')
-    call dein#add('Shougo/neosnippet-snippets')
-  else
-    call dein#add('prabirshrestha/asyncomplete.vim')
-    call dein#add('prabirshrestha/asyncomplete-buffer.vim')
-    call dein#add('prabirshrestha/asyncomplete-lsp.vim')
-    call dein#add('machakann/asyncomplete-ezfilter.vim')
-    if has('python3')
-      call dein#add('prabirshrestha/asyncomplete-ultisnips.vim')
-      call dein#add('SirVer/ultisnips')
-    endif
-  endif
-
-  call dein#add('honza/vim-snippets')
+  call dein#add('hrsh7th/vim-vsnip')
+  call dein#add('hrsh7th/vim-vsnip-integ')
+  call dein#add('microsoft/vscode-python', {'merged': 0})
 
   " 移動系
   call dein#add('junegunn/fzf.vim')
-  call dein#add('junegunn/fzf', { 'build': './install --all', 'merged': 0 })
+  call dein#add('junegunn/fzf')
   call dein#add('Shougo/defx.nvim', {'lazy': 1})
   if has('nvim')
     call dein#add('ncm2/float-preview.nvim')
@@ -498,61 +484,44 @@ let g:lsp_highlights_enabled = 0
 let g:lsp_preview_float = 1
 let g:lsp_text_edit_enabled = 0
 
-nmap <silent> ]e  <plug>(lsp-next-error)
-nmap <silent> [e  <plug>(lsp-previous-error)
-nmap <silent> ]w  <plug>(lsp-next-diagnostic)
-nmap <silent> [w  <plug>(lsp-previous-diagnostic)
-nmap <silent> <C-]> <plug>(lsp-definition)
-nmap <silent> <C-<> <plug>(lsp-type-definition)
+function! s:on_lsp_buffer_enabled() abort
+  setlocal omnifunc=lsp#complete
+  setlocal completeopt=menuone,popup
 
-nnoremap [vim-lsp] <Nop>
-nmap     <Leader>l [vim-lsp]
+  nmap <silent> ]e  <plug>(lsp-next-error)
+  nmap <silent> [e  <plug>(lsp-previous-error)
+  nmap <silent> ]w  <plug>(lsp-next-diagnostic)
+  nmap <silent> [w  <plug>(lsp-previous-diagnostic)
+  nmap <silent> <C-]> <plug>(lsp-definition)
+  nmap <silent> <C-<> <plug>(lsp-type-definition)
 
-nmap [vim-lsp]v :vsp<CR><plug>(lsp-definition)
-nmap [vim-lsp]s <plug>(lsp-status)
-nmap [vim-lsp]r <plug>(lsp-rename)
-nmap [vim-lsp]d <plug>(lsp-document-diagnostics)
-nmap [vim-lsp]f <plug>(lsp-document-format)
-nmap [vim-lsp]h <plug>(lsp-hover)
+  nnoremap [vim-lsp] <Nop>
+  nmap     <Leader>l [vim-lsp]
 
-" stop efm-langserver
-nnoremap [vim-lsp]t :call lsp#stop_server('efm-langserver')<CR>
+  nmap [vim-lsp]v :vsp<CR><plug>(lsp-definition)
+  nmap [vim-lsp]s <plug>(lsp-status)
+  nmap [vim-lsp]r <plug>(lsp-rename)
+  nmap [vim-lsp]d <plug>(lsp-document-diagnostics)
+  nmap [vim-lsp]f <plug>(lsp-document-format)
+  nmap [vim-lsp]h <plug>(lsp-hover)
+
+  " stop efm-langserver
+  nmap [vim-lsp]t :call lsp#stop_server('efm-langserver')<CR>
+endfunction
+
+augroup lsp_install
+  au!
+  autocmd User lsp_buffer_enabled call s:on_lsp_buffer_enabled()
+augroup END
 " }}}
 
-" asyncomplete {{{
-let g:lsp_log_verbose = 1
-let g:lsp_log_file = expand(g:log_files_dir . '/vim-lsp.log')
-let g:asyncomplete_log_file = expand(g:log_files_dir . '/asyncomplete.log')
-
-call asyncomplete#register_source(asyncomplete#sources#buffer#get_source_options({
-    \ 'name': 'buffer',
-    \ 'whitelist': ['*'],
-    \ 'completor': function('asyncomplete#sources#buffer#completor'),
-    \ 'config': {
-    \    'max_buffer_size': 5000000,
-    \  },
-    \ }))
-
-if has('python3')
-    let g:UltiSnipsExpandTrigger="<c-e>"
-    call asyncomplete#register_source(asyncomplete#sources#ultisnips#get_source_options({
-        \ 'name': 'ultisnips',
-        \ 'whitelist': ['*'],
-        \ 'completor': function('asyncomplete#sources#ultisnips#completor'),
-        \ }))
-endif
-
-" MEMO: fuzzyに検索するためのコード。ちょっと邪魔なので一旦無効。
-" function! s:fuzzy(lhs, rhs) abort
-"   return a:lhs =~ join(map(split(a:rhs, '\zs'), "printf('[\\x%02x].*', char2nr(v:val))"), '')
-" endfunction
-
-" let g:asyncomplete_preprocessor =
-"   \ [function('asyncomplete#preprocessor#ezfilter#filter')]
-
-" let g:asyncomplete#preprocessor#ezfilter#config = {}
-" let g:asyncomplete#preprocessor#ezfilter#config['*'] =
-"   \ {ctx, items -> filter(items, 's:fuzzy(v:val.word, ctx.base) != 0')}
+" vsnip {{{
+imap <expr> <C-e>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-e>'
+smap <expr> <C-e>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-e>'
+imap <expr> <C-j>   vsnip#available(1)  ? '<Plug>(vsnip-jump-next)'      : '<C-j>'
+smap <expr> <C-j>   vsnip#available(1)  ? '<Plug>(vsnip-jump-next)'      : '<C-j>'
+imap <expr> <C-k> vsnip#available(-1)   ? '<Plug>(vsnip-jump-prev)'      : '<C-k>'
+smap <expr> <C-k> vsnip#available(-1)   ? '<Plug>(vsnip-jump-prev)'      : '<C-k>'
 " }}}
 
 " lightline {{{

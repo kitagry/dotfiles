@@ -13,8 +13,6 @@ export NVIM_LISTEN_ADDRESS="/tmp/nvimsocket"
 export PATH="/usr/local/opt/llvm/bin:$PATH"
 export QT_HOMEBREW=true
 
-export NVIM_PYTHON_LOG_FILE="$HOME/.config/nvim/logs/python.log"
-
 export PATH="$HOME/.cargo/bin:$PATH"
 
 ###########################
@@ -165,6 +163,9 @@ alias redis-server='redis-server /usr/local/etc/redis.conf &'
 
 # awkをgawkにする
 alias awk="gawk"
+
+# pip3をマッピングしておく
+alias pip3="python3 -m pip"
 
 # cdのよく行くところへのalias
 alias cdg='cd $(ghq root)/github.com/kitagry'
