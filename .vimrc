@@ -61,8 +61,8 @@ if dein#load_state(s:dein_dir)
   call dein#add('mattn/vim-goimpl', {'on_ft': 'go'})
   call dein#add('mattn/vim-goaddtags', {'on_ft': 'go'})
   call dein#add('kitagry/vim-gotest', {'on_ft': 'go'})
-  call dein#add('lervag/vimtex', {'on_ft': 'tex', 'lazy': 1})
-  call dein#add('jalvesaq/Nvim-R')
+  call dein#add('lervag/vimtex', {'on_ft': 'tex'})
+  call dein#add('jalvesaq/Nvim-R', {'on_ft': 'R'})
   call dein#add('sheerun/vim-polyglot')
 
   " Git系
@@ -308,7 +308,7 @@ if executable('gopls')
     au User lsp_setup call lsp#register_server({
         \ 'name': 'go',
         \ 'cmd': {server_info->['gopls']},
-        \ 'whitelist': ['go'],
+        \ 'whitelist': ['go', 'gomod'],
         \ 'workspace_config': {'gopls': {
         \     'usePlaceholders': v:true,
         \     'completeUnimported': v:true,
@@ -470,11 +470,23 @@ if executable('R')
     \ })
 endif
 
-" if executable('kube-langserver')
+" if executable('texlab')
 "   au User lsp_setup call lsp#register_server({
-"     \ 'name': 'kube-langserver',
-"     \ 'cmd': {server_info->['kube-langserver', '-log='.g:log_files_dir.'/kube-langserver.log']},
-"     \ 'whitelist': ['yaml'],
+"     \ 'name': 'tex',
+"     \ 'cmd': {server_info->['texlab']},
+"     \ 'workspace_config': {
+"     \   'latex': {
+"     \     'build': {
+"     \       'executable': 'latexmk',
+"     \       'args': ['-pdfdvi', '-synctex=1'],
+"     \       'onSave': v:true,
+"     \     },
+"     \     'lint': {
+"     \       'onSave': v:true,
+"     \     },
+"     \   },
+"     \ },
+"     \ 'whitelist': ['tex', 'plaintex', 'bib'],
 "     \ })
 " endif
 " }}}
@@ -483,12 +495,13 @@ let g:lsp_diagnostics_enabled = 1
 let g:lsp_signs_enabled = 1
 let g:lsp_diagnostics_echo_cursor = 1
 let g:lsp_highlights_enabled = 0
-let g:lsp_preview_doubletap = 0
 let g:lsp_preview_float = 1
 let g:lsp_text_edit_enabled = 0
 
 nmap <silent> ]e  <plug>(lsp-next-error)
 nmap <silent> [e  <plug>(lsp-previous-error)
+nmap <silent> ]w  <plug>(lsp-next-diagnostic)
+nmap <silent> [w  <plug>(lsp-previous-diagnostic)
 nmap <silent> <C-]> <plug>(lsp-definition)
 nmap <silent> <C-<> <plug>(lsp-type-definition)
 
@@ -637,8 +650,8 @@ nmap <silent> [fzf]] :<C-u>call fzf#vim#ag('<C-r><C-w>', {'options': '--bind ctr
 let $NVIM_PYTHON_LOG_FILE=$HOME . "/.config/logs/nvim_python_log_file"
 " }}}
 
-" vim-tex {{{
-let g:vimtex_compiler_progname = 'nvr'
+" vimtex {{{
+let g:latex_latexmk_options = '-pdf'
 let g:vimtex_view_general_viewer = '/Applications/Skim.app/Contents/SharedSupport/displayline'
 let g:vimtex_view_general_options = '@line @pdf @tex'
 " }}}
@@ -708,6 +721,10 @@ augroup goshortcut
   nnoremap [go]i :GoImport
   nnoremap [go]p :GoImpl
 augroup end
+"}}}
+
+" polyglot {{{
+let g:polyglot_disabled = ['latex']
 "}}}
 
 let s:vimrc_local = $HOME . "/.vimrc_local"
