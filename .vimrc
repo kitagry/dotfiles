@@ -27,13 +27,14 @@ if dein#load_state(s:dein_dir)
   call dein#add('Shougo/dein.vim')
   call dein#add('prabirshrestha/async.vim')
   call dein#add('prabirshrestha/vim-lsp')
+  call dein#add('mattn/vim-lsp-settings')
   call dein#add('hrsh7th/vim-vsnip')
   call dein#add('hrsh7th/vim-vsnip-integ')
   call dein#add('microsoft/vscode-python', {'merged': 0})
 
   " 移動系
   call dein#add('junegunn/fzf.vim')
-  call dein#add('junegunn/fzf')
+  call dein#add('junegunn/fzf', {'build': './install --all'})
   call dein#add('Shougo/defx.nvim', {'lazy': 1})
   if has('nvim')
     call dein#add('ncm2/float-preview.nvim')
@@ -101,12 +102,16 @@ augroup END
 " }}}
 
 " General Settings {{{
-if has('mac')
-  let g:python_host_prog = '/usr/local/bin/python'
+if filereadable('/usr/local/bin/python3')
   let g:python3_host_prog = '/usr/local/bin/python3'
-else
+elseif filereadable('/usr/bin/python3')
+  let g:python3_host_prog = '/usr/bin/python3'
+endif
+
+if filereadable('/usr/local/bin/python')
+  let g:python_host_prog = '/usr/local/bin/python'
+elseif filereadable('/usr/bin/python')
   let g:python_host_prog = '/usr/bin/python'
-  let g:python3_host_prog = '/usr/bin/python3.6'
 endif
 
 let g:log_files_dir = $HOME . '/.config/logs'
@@ -288,195 +293,37 @@ inoremap <BS> <Nop>
 inoremap <Del> <Nop>
 " }}}
 
-" vim-lsp {{{
-" + register lsp {{{
-if executable('gopls')
-    au User lsp_setup call lsp#register_server({
-        \ 'name': 'go',
-        \ 'cmd': {server_info->['gopls']},
-        \ 'whitelist': ['go', 'gomod'],
-        \ 'workspace_config': {'gopls': {
-        \     'usePlaceholders': v:true,
-        \     'completeUnimported': v:true,
-        \   }},
-        \ })
-endif
-
-if executable('pyls')
-  au User lsp_setup call lsp#register_server({
-    \ 'name': 'python',
-    \ 'cmd': {server_info->['python3', '-m', 'pyls']},
-    \ 'whitelist': ['python'],
-    \ 'workspace_config': {'pyls': {'configurationSources': ['flake8']}}
-    \ })
-endif
-
-if executable('docker-langserver')
-  au User lsp_setup call lsp#register_server({
-    \ 'name': 'docker',
-    \ 'cmd': {server_info->[&shell, &shellcmdflag, 'docker-langserver --stdio']},
-    \ 'whitelist': ['dockerfile'],
-    \ })
-endif
-
-if executable('typescript-language-server')
-  au User lsp_setup call lsp#register_server({
-    \ 'name': 'typescript',
-    \ 'cmd': {server_info->[&shell, &shellcmdflag, 'typescript-language-server --stdio']},
-    \ 'root_uri':{
-    \   server_info->lsp#utils#path_to_uri(
-    \     lsp#utils#find_nearest_parent_file_directory(
-    \        lsp#utils#get_buffer_path(),
-    \        'tsconfig.json')
-    \ )},
-    \ 'whitelist': ['typescript', 'typescript.tsx', 'typescriptreact'],
-    \ })
-
-    au User lsp_setup call lsp#register_server({
-      \ 'name': 'javascript',
-      \ 'cmd': { server_info->[&shell, &shellcmdflag, 'typescript-language-server --stdio']},
-      \ 'root_uri': { server_info->lsp#utils#path_to_uri(lsp#utils#find_nearest_parent_directory(lsp#utils#get_buffer_path(), '.git/..'))},
-      \ 'whitelist': ['javascript', 'javascript.jsx', 'javascriptreact']
-      \ })
-endif
-
+" vim-lsp-settings {{{
 if executable('julia')
   au User lsp_setup call lsp#register_server({
     \ 'name': 'julia',
     \ 'whitelist': ['julia'],
     \ 'cmd': {server_info->['julia', '--startup-file=no', '--history-file=no', '-e', '
-    \     using LanguageServer;
-    \     using Pkg;
-    \     import StaticLint;
-    \     import SymbolServer;
-    \     env_path = dirname(Pkg.Types.Context().env.project_file);
-    \     debug = false;
+    \       using LanguageServer;
+    \       using Pkg;
+    \       import StaticLint;
+    \       import SymbolServer;
+    \       env_path = dirname(Pkg.Types.Context().env.project_file);
+    \       debug = false;
     \
-    \     server = LanguageServer.LanguageServerInstance(stdin, stdout, debug, env_path, "", Dict());
-    \     server.runlinter = true;
-    \     run(server);
+    \       server = LanguageServer.LanguageServerInstance(stdin, stdout, debug, env_path, "", Dict());
+    \       server.runlinter = true;
+    \       run(server);
     \ ']}
     \ })
 endif
 
-if executable('vls')
-  au User lsp_setup call lsp#register_server({
-    \ 'name': 'vue',
-    \ 'cmd': {server_info->['vls']},
-    \ 'whitelist': ['vue'],
-    \ })
-endif
-
-if executable('clangd')
-    au User lsp_setup call lsp#register_server({
-        \ 'name': 'c, cpp',
-        \ 'cmd': {server_info->['clangd']},
-        \ 'whitelist': ['c', 'cpp', 'objc', 'objcpp'],
-        \ })
-endif
-
-if executable('solargraph')
-    " gem install solargraph
-    au User lsp_setup call lsp#register_server({
-        \ 'name': 'ruby',
-        \ 'cmd': {server_info->[&shell, &shellcmdflag, 'solargraph stdio']},
-        \ 'initialization_options': {"diagnostics": "true"},
-        \ 'whitelist': ['ruby'],
-        \ })
-endif
-
-if executable('rls')
-  au User lsp_setup call lsp#register_server({
-    \ 'name': 'rust',
-    \ 'cmd': {server_info->['rustup', 'run', 'stable', 'rls']},
-    \ 'whitelist': ['rust'],
-    \ })
-endif
-
-if executable('yaml-language-server')
-  au User lsp_setup call lsp#register_server({
-        \ 'name': 'yaml-language-server',
-        \ 'cmd': {server_info->['yaml-language-server', '--stdio']},
-        \ 'whitelist': ['yaml', 'yml'],
-        \ 'workspace_config': {
-        \   'yaml': {
-        \     'completion': v:true,
-        \     'hover': v:true,
-        \     'validate': v:true,
-        \     'schemas': {
-        \       'Kubernetes': '/*'
-        \     },
-        \   },
-        \   'http': {
-        \     'proxyStrictSSL': v:true,
-        \   },
-        \ },
-        \ })
-endif
-
-if executable('efm-langserver')
-  augroup LspEFM
-    au!
-    autocmd User lsp_setup call lsp#register_server({
-        \ 'name': 'efm-langserver',
-        \ 'cmd': {server_info->['efm-langserver', '-c='.$HOME.'/.config/efm-langserver/config.yaml', '-log='.g:log_files_dir.'/efm-langserver.log']},
-        \ 'whitelist': ['go', 'vim'],
-        \ })
-  augroup END
-endif
-
-if executable('java') && filereadable(expand('~/lsp/eclipse.jdt.ls/plugins/org.eclipse.equinox.launcher_1.5.300.v20190213-1655.jar'))
-    au User lsp_setup call lsp#register_server({
-        \ 'name': 'java',
-        \ 'cmd': {server_info->[
-        \     'java',
-        \     '-Declipse.application=org.eclipse.jdt.ls.core.id1',
-        \     '-Dosgi.bundles.defaultStartLevel=4',
-        \     '-Declipse.product=org.eclipse.jdt.ls.core.product',
-        \     '-Dlog.level=ALL',
-        \     '-noverify',
-        \     '-Dfile.encoding=UTF-8',
-        \     '-Xmx1G',
-        \     '-jar',
-        \     expand('~/lsp/eclipse.jdt.ls/plugins/org.eclipse.equinox.launcher_1.5.300.v20190213-1655.jar'),
-        \     '-configuration',
-        \     expand('~/lsp/eclipse.jdt.ls/config_mac'),
-        \     '-data',
-        \     expand('~/lsp/eclipse.jdt.ls/workspace')
-        \ ]},
-        \ 'whitelist': ['java'],
-        \ })
-endif
-
-if executable('R')
-  au User lsp_setup call lsp#register_server({
-    \ 'name': 'R',
-    \ 'cmd': {server_info->['R', '--slave', '-e', 'languageserver::run()']},
-    \ 'whitelist': ['R'],
-    \ })
-endif
-
-" if executable('texlab')
-"   au User lsp_setup call lsp#register_server({
-"     \ 'name': 'tex',
-"     \ 'cmd': {server_info->['texlab']},
-"     \ 'workspace_config': {
-"     \   'latex': {
-"     \     'build': {
-"     \       'executable': 'latexmk',
-"     \       'args': ['-pdfdvi', '-synctex=1'],
-"     \       'onSave': v:true,
-"     \     },
-"     \     'lint': {
-"     \       'onSave': v:true,
-"     \     },
-"     \   },
-"     \ },
-"     \ 'whitelist': ['tex', 'plaintex', 'bib'],
-"     \ })
-" endif
+let g:lsp_settings = {
+  \   'go': {
+  \     'workspace_config': {
+  \       'usePlaceholders': v:true,
+  \       'completeUnimported': v:true,
+  \     },
+  \   },
+  \ }
 " }}}
 
+" vim-lsp {{{
 let g:lsp_diagnostics_enabled = 1
 let g:lsp_signs_enabled = 1
 let g:lsp_diagnostics_echo_cursor = 1
@@ -499,7 +346,7 @@ function! s:on_lsp_buffer_enabled() abort
   nmap     <Leader>l [vim-lsp]
 
   nmap [vim-lsp]v :vsp<CR><plug>(lsp-definition)
-  nmap [vim-lsp]s <plug>(lsp-status)
+  nmap [vim-lsp]s :<C-u>LspStatus<CR>
   nmap [vim-lsp]r <plug>(lsp-rename)
   nmap [vim-lsp]d <plug>(lsp-document-diagnostics)
   nmap [vim-lsp]f <plug>(lsp-document-format)
@@ -605,7 +452,6 @@ nmap <silent> [defx]h :<C-u>Defx -split='vertical' %%<CR>
 " }}}
 
 " fzf {{{
-"
 nnoremap [fzf] <Nop>
 nmap <Leader>f [fzf]
 nmap <silent> [fzf]f :<C-u>Files<CR>
