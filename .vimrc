@@ -314,10 +314,16 @@ if executable('julia')
 endif
 
 let g:lsp_settings = {
-  \   'go': {
+  \   'gopls': {
   \     'workspace_config': {
-  \       'usePlaceholders': v:true,
-  \       'completeUnimported': v:true,
+  \       'gopls': {
+  \         'usePlaceholders': v:true,
+  \         'completeUnimported': v:true,
+  \       },
+  \     },
+  \   },
+  \   'pyls': {
+  \    'workspace_config': {'pyls': {'configurationSources': ['flake8']},
   \     },
   \   },
   \ }
