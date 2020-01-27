@@ -30,7 +30,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('mattn/vim-lsp-settings')
   call dein#add('hrsh7th/vim-vsnip')
   call dein#add('hrsh7th/vim-vsnip-integ')
-  call dein#add('microsoft/vscode-python', {'merged': 0})
+  call dein#add('kitagry/vs-snippets')
 
   " 移動系
   call dein#add('junegunn/fzf.vim')
@@ -339,7 +339,7 @@ let g:lsp_text_edit_enabled = 0
 
 function! s:on_lsp_buffer_enabled() abort
   setlocal omnifunc=lsp#complete
-  setlocal completeopt=menuone,popup
+  setlocal completeopt=menuone,popup,noinsert,noselect
 
   nmap <silent> ]e  <plug>(lsp-next-error)
   nmap <silent> [e  <plug>(lsp-previous-error)
@@ -357,7 +357,7 @@ function! s:on_lsp_buffer_enabled() abort
   nmap [vim-lsp]d <plug>(lsp-document-diagnostics)
   nmap [vim-lsp]f <plug>(lsp-document-format)
   nmap [vim-lsp]h <plug>(lsp-hover)
-
+  nmap [vim-lsp]e <plug>(lsp-references)
   " stop efm-langserver
   nmap [vim-lsp]t :call lsp#stop_server('efm-langserver')<CR>
 endfunction
@@ -369,6 +369,7 @@ augroup END
 " }}}
 
 " vsnip {{{
+let g:vsnip_snippet_dirs = split(globpath(&runtimepath, 'snippets'), '\n')
 imap <expr> <C-e>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-e>'
 smap <expr> <C-e>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-e>'
 imap <expr> <C-j>   vsnip#available(1)  ? '<Plug>(vsnip-jump-next)'      : '<C-j>'
