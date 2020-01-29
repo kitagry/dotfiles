@@ -361,7 +361,7 @@ function! s:on_lsp_buffer_enabled() abort
   nmap [vim-lsp]d <plug>(lsp-document-diagnostics)
   nmap [vim-lsp]f <plug>(lsp-document-format)
   nmap [vim-lsp]h <plug>(lsp-hover)
-
+  nmap [vim-lsp]e <plug>(lsp-references)
   " stop efm-langserver
   nmap [vim-lsp]t :call lsp#stop_server('efm-langserver')<CR>
 endfunction
