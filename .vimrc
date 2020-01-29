@@ -27,15 +27,18 @@ if dein#load_state(s:dein_dir)
   call dein#add('Shougo/dein.vim')
   call dein#add('prabirshrestha/async.vim')
   call dein#add('prabirshrestha/vim-lsp')
-  call dein#add('mattn/vim-lsp-settings')
+  call dein#add('mattn/vim-lsp-settings', {'merged': 0})
+  call dein#add('prabirshrestha/asyncomplete.vim')
+  call dein#add('prabirshrestha/asyncomplete-lsp.vim')
   call dein#add('hrsh7th/vim-vsnip')
   call dein#add('hrsh7th/vim-vsnip-integ')
-  call dein#add('microsoft/vscode-python', {'merged': 0})
+  call dein#add('kitagry/vs-snippets')
+  " call dein#local(s:dein_dir . '/repos/github.com/kitagry', {}, ['vs-snippets'])
 
   " 移動系
   call dein#add('junegunn/fzf.vim')
   call dein#add('junegunn/fzf', {'build': './install --all'})
-  call dein#add('Shougo/defx.nvim', {'lazy': 1})
+  call dein#add('lambdalisue/fern.vim', {'lazy': 1})
   if has('nvim')
     call dein#add('ncm2/float-preview.nvim')
   else
@@ -68,7 +71,8 @@ if dein#load_state(s:dein_dir)
   " コマンド拡張系
   call dein#add('cohama/lexima.vim')
   call dein#add('machakann/vim-sandwich')
-  call dein#add('tpope/vim-commentary')
+  call dein#add('tyru/caw.vim')
+  call dein#add('kana/vim-repeat')
   call dein#add('mattn/emmet-vim')
   call dein#add('alvan/vim-closetag')
   call dein#add('thinca/vim-quickrun')
@@ -102,7 +106,9 @@ augroup END
 " }}}
 
 " General Settings {{{
-if filereadable('/usr/local/bin/python3')
+if filereadable('/usr/local/opt/python@3/bin/python3')
+  let g:python3_host_prog = '/usr/local/opt/python@3/bin/python3'
+elseif filereadable('/usr/local/bin/python3')
   let g:python3_host_prog = '/usr/local/bin/python3'
 elseif filereadable('/usr/bin/python3')
   let g:python3_host_prog = '/usr/bin/python3'
@@ -232,9 +238,6 @@ elseif has('mac')
     let &t_SR .= "\e[4 q"
 endif
 
-" javaを保存時にコンパイルする
-autocmd BufWritePost *.java :!javac *.java
-
 " yamlの時はvertical highlight
 autocmd FileType yaml setlocal cursorcolumn
 " }}}
@@ -336,11 +339,12 @@ let g:lsp_diagnostics_echo_cursor = 1
 let g:lsp_highlights_enabled = 0
 let g:lsp_preview_float = 1
 let g:lsp_text_edit_enabled = 0
+let g:lsp_async_completion = 1
+
+set completeopt=menuone,noinsert,noselect
 
 function! s:on_lsp_buffer_enabled() abort
   setlocal omnifunc=lsp#complete
-  setlocal completeopt=menuone,popup
-
   nmap <silent> ]e  <plug>(lsp-next-error)
   nmap <silent> [e  <plug>(lsp-previous-error)
   nmap <silent> ]w  <plug>(lsp-next-diagnostic)
@@ -369,6 +373,7 @@ augroup END
 " }}}
 
 " vsnip {{{
+let g:vsnip_snippet_dirs = split(globpath(&runtimepath, 'snippets'), '\n')
 imap <expr> <C-e>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-e>'
 smap <expr> <C-e>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-e>'
 imap <expr> <C-j>   vsnip#available(1)  ? '<Plug>(vsnip-jump-next)'      : '<C-j>'
@@ -376,6 +381,12 @@ smap <expr> <C-j>   vsnip#available(1)  ? '<Plug>(vsnip-jump-next)'      : '<C-j
 imap <expr> <C-k> vsnip#available(-1)   ? '<Plug>(vsnip-jump-prev)'      : '<C-k>'
 smap <expr> <C-k> vsnip#available(-1)   ? '<Plug>(vsnip-jump-prev)'      : '<C-k>'
 " }}}
+
+" asyncomplete {{{
+let g:asyncomplete_auto_popup = 1
+let g:asyncomplete_auto_completeopt = 0
+let g:asyncomplete_popup_delay = 200
+"}}}
 
 " lightline {{{
 set hidden  " allow buffer switching without saving
