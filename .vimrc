@@ -340,6 +340,7 @@ let g:lsp_highlights_enabled = 0
 let g:lsp_preview_float = 1
 let g:lsp_text_edit_enabled = 0
 let g:lsp_async_completion = 1
+let g:lsp_log_file = ''
 
 set completeopt=menuone,noinsert,noselect
 
@@ -431,9 +432,9 @@ let g:lightline_buffer_enable_devicons = 1
 nnoremap [fern] <Nop>
 nmap <Leader>d [fern]
 nmap <silent> [fern]d :<C-u>Fern . -opener=edit<CR>
-nmap <silent> [fern]f :<C-u>Fern %% -opender=edit<CR>
+nmap <silent> [fern]f :<C-u>Fern %:h -opener=edit<CR>
 nmap <silent> [fern]v :<C-u>Fern . -opener=vsplit<CR>
-nmap <silent> [fern]h :<C-u>Fern %% -opener=vsplit<CR>
+nmap <silent> [fern]h :<C-u>Fern %:h -opener=vsplit<CR>
 " }}}
 
 " fzf {{{
@@ -444,10 +445,7 @@ nmap <silent> [fzf]c :<C-u>Files %%<CR>
 nmap <silent> [fzf]m :<C-u>Marks<CR>
 nmap <silent> [fzf]g :<C-u>call fzf#vim#ag('', {'options': '--bind ctrl-a:select-all,ctrl-d:deselect-all'})<CR>
 nmap <silent> [fzf]] :<C-u>call fzf#vim#ag('<C-r><C-w>', {'options': '--bind ctrl-a:select-all,ctrl-d:deselect-all'})<CR>
-" }}}
-
-" roxma/vim-hug-neovim-rpc {{{
-let $NVIM_PYTHON_LOG_FILE=$HOME . "/.config/logs/nvim_python_log_file"
+let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6 } }
 " }}}
 
 " vimtex {{{

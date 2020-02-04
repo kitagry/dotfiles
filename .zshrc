@@ -67,6 +67,10 @@ zplugin light sindresorhus/pure
 export PURE_GIT_PULL=1
 export PURE_GIT_UNTRACKED_DIRTY=1
 
+zplugin ice pick"gh" src"kubectl.zsh"
+zplugin light superbrothers/zsh-kubectl-prompt
+RPROMPT='%F{blue}($ZSH_KUBECTL_PROMPT)%f'
+
 zplugin ice from"gh"
 zplugin light zsh-users/zaw
 bindkey '^R' zaw-history
