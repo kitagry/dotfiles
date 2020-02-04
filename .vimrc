@@ -349,6 +349,8 @@ function! s:on_lsp_buffer_enabled() abort
   nmap <silent> [e  <plug>(lsp-previous-error)
   nmap <silent> ]w  <plug>(lsp-next-diagnostic)
   nmap <silent> [w  <plug>(lsp-previous-diagnostic)
+  nmap <silent> ]r  <plug>(lsp-next-reference)
+  nmap <silent> ]r  <plug>(lsp-previous-reference)
   nmap <silent> <C-]> <plug>(lsp-definition)
   nmap <silent> <C-<> <plug>(lsp-type-definition)
 
@@ -425,47 +427,13 @@ let g:lightline = {
 let g:lightline_buffer_enable_devicons = 1
 " }}}
 
-" Defx {{{
-autocmd FileType defx call s:defx_my_settings()
-function! s:defx_my_settings() abort
-  nnoremap <silent><buffer><expr> <CR>
-  \ defx#do_action('open')
-  nnoremap <silent><buffer><expr> c
-  \ defx#do_action('copy')
-  nnoremap <silent><buffer><expr> m
-  \ defx#do_action('move')
-  nnoremap <silent><buffer><expr> p
-  \ defx#do_action('paste')
-  nnoremap <silent><buffer><expr> <C-v>
-  \ defx#do_action('open', 'vsplit')
-  nnoremap <silent><buffer><expr> K
-  \ defx#do_action('new_directory')
-  nnoremap <silent><buffer><expr> N
-  \ defx#do_action('new_file')
-  nnoremap <silent><buffer><expr> .
-  \ defx#do_action('toggle_ignored_files')
-  nnoremap <silent><buffer><expr> d
-  \ defx#do_action('remove')
-  nnoremap <silent><buffer><expr> r
-  \ defx#do_action('rename')
-  nnoremap <silent><buffer><expr> yy
-  \ defx#do_action('yank_path')
-  nnoremap <silent><buffer><expr> h
-  \ defx#do_action('cd', ['..'])
-  nnoremap <silent><buffer><expr> l
-  \ defx#do_action('open')
-  nnoremap <silent><buffer><expr> ~
-  \ defx#do_action('cd')
-  nnoremap <silent><buffer><expr> q
-  \ defx#do_action('quit')
-endfunction
-
-nnoremap [defx] <Nop>
-nmap <Leader>d [defx]
-nmap <silent> [defx]d :<C-u>Defx<CR>
-nmap <silent> [defx]v :<C-u>Defx -split='vertical'<CR>
-nmap <silent> [defx]f :<C-u>Defx %%<CR>
-nmap <silent> [defx]h :<C-u>Defx -split='vertical' %%<CR>
+" fern {{{
+nnoremap [fern] <Nop>
+nmap <Leader>d [fern]
+nmap <silent> [fern]d :<C-u>Fern . -opener=edit<CR>
+nmap <silent> [fern]f :<C-u>Fern %% -opender=edit<CR>
+nmap <silent> [fern]v :<C-u>Fern . -opener=vsplit<CR>
+nmap <silent> [fern]h :<C-u>Fern %% -opener=vsplit<CR>
 " }}}
 
 " fzf {{{
