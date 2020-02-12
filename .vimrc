@@ -25,8 +25,8 @@ if dein#load_state(s:dein_dir)
 
   " 補完系
   call dein#add('Shougo/dein.vim')
-  call dein#add('prabirshrestha/async.vim')
-  call dein#add('prabirshrestha/vim-lsp')
+  call dein#add('prabirshrestha/async.vim', {'merged': 0})
+  call dein#add('prabirshrestha/vim-lsp', {'merged': 0})
   call dein#add('mattn/vim-lsp-settings', {'merged': 0})
   call dein#add('prabirshrestha/asyncomplete.vim')
   call dein#add('prabirshrestha/asyncomplete-lsp.vim')
@@ -283,8 +283,6 @@ nnoremap <Leader>T :<C-u>terminal<CR>
 " '%%'でアクティブなバッファのディレクトリを開いてくれる
 cnoremap <expr> %% getcmdtype() == ':' ? expand('%:h').'/' : '%%'
 
-tnoremap <silent> jj <C-\><C-n>
-
 inoremap <silent> <C-l> <C-G>U<Right>
 inoremap <Left> <C-G>U<Left>
 inoremap <Right> <C-G>U<Right>
@@ -340,7 +338,7 @@ let g:lsp_highlights_enabled = 0
 let g:lsp_preview_float = 1
 let g:lsp_text_edit_enabled = 0
 let g:lsp_async_completion = 1
-let g:lsp_log_file = ''
+let g:lsp_diagnostics_float_cursor = 1
 
 set completeopt=menuone,noinsert,noselect
 
@@ -540,3 +538,10 @@ function! Mdpdf() abort
 endfunction
 
 command! Mdpdf call Mdpdf()
+
+function! Todo() abort
+  call popup_create(term_start(["todocli"], #{ hidden: 1, term_finish: 'close'}), #{ border: [], minwidth: winwidth(0)/2, minheight: &lines/2 })
+endfunction
+
+command! Todo call Todo()
+nnoremap <Leader>kt :<C-u>Todo<CR>
