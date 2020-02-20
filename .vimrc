@@ -120,7 +120,10 @@ elseif filereadable('/usr/bin/python')
   let g:python_host_prog = '/usr/bin/python'
 endif
 
-let g:log_files_dir = $HOME . '/.config/logs'
+if !isdirectory($HOME . '/Library/Logs/vim')
+  silent !mkdir -p "$HOME/Library/Logs/vim"
+endif
+let g:log_files_dir = $HOME . '/Library/Logs/vim'
 
 filetype plugin indent on
 syntax enable
@@ -314,6 +317,15 @@ if executable('julia')
     \ })
 endif
 
+augroup LspEFM
+  au!
+  autocmd User lsp_setup call lsp#register_server({
+      \ 'name': 'efm-langserver',
+      \ 'cmd': {server_info->['efm-langserver', '-c='.$HOME.'/.config/efm-langserver/config.yaml', '-log=' . g:log_files_dir . '/efm-langserver.log']},
+      \ 'whitelist': ['go'],
+      \ })
+augroup END
+
 let g:lsp_settings = {
   \   'gopls': {
   \     'workspace_config': {
@@ -324,8 +336,21 @@ let g:lsp_settings = {
   \     },
   \   },
   \   'pyls': {
-  \    'workspace_config': {'pyls': {'configurationSources': ['flake8']},
+  \     'cmd': ['python3', '-m', 'pyls'],
+  \     'workspace_config': {'pyls': {'configurationSources': ['flake8']}},
+  \   },
+  \   'yaml-language-server': {
+  \     'workspace_config': {
+  \       'yaml': {
+  \         'schemas': {
+  \           'https://raw.githubusercontent.com/docker/compose/master/compose/config/config_schema_v3.4.json': '/docker-compose.yml',
+  \         },
+  \         'completion': v:true,
+  \         'hover': v:true,
+  \         'validate': v:true,
+  \       },
   \     },
+  \     'whitelist': ['yaml.docker-compose'],
   \   },
   \ }
 " }}}
@@ -339,6 +364,7 @@ let g:lsp_preview_float = 1
 let g:lsp_text_edit_enabled = 0
 let g:lsp_async_completion = 1
 let g:lsp_diagnostics_float_cursor = 1
+let g:lsp_log_file = g:log_files_dir . '/vim-lsp.log'
 
 set completeopt=menuone,noinsert,noselect
 
