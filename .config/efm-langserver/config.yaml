@@ -1,10 +1,18 @@
-languages:
-  go:
-    lint-command: 'golint'
+version: 2
+tools:
+  golint: &golint
+    lint-command: "golint ${INPUT} | sed 's/^/i:/'"
     lint-ignore-exit-code: true
     lint-formats:
-      - '%f:%l:%c:%m'
+      - '%t:%f:%l:%c:%m'
 
-  vim:
+  vint: &vint
     lint-command: 'vint -'
     lint-stdin: true
+
+languages:
+  go:
+    - <<: *golint
+
+  vim:
+    - <<: *vint
