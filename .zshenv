@@ -101,7 +101,7 @@ kubectl_log() {
   if [ $target_pod ]; then
     result="$(kubectl logs $target_pod $1 |& xargs echo)"
     if [ "`echo $result | grep 'a container name must be specified for'`" ]; then
-      target_container=$(echo $result | cut -d '[' -f 2 | cut -d ']' -f1 | tr ' ' '\n' | fzf)
+      target_container=$(kubectl get pods/$target_pod -o "jsonpath={['..containers','..initContainers'][*].name}" | tr ' ' '\n' | fzf)
       kubectl logs $target_pod $target_container
     else
       # TODO: NOT RERUN COMMAND
