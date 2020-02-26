@@ -47,32 +47,32 @@ export LS_COLORS='di=34:ln=35:so=32:pi=33:ex=31:bd=46;34:cd=43;34:su=41;30:sg=46
 zstyle ':completion:*' list-colors 'di=34' 'ln=35' 'so=32' 'ex=31' 'bd=46;34' 'cd=43;34'
 
 ### Added by Zplugin's installer
-if [ ! -e "$HOME/.zplugin/bin/zplugin.zsh" ]; then
-  sh -c "$(curl -fsSL https://raw.githubusercontent.com/zdharma/zplugin/master/doc/install.sh)"
+if [ ! -e "$HOME/.zinit/bin/zinit.zsh" ]; then
+  sh -c "$(curl -fsSL https://raw.githubusercontent.com/zdharma/zinit/master/doc/install.sh)"
 fi
 
-source "$HOME/.zplugin/bin/zplugin.zsh"
-autoload -Uz _zplugin
-(( ${+_comps} )) && _comps[zplugin]=_zplugin
+source "$HOME/.zinit/bin/zinit.zsh"
+autoload -Uz _zinit
+(( ${+_comps} )) && _comps[zinit]=_zinit
 
-zplugin light b4b4r07/enhancd
+zinit light b4b4r07/enhancd
 export ENHANCD_FILTER=fzf
 
-zplugin light zsh-users/zsh-autosuggestions
+zinit light zsh-users/zsh-autosuggestions
 bindkey '^l' autosuggest-accept
-zplugin light zsh-users/zsh-syntax-highlighting
+zinit light zsh-users/zsh-syntax-highlighting
 
-zplugin ice pick"async.zsh" src"pure.zsh"
-zplugin light sindresorhus/pure
+zinit ice pick"async.zsh" src"pure.zsh"
+zinit light sindresorhus/pure
 export PURE_GIT_PULL=1
 export PURE_GIT_UNTRACKED_DIRTY=1
 
-zplugin ice pick"gh" src"kubectl.zsh"
-zplugin light superbrothers/zsh-kubectl-prompt
+zinit ice pick"gh" src"kubectl.zsh"
+zinit light superbrothers/zsh-kubectl-prompt
 RPROMPT='%F{blue}($ZSH_KUBECTL_PROMPT)%f'
 
-zplugin ice from"gh"
-zplugin light zsh-users/zaw
+zinit ice from"gh"
+zinit light zsh-users/zaw
 bindkey '^R' zaw-history
 bindkey '^B' zaw-git-branches
 
