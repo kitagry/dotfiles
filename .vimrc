@@ -25,6 +25,7 @@ if dein#load_state(s:dein_dir)
 
   " 補完系
   call dein#add('Shougo/dein.vim')
+  call dein#add('haya14busa/dein-command.vim')
   call dein#add('prabirshrestha/async.vim', {'merged': 0})
   call dein#add('prabirshrestha/vim-lsp', {'merged': 0})
   call dein#add('mattn/vim-lsp-settings', {'merged': 0})
