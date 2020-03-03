@@ -540,7 +540,7 @@ augroup goshortcut
   nnoremap [go] <Nop>
   nmap <Leader>g [go]
 
-  nnoremap [go]t :GoTest<CR>
+  nnoremap [go]t :GoTest -short<CR>
   nnoremap [go]i :GoImport
   nnoremap [go]p :GoImpl
 augroup end
