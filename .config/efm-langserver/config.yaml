@@ -1,7 +1,7 @@
 version: 2
 tools:
   golint: &golint
-    lint-command: "golint ${INPUT} | sed 's/^/i:/'"
+    lint-command: "golint ${INPUT} | sed 's/^/h:/'"
     lint-ignore-exit-code: true
     lint-formats:
       - '%t:%f:%l:%c:%m'
