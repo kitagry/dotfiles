@@ -34,7 +34,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('hrsh7th/vim-vsnip')
   call dein#add('hrsh7th/vim-vsnip-integ')
   call dein#add('kitagry/vs-snippets')
-  " call dein#local(s:dein_dir . '/repos/github.com/kitagry', {}, ['vs-snippets'])
+  call dein#local(s:dein_dir . '/repos/github.com/kitagry', {}, ['vim-gotest'])
 
   " 移動系
   call dein#add('junegunn/fzf.vim')
@@ -51,7 +51,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('mattn/vim-goimports', {'on_ft': 'go'})
   call dein#add('mattn/vim-goimpl', {'on_ft': 'go'})
   call dein#add('mattn/vim-goaddtags', {'on_ft': 'go'})
-  call dein#add('kitagry/vim-gotest', {'on_ft': 'go'})
+  " call dein#add('kitagry/vim-gotest', {'on_ft': 'go'})
   call dein#add('lervag/vimtex', {'on_ft': 'tex'})
   call dein#add('jalvesaq/Nvim-R', {'on_ft': 'R'})
   call dein#add('sheerun/vim-polyglot')
@@ -354,6 +354,7 @@ let g:lsp_settings = {
   \     'whitelist': ['yaml.docker-compose'],
   \   },
   \ }
+let g:lsp_settings_filetype_go = ['gopls', 'golangci-lint-langserver']
 " }}}
 
 " vim-lsp {{{
