@@ -1,0 +1,68 @@
+{
+  "abs": {
+    "prefix": "abs",
+    "body": [
+      "func abs(s ${1:int}) $1 {",
+      "\tif s < 0 {",
+      "\t\treturn -s",
+      "\t}",
+      "\treturn s",
+      "}$0"
+    ],
+    "description": "min function"
+  },
+  "max": {
+    "prefix": "max",
+    "body": [
+      "func max(s ...${1:int}) $1 {",
+      "\tmaxContent := s[0]",
+      "\tfor _, el := range s {",
+      "\t\tif el > maxContent {",
+      "\t\t\tmaxContent = el",
+      "\t\t}",
+      "\t}",
+      "\treturn maxContent",
+      "}$0"
+    ],
+    "description": "max function"
+  },
+  "min": {
+    "prefix": "min",
+    "body": [
+      "func min(s ...${1:int}) $1 {",
+      "\tminContent := s[0]",
+      "\tfor _, el := range s {",
+      "\t\tif el < minContent {",
+      "\t\t\tminContent = el",
+      "\t\t}",
+      "\t}",
+      "\treturn minContent",
+      "}$0"
+    ],
+    "description": "min function"
+  },
+  "scanner": {
+    "prefix": ["bufscanner", "scanner"],
+    "body": [
+      "sc := bufio.NewScanner(os.Stdin)",
+      "sc.Split(bufio.Scan${1:Words}$0)"
+    ],
+    "description": "Create bufio.Scanner"
+  },
+  "scan": {
+    "prefix": ["scan"],
+    "body": [
+      "sc.Scan()",
+      "${1:n} ${2::}= sc.Text()$0"
+    ],
+    "description": "Scan"
+  },
+  "scanInt": {
+    "prefix": ["scanInt"],
+    "body": [
+      "sc.Scan()",
+      "${1:n}, _ ${2::}= strconv.Atoi(sc.Text())$0"
+    ],
+    "description": "Scan int"
+  }
+}

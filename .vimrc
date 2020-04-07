@@ -94,6 +94,8 @@ if dein#load_state(s:dein_dir)
   \ })
 
   call dein#add('vim-scripts/todo-txt.vim')
+  call dein#add('godlygeek/tabular')
+  call dein#add('plasticboy/vim-markdown')
 
   call dein#end()
   call dein#save_state()
@@ -353,6 +355,9 @@ let g:lsp_settings = {
   \     },
   \     'whitelist': ['yaml.docker-compose'],
   \   },
+  \   'golangci-lint-langserver': {
+  \     'cmd': ['golangci-lint-langserver', '-debug'],
+  \   },
   \ }
 let g:lsp_settings_filetype_go = ['gopls', 'golangci-lint-langserver']
 " }}}
@@ -405,6 +410,7 @@ augroup END
 " }}}
 
 " vsnip {{{
+let g:vsnip_snippet_dir = expand('~/.vim/vsnip')
 let g:vsnip_snippet_dirs = split(globpath(&runtimepath, 'snippets'), '\n')
 imap <expr> <C-e>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-e>'
 smap <expr> <C-e>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-e>'
@@ -418,6 +424,10 @@ smap <expr> <C-k> vsnip#available(-1)   ? '<Plug>(vsnip-jump-prev)'      : '<C-k
 let g:asyncomplete_auto_popup = 1
 let g:asyncomplete_auto_completeopt = 0
 let g:asyncomplete_popup_delay = 200
+"}}}
+
+" asyncomplete {{{
+let g:sonictemplate_vim_template_dir = expand('~/.vim/sonictemplate')
 "}}}
 
 " lightline {{{
@@ -474,7 +484,6 @@ nmap <silent> [fzf]c :<C-u>Files %%<CR>
 nmap <silent> [fzf]m :<C-u>Marks<CR>
 nmap <silent> [fzf]g :<C-u>call fzf#vim#ag('', {'options': '--bind ctrl-a:select-all,ctrl-d:deselect-all'})<CR>
 nmap <silent> [fzf]] :<C-u>call fzf#vim#ag('<C-r><C-w>', {'options': '--bind ctrl-a:select-all,ctrl-d:deselect-all'})<CR>
-let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6 } }
 " }}}
 
 " vimtex {{{
@@ -576,3 +585,4 @@ endfunction
 
 command! Todo call Todo()
 nnoremap <Leader>kt :<C-u>Todo<CR>
+let g:vim_markdown_folding_disabled = 1
