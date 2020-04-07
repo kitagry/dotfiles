@@ -5,6 +5,7 @@ tools:
     lint-ignore-exit-code: true
     lint-formats:
       - '%t:%f:%l:%c:%m'
+    format-command: gofmt -s
 
   vint: &vint
     lint-command: 'vint -'
