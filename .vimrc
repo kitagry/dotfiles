@@ -33,8 +33,9 @@ if dein#load_state(s:dein_dir)
   call dein#add('prabirshrestha/asyncomplete-lsp.vim')
   call dein#add('hrsh7th/vim-vsnip')
   call dein#add('hrsh7th/vim-vsnip-integ')
-  call dein#add('kitagry/vs-snippets')
-  call dein#local(s:dein_dir . '/repos/github.com/kitagry', {}, ['vim-gotest'])
+  " call dein#local(s:dein_dir . '/repos/github.com/hrsh7th', {}, ['vim-vsnip'])
+  call dein#add('kitagry/vs-snippets', {'merged': 0})
+  call dein#local(s:dein_dir . '/repos/github.com/kitagry', {}, ['vim-gotest', 'vim-monkey'])
 
   " 移動系
   call dein#add('junegunn/fzf.vim')
@@ -96,6 +97,11 @@ if dein#load_state(s:dein_dir)
   call dein#add('vim-scripts/todo-txt.vim')
   call dein#add('godlygeek/tabular')
   call dein#add('plasticboy/vim-markdown')
+  call dein#add('Shougo/context_filetype.vim')
+  call dein#add('delphinus/vim-firestore')
+
+  " テスト用
+  call dein#add('thinca/vim-themis')
 
   call dein#end()
   call dein#save_state()
@@ -347,13 +353,14 @@ let g:lsp_settings = {
   \       'yaml': {
   \         'schemas': {
   \           'https://raw.githubusercontent.com/docker/compose/master/compose/config/config_schema_v3.4.json': '/docker-compose.yml',
+  \           'kubernetes': '/deployment.yaml'
   \         },
   \         'completion': v:true,
   \         'hover': v:true,
   \         'validate': v:true,
   \       },
   \     },
-  \     'whitelist': ['yaml.docker-compose'],
+  \     'whitelist': ['yaml.docker-compose', 'yaml'],
   \   },
   \   'golangci-lint-langserver': {
   \     'cmd': ['golangci-lint-langserver', '-debug'],
@@ -387,7 +394,6 @@ function! s:on_lsp_buffer_enabled() abort
   nmap <silent> ]r  <plug>(lsp-next-reference)
   nmap <silent> ]r  <plug>(lsp-previous-reference)
   nmap <silent> <C-]> <plug>(lsp-definition)
-  nmap <silent> <C-<> <plug>(lsp-type-definition)
 
   nnoremap [vim-lsp] <Nop>
   nmap     <Leader>l [vim-lsp]
@@ -399,8 +405,9 @@ function! s:on_lsp_buffer_enabled() abort
   nmap [vim-lsp]f <plug>(lsp-document-format)
   nmap [vim-lsp]h <plug>(lsp-hover)
   nmap [vim-lsp]e <plug>(lsp-references)
+  nmap [vim-lsp]t <plug>(lsp-type-definition)
   " stop efm-langserver
-  nmap [vim-lsp]t :call lsp#stop_server('efm-langserver')<CR>
+  " nmap [vim-lsp]t :call lsp#stop_server('efm-langserver')<CR>
 endfunction
 
 augroup lsp_install
