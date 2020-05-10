@@ -1,4 +1,28 @@
 {
+  "test": {
+    "prefix": "test",
+    "body": [
+      "func Test${1}(t *testing.T) {",
+      "\t$0",
+      "}"
+    ],
+    "description": "test function"
+  },
+  "table test": {
+    "prefix": "tabletest",
+    "body": [
+      "tests := []struct{",
+      "\t$1",
+      "}{",
+      "\t{$2},",
+      "}",
+      "",
+      "for _, tt := range tests {",
+      "\t$3",
+      "}$0"
+    ],
+    "description": "table test"
+  },
   "abs": {
     "prefix": "abs",
     "body": [
