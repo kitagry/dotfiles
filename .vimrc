@@ -26,7 +26,6 @@ if dein#load_state(s:dein_dir)
   " 補完系
   call dein#add('Shougo/dein.vim')
   call dein#add('haya14busa/dein-command.vim')
-  call dein#add('prabirshrestha/async.vim', {'merged': 0})
   call dein#add('prabirshrestha/vim-lsp', {'merged': 0})
   call dein#add('mattn/vim-lsp-settings', {'merged': 0})
   call dein#add('prabirshrestha/asyncomplete.vim')
@@ -52,14 +51,11 @@ if dein#load_state(s:dein_dir)
   call dein#add('mattn/vim-goimports', {'on_ft': 'go'})
   call dein#add('mattn/vim-goimpl', {'on_ft': 'go'})
   call dein#add('mattn/vim-goaddtags', {'on_ft': 'go'})
-  " call dein#add('kitagry/vim-gotest', {'on_ft': 'go'})
   call dein#add('lervag/vimtex', {'on_ft': 'tex'})
   call dein#add('jalvesaq/Nvim-R', {'on_ft': 'R'})
   call dein#add('sheerun/vim-polyglot')
 
   " Git系
-  call dein#add('tpope/vim-fugitive')
-  call dein#add('tpope/vim-rhubarb')
   call dein#add('airblade/vim-gitgutter')
   call dein#add('lambdalisue/gina.vim')
 
@@ -102,6 +98,8 @@ if dein#load_state(s:dein_dir)
 
   " テスト用
   call dein#add('thinca/vim-themis')
+  call dein#add('mattn/vim-go2')
+  call dein#add('mattn/webapi-vim')
 
   call dein#end()
   call dein#save_state()
@@ -148,7 +146,17 @@ set hidden
 " 入力中のコマンドをステータスに表示する
 set showcmd
 " 保存時に余計なスペースを削除
-autocmd BufWritePre * :%s/\s\+$//ge
+autocmd BufWritePre * call s:remove_unnecessary_space()
+
+function! s:remove_unnecessary_space()
+    " delete last spaces
+    %s/\s\+$//ge
+
+    " delete last blank lines
+    while getline('$') == ""
+            $delete _
+    endwhile
+endfunction
 
 " 現在の行を強調表示
 set cursorline
@@ -252,6 +260,7 @@ endif
 
 " yamlの時はvertical highlight
 autocmd FileType yaml setlocal cursorcolumn
+autocmd FileType yaml lcd %:h
 " }}}
 
 " Key Mapping {{{
@@ -330,8 +339,8 @@ augroup LspEFM
   au!
   autocmd User lsp_setup call lsp#register_server({
       \ 'name': 'efm-langserver',
-      \ 'cmd': {server_info->['efm-langserver', '-c='.$HOME.'/.config/efm-langserver/config.yaml', '-log=' . g:log_files_dir . '/efm-langserver.log']},
-      \ 'whitelist': ['go'],
+      \ 'cmd': {server_info->['efm-langserver', '-c='.$HOME.'/.config/efm-langserver/config.yaml', '-logfile=' . g:log_files_dir . '/efm-langserver.log']},
+      \ 'whitelist': ['go', 'python', 'vim'],
       \ })
 augroup END
 
@@ -378,7 +387,8 @@ let g:lsp_preview_float = 1
 let g:lsp_text_edit_enabled = 0
 let g:lsp_async_completion = 1
 let g:lsp_diagnostics_float_cursor = 1
-let g:lsp_log_file = g:log_files_dir . '/vim-lsp.log'
+let g:lsp_log_verbose = 1
+let g:lsp_log_file = expand(g:log_files_dir . '/vim-lsp.log')
 
 set completeopt=menuone,noinsert,noselect
 let g:lsp_signs_error = {'text': ''}
