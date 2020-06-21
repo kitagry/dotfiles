@@ -9,7 +9,6 @@ old
 .git
 .svn
 zsh-completions
-lib
 libs
 jquery-*.js
 bootstrap*.css
