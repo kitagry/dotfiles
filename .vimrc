@@ -1,3 +1,7 @@
+" windows terminal bug: https://github.com/vim-jp/issues/issues/578
+set t_u7=
+set t_RV=
+
 set encoding=utf-8
 scriptencoding utf-8
 
@@ -30,11 +34,12 @@ if dein#load_state(s:dein_dir)
   call dein#add('mattn/vim-lsp-settings', {'merged': 0})
   call dein#add('prabirshrestha/asyncomplete.vim')
   call dein#add('prabirshrestha/asyncomplete-lsp.vim')
+  call dein#add('prabirshrestha/asyncomplete-buffer.vim')
   call dein#add('hrsh7th/vim-vsnip')
   call dein#add('hrsh7th/vim-vsnip-integ')
-  " call dein#local(s:dein_dir . '/repos/github.com/hrsh7th', {}, ['vim-vsnip'])
   call dein#add('kitagry/vs-snippets', {'merged': 0})
-  call dein#local(s:dein_dir . '/repos/github.com/kitagry', {}, ['vim-gotest', 'vim-monkey'])
+  call dein#add('kitagry/vim-gotest', {'merged': 0})
+  call dein#add('kitagry/asyncomplete-tabnine.vim', {'merged': 0})
 
   " 移動系
   call dein#add('junegunn/fzf.vim')
@@ -60,7 +65,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('lambdalisue/gina.vim')
 
   " 見た目系
-  call dein#add('romainl/Apprentice')
+  call dein#add('romainl/Apprentice', {'merged': 0})
   call dein#add('gkapfham/vim-vitamin-onec')
   call dein#add('itchyny/lightline.vim')
   call dein#add('taohexxx/lightline-buffer')
@@ -191,10 +196,10 @@ set shiftwidth=2
 augroup fileTypeIndent
   autocmd!
   autocmd BufNewFile,BufRead *.py   setlocal tabstop=4 softtabstop=4 shiftwidth=4
-  autocmd BufNewFile,BufRead *.rb   setlocal tabstop=2 softtabstop=2 shiftwidth=2
   autocmd BufNewFile,BufRead *.jl   setlocal tabstop=4 softtabstop=4 shiftwidth=4
   autocmd BufNewFile,BufRead *.php  setlocal tabstop=4 softtabstop=4 shiftwidth=4
   autocmd BufNewFile,BufRead *.java setlocal tabstop=4 softtabstop=4 shiftwidth=4
+  autocmd BufNewFile,BufRead *.vim  setlocal tabstop=4 softtabstop=4 shiftwidth=4
   autocmd BufNewFile,BufRead *.go   setlocal noexpandtab
 augroup END
 
@@ -335,6 +340,14 @@ if executable('julia')
     \ })
 endif
 
+if executable('ocamllsp')
+  au User lsp_setup call lsp#register_server({
+    \ 'name': 'julia',
+    \ 'whitelist': ['ocaml'],
+    \ 'cmd': {server_info->['ocamllsp']}
+    \ })
+endif
+
 augroup LspEFM
   au!
   autocmd User lsp_setup call lsp#register_server({
@@ -352,10 +365,6 @@ let g:lsp_settings = {
   \         'completeUnimported': v:true,
   \       },
   \     },
-  \   },
-  \   'pyls': {
-  \     'cmd': ['python3', '-m', 'pyls'],
-  \     'workspace_config': {'pyls': {'configurationSources': ['flake8']}},
   \   },
   \   'yaml-language-server': {
   \     'workspace_config': {
@@ -441,9 +450,14 @@ smap <expr> <C-k> vsnip#available(-1)   ? '<Plug>(vsnip-jump-prev)'      : '<C-k
 let g:asyncomplete_auto_popup = 1
 let g:asyncomplete_auto_completeopt = 0
 let g:asyncomplete_popup_delay = 200
+call asyncomplete#register_source(asyncomplete#sources#tabnine#get_source_options({
+  \ 'name': 'tabnine',
+  \ 'allowlist': ['*'],
+  \ 'completor': function('asyncomplete#sources#tabnine#completor'),
+  \ }))
 "}}}
 
-" asyncomplete {{{
+" sonictemplate {{{
 let g:sonictemplate_vim_template_dir = expand('~/.vim/sonictemplate')
 "}}}
 
@@ -580,7 +594,7 @@ augroup end
 let g:polyglot_disabled = ['latex']
 "}}}
 
-let s:vimrc_local = $HOME . "/.vimrc_local"
+let s:vimrc_local = $HOME . "/.vimrc.local"
 if filereadable( s:vimrc_local )
   execute "source " . s:vimrc_local
 endif
