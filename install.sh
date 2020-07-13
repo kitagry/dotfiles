@@ -7,16 +7,15 @@ if [ "$(uname)" == "Darwin" ];then
 fi
 
 DOT_DIRECTORY=${PWD}
-declare -a DIRECTORIES=('.config .vim')
+declare -a DIRECTORIES=('.config .vim .zsh')
 DOT_CONFIG_DIRECTORY=".config"
 
 for f in .??*
 do
     [[ "$f" == ".git" ]] && continue
     [[ "$f" == ".gitignore" ]] && continue
-    [[ "$f" == ".config" ]] && continue
-    [[ "$f" == ".vim" ]] && continue
     [[ "$f" == ".DS_Store" ]] && continue
+    [[ "${DIRECTORIES[@]}" =~ "$f" ]] && continue
 
     ln -snfv ${DOT_DIRECTORY}/$f $HOME/$f
 done
