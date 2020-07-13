@@ -19,11 +19,9 @@ setopt auto_cd
 bindkey -v
 
 # 補完機能を有効にする
-autoload -Uz compinit
-compinit -u
 zstyle ':completion:*:default' menu select=2
-if [ -e /usr/local/share/zsh-completions ]; then
-  fpath=(/usr/local/share/zsh-completions $fpath)
+if [ -e $HOME/.zsh/completion ]; then
+  fpath=($HOME/.zsh/completion $fpath)
 fi
 # 補完で小文字でも大文字にマッチさせる
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
@@ -31,6 +29,9 @@ zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 setopt list_packed
 # 補完候補一覧をカラー表示
 zstyle ':completion:*' list-colors ''
+
+autoload -Uz compinit
+compinit -u
 
 # コマンドのスペルを訂正
 setopt correct
@@ -67,10 +68,6 @@ zinit light sindresorhus/pure
 export PURE_GIT_PULL=1
 export PURE_GIT_UNTRACKED_DIRTY=1
 
-zinit ice pick"gh" src"kubectl.zsh"
-zinit light superbrothers/zsh-kubectl-prompt
-RPROMPT='%F{blue}($ZSH_KUBECTL_PROMPT)%f'
-
 zinit ice from"gh"
 zinit light zsh-users/zaw
 bindkey '^R' zaw-history
@@ -80,6 +77,9 @@ bindkey '^B' zaw-git-branches
 
 ## kubernetes completes
 if [ $commands[kubectl] ]; then
+  zinit ice pick"gh" src"kubectl.zsh"
+  zinit light superbrothers/zsh-kubectl-prompt
+  RPROMPT='%F{blue}($ZSH_KUBECTL_PROMPT)%f'
   source <(kubectl completion zsh)
 fi
 
