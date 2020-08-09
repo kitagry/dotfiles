@@ -35,7 +35,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('prabirshrestha/asyncomplete.vim')
   call dein#add('prabirshrestha/asyncomplete-lsp.vim')
   call dein#add('prabirshrestha/asyncomplete-buffer.vim')
-  call dein#add('hrsh7th/vim-vsnip')
+  call dein#add('hrsh7th/vim-vsnip', {'merged': 0})
   call dein#add('hrsh7th/vim-vsnip-integ')
   call dein#add('kitagry/vs-snippets', {'merged': 0})
   call dein#add('kitagry/vim-gotest', {'merged': 0})
@@ -44,13 +44,8 @@ if dein#load_state(s:dein_dir)
   " 移動系
   call dein#add('junegunn/fzf.vim')
   call dein#add('junegunn/fzf', {'build': './install --all'})
-  call dein#add('lambdalisue/fern.vim', {'lazy': 1})
-  if has('nvim')
-    call dein#add('ncm2/float-preview.nvim')
-  else
-    call dein#add('roxma/nvim-yarp')
-    call dein#add('roxma/vim-hug-neovim-rpc')
-  endif
+  call dein#add('lambdalisue/fern.vim')
+  call dein#add('lambdalisue/fern-renderer-devicons.vim')
 
   " 言語系
   call dein#add('mattn/vim-goimports', {'on_ft': 'go'})
@@ -66,7 +61,6 @@ if dein#load_state(s:dein_dir)
 
   " 見た目系
   call dein#add('romainl/Apprentice', {'merged': 0})
-  call dein#add('gkapfham/vim-vitamin-onec')
   call dein#add('itchyny/lightline.vim')
   call dein#add('taohexxx/lightline-buffer')
   call dein#add('ryanoasis/vim-devicons')
@@ -302,6 +296,7 @@ nnoremap gk k
 " ヘルプ用
 nnoremap <C-h>      :<C-u>help<Space>
 nnoremap <C-h><C-h> :<C-u>help<Space><C-r><C-w><CR>
+set helplang=ja,en
 
 nnoremap <Leader>t :<C-u>:vertical terminal<CR>
 nnoremap <Leader>T :<C-u>terminal<CR>
@@ -324,7 +319,7 @@ inoremap <Del> <Nop>
 if executable('julia')
   au User lsp_setup call lsp#register_server({
     \ 'name': 'julia',
-    \ 'whitelist': ['julia'],
+    \ 'allowlist': ['julia'],
     \ 'cmd': {server_info->['julia', '--startup-file=no', '--history-file=no', '-e', '
     \       using LanguageServer;
     \       using Pkg;
@@ -343,7 +338,7 @@ endif
 if executable('ocamllsp')
   au User lsp_setup call lsp#register_server({
     \ 'name': 'julia',
-    \ 'whitelist': ['ocaml'],
+    \ 'allowlist': ['ocaml'],
     \ 'cmd': {server_info->['ocamllsp']}
     \ })
 endif
@@ -353,7 +348,7 @@ augroup LspEFM
   autocmd User lsp_setup call lsp#register_server({
       \ 'name': 'efm-langserver',
       \ 'cmd': {server_info->['efm-langserver', '-c='.$HOME.'/.config/efm-langserver/config.yaml', '-logfile=' . g:log_files_dir . '/efm-langserver.log']},
-      \ 'whitelist': ['go', 'python', 'vim'],
+      \ 'allowlist': ['go', 'python', 'vim'],
       \ })
 augroup END
 
@@ -363,6 +358,21 @@ let g:lsp_settings = {
   \       'gopls': {
   \         'usePlaceholders': v:true,
   \         'completeUnimported': v:true,
+  \         'codelens': {
+  \           'test': v:true,
+  \         }
+  \       },
+  \       'analyses': {
+  \         'fillstruct': v:true,
+  \       }
+  \     },
+  \     'initialization_options': {
+  \       'usePlaceholders': v:true,
+  \       'codelens': {
+  \         'test': v:true,
+  \       },
+  \       'analyses': {
+  \         'fillstruct': v:true,
   \       },
   \     },
   \   },
@@ -378,13 +388,13 @@ let g:lsp_settings = {
   \         'validate': v:true,
   \       },
   \     },
-  \     'whitelist': ['yaml.docker-compose', 'yaml'],
+  \     'allowlist': ['yaml.docker-compose', 'yaml'],
   \   },
   \   'golangci-lint-langserver': {
   \     'cmd': ['golangci-lint-langserver', '-debug'],
   \   },
   \ }
-let g:lsp_settings_filetype_go = ['gopls', 'golangci-lint-langserver']
+let g:lsp_settings_filetype_go = ['gopls', 'golangci-lint-langserver', 'efm-langserver']
 " }}}
 
 " vim-lsp {{{
@@ -399,7 +409,6 @@ let g:lsp_diagnostics_float_cursor = 1
 let g:lsp_log_verbose = 1
 let g:lsp_log_file = expand(g:log_files_dir . '/vim-lsp.log')
 
-set completeopt=menuone,noinsert,noselect
 let g:lsp_signs_error = {'text': ''}
 let g:lsp_signs_warning = {'text': ''}
 let g:lsp_signs_hint = {'text': ''}
@@ -447,14 +456,15 @@ smap <expr> <C-k> vsnip#available(-1)   ? '<Plug>(vsnip-jump-prev)'      : '<C-k
 " }}}
 
 " asyncomplete {{{
+set completeopt=menuone,noinsert,noselect
 let g:asyncomplete_auto_popup = 1
 let g:asyncomplete_auto_completeopt = 0
 let g:asyncomplete_popup_delay = 200
-call asyncomplete#register_source(asyncomplete#sources#tabnine#get_source_options({
-  \ 'name': 'tabnine',
-  \ 'allowlist': ['*'],
-  \ 'completor': function('asyncomplete#sources#tabnine#completor'),
-  \ }))
+" call asyncomplete#register_source(asyncomplete#sources#tabnine#get_source_options({
+"  \ 'name': 'tabnine',
+"  \ 'allowlist': ['*'],
+"  \ 'completor': function('asyncomplete#sources#tabnine#completor'),
+"  \ }))
 "}}}
 
 " sonictemplate {{{
@@ -464,31 +474,63 @@ let g:sonictemplate_vim_template_dir = expand('~/.vim/sonictemplate')
 " lightline {{{
 set hidden  " allow buffer switching without saving
 set showtabline=2  " always show tabline
+function! LightlineLSPWarnings() abort
+  let l:counts = lsp#ui#vim#diagnostics#get_buffer_diagnostics_counts()
+  return l:counts.warning == 0 ? '' : printf('W:%d', l:counts.warning)
+endfunction
+
+function! LightlineLSPErrors() abort
+  let l:counts = lsp#ui#vim#diagnostics#get_buffer_diagnostics_counts()
+  return l:counts.error == 0 ? '' : printf('E:%d', l:counts.error)
+endfunction
+
+function! LightlineLSPOk() abort
+  let l:counts =  lsp#ui#vim#diagnostics#get_buffer_diagnostics_counts()
+  let l:total = l:counts.error + l:counts.warning
+  return l:total == 0 ? 'OK' : ''
+endfunction
+
+augroup LightLineOnLSP
+  autocmd!
+  autocmd User lsp_diagnostics_updated call lightline#update()
+augroup END
+
 let g:lightline = {
       \ 'colorscheme': 'wombat',
       \ 'active': {
-      \   'left': [ [ 'mode', 'paste' ],
-      \             [ 'gitbranch', 'readonly', 'filename', 'modified' ] ]
+      \   'left': [
+      \     [ 'mode', 'paste' ],
+      \   ],
+      \   'right': [
+      \     [ 'lsp_errors', 'lsp_warnings', 'lsp_ok' ],
+      \     [ 'percent' ],
+      \     [ 'fileformat', 'fileencoding', 'filetype'  ],
+      \   ],
       \ },
       \ 'component_function': {
-      \   'gitbranch': 'fugitive#head',
       \   'bufferinfo': 'lightline#buffer#bufferinfo',
       \ },
       \ 'tabline': {
       \   'left': [ [ 'bufferinfo' ],
       \             [ 'separator' ],
-      \             [ 'bufferbefore', 'buffercurrent', 'bufferafter' ], ],
+      \             [ 'bufferbefore', 'buffercurrent', 'bufferafter' ]],
       \   'right': [ [ 'close' ], ],
       \ },
       \ 'component_expand': {
       \   'buffercurrent': 'lightline#buffer#buffercurrent',
       \   'bufferbefore': 'lightline#buffer#bufferbefore',
       \   'bufferafter': 'lightline#buffer#bufferafter',
+      \   'lsp_warnings': 'LightlineLSPWarnings',
+      \   'lsp_errors':   'LightlineLSPErrors',
+      \   'lsp_ok':       'LightlineLSPOk',
       \ },
       \ 'component_type': {
       \   'buffercurrent': 'tabsel',
       \   'bufferbefore': 'raw',
       \   'bufferafter': 'raw',
+      \   'lsp_warnings': 'warning',
+      \   'lsp_errors':   'error',
+      \   'lsp_ok':       'middle',
       \ },
       \ 'component': {
       \   'separator': '',
@@ -501,10 +543,13 @@ let g:lightline_buffer_enable_devicons = 1
 " fern {{{
 nnoremap [fern] <Nop>
 nmap <Leader>d [fern]
+nmap <silent> [fern]a :<C-u>Fern . -drawer<CR>
+nmap <silent> [fern]r :<C-u>FernDo :<CR>
 nmap <silent> [fern]d :<C-u>Fern . -opener=edit<CR>
 nmap <silent> [fern]f :<C-u>Fern %:h -opener=edit<CR>
 nmap <silent> [fern]v :<C-u>Fern . -opener=vsplit<CR>
 nmap <silent> [fern]h :<C-u>Fern %:h -opener=vsplit<CR>
+" let g:fern#renderer = "devicons"
 " }}}
 
 " fzf {{{
@@ -593,6 +638,17 @@ augroup end
 " polyglot {{{
 let g:polyglot_disabled = ['latex']
 "}}}
+
+" context_filetype {{{
+" let g:context_filetype#filetypes = {
+"      \ 'markdown': [
+"      \   {
+"      \     'start': '^\s*```\s*\(\h\w*\):[a-zA-Z_./]*',
+"      \     'end':  '^\s*```$',
+"      \     'filetype': '\1',
+"      \   }
+"      \ ]}
+" }}}
 
 let s:vimrc_local = $HOME . "/.vimrc.local"
 if filereadable( s:vimrc_local )
