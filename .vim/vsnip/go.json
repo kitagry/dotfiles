@@ -88,5 +88,36 @@
       "${1:n}, _ ${2::}= strconv.Atoi(sc.Text())$0"
     ],
     "description": "Scan int"
+  },
+  "tysn": {
+    "prefix": ["tysn"],
+    "body": [
+      "type $1 struct {",
+      "\t$2",
+      "}",
+      "",
+      "func New$1($3) {",
+      "\treturn $1{$4}",
+      "}$0"
+    ],
+    "description": "Create struct and New method"
+  },
+  "queue": {
+    "prefix": ["queue"],
+    "body": [
+      "type queue []${1:int}",
+      "",
+      "func (q queue) Push(p $1) queue {",
+      "\treturn append(q, p)",
+      "}",
+      "",
+      "func (q queue) Pop() ($1, queue) {",
+      "\tif len(q) == 1 {",
+      "\t\treturn q[0], make(queue, 0)",
+      "\t}",
+      "\treturn q[0], q[1:]",
+      "}"
+    ],
+    "description": "Queue snippets"
   }
 }
