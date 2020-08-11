@@ -45,7 +45,8 @@ if dein#load_state(s:dein_dir)
   call dein#add('junegunn/fzf.vim')
   call dein#add('junegunn/fzf', {'build': './install --all'})
   call dein#add('lambdalisue/fern.vim')
-  call dein#add('lambdalisue/fern-renderer-devicons.vim')
+  call dein#add('lambdalisue/nerdfont.vim')
+  call dein#add('lambdalisue/fern-renderer-nerdfont.vim')
 
   " 言語系
   call dein#add('mattn/vim-goimports', {'on_ft': 'go'})
@@ -63,7 +64,6 @@ if dein#load_state(s:dein_dir)
   call dein#add('romainl/Apprentice', {'merged': 0})
   call dein#add('itchyny/lightline.vim')
   call dein#add('taohexxx/lightline-buffer')
-  call dein#add('ryanoasis/vim-devicons')
 
   " コマンド拡張系
   call dein#add('cohama/lexima.vim')
@@ -511,9 +511,7 @@ let g:lightline = {
       \   'bufferinfo': 'lightline#buffer#bufferinfo',
       \ },
       \ 'tabline': {
-      \   'left': [ [ 'bufferinfo' ],
-      \             [ 'separator' ],
-      \             [ 'bufferbefore', 'buffercurrent', 'bufferafter' ]],
+      \   'left': [ [ 'bufferbefore', 'buffercurrent', 'bufferafter' ]],
       \   'right': [ [ 'close' ], ],
       \ },
       \ 'component_expand': {
@@ -536,8 +534,6 @@ let g:lightline = {
       \   'separator': '',
       \ },
     \ }
-
-let g:lightline_buffer_enable_devicons = 1
 " }}}
 
 " fern {{{
@@ -549,7 +545,7 @@ nmap <silent> [fern]d :<C-u>Fern . -opener=edit<CR>
 nmap <silent> [fern]f :<C-u>Fern %:h -opener=edit<CR>
 nmap <silent> [fern]v :<C-u>Fern . -opener=vsplit<CR>
 nmap <silent> [fern]h :<C-u>Fern %:h -opener=vsplit<CR>
-" let g:fern#renderer = "devicons"
+let g:fern#renderer = "nerdfont"
 " }}}
 
 " fzf {{{
