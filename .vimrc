@@ -12,16 +12,17 @@ augroup END
 
 " dein setting {{{
 " プラグインが実際にインストールされるディレクトリ
-let s:dein_dir = expand('~/.config/dein')
+let s:dein_dir_ = '~/.config/dein'
+let s:dein_dir = expand(s:dein_dir_)
 
-let s:dein_repo_dir = s:dein_dir . '/repos/github.com/Shougo/dein.vim'
+let s:dein_repo_dir = expand(s:dein_dir_ . '/repos/github.com/Shougo/dein.vim')
 
 if &runtimepath !~# '/dein.vim'
   if !isdirectory(s:dein_repo_dir)
     execute '!git clone https://github.com/Shougo/dein.vim' s:dein_repo_dir
   endif
 
-  execute 'set runtimepath^=' . fnamemodify(s:dein_repo_dir, ':p')
+  execute 'set runtimepath^=' . s:dein_repo_dir
 endif
 
 if dein#load_state(s:dein_dir)
@@ -43,7 +44,7 @@ if dein#load_state(s:dein_dir)
 
   " 移動系
   call dein#add('junegunn/fzf.vim')
-  call dein#add('junegunn/fzf', {'build': './install --all'})
+  call dein#add('junegunn/fzf', {'on_cmd': 'fzf#install()'})
   call dein#add('lambdalisue/fern.vim')
   call dein#add('lambdalisue/nerdfont.vim')
   call dein#add('lambdalisue/fern-renderer-nerdfont.vim')
@@ -55,10 +56,10 @@ if dein#load_state(s:dein_dir)
   call dein#add('lervag/vimtex', {'on_ft': 'tex'})
   call dein#add('jalvesaq/Nvim-R', {'on_ft': 'R'})
   call dein#add('sheerun/vim-polyglot')
+  call dein#add('pprovost/vim-ps1')
 
   " Git系
   call dein#add('airblade/vim-gitgutter')
-  call dein#add('lambdalisue/gina.vim')
 
   " 見た目系
   call dein#add('romainl/Apprentice', {'merged': 0})
@@ -86,7 +87,8 @@ if dein#load_state(s:dein_dir)
 
   call dein#add('kana/vim-operator-user')
   call dein#add('haya14busa/vim-operator-flashy', {
-  \ 'depends': 'vim-operator-user'
+  \ 'depends': 'vim-operator-user',
+  \ 'merged': 0,
   \ })
 
   call dein#add('vim-scripts/todo-txt.vim')
@@ -138,6 +140,8 @@ syntax enable
 set nobackup
 " スワップファイルを作らない
 set noswapfile
+" undoファイルを作らない
+set noundofile
 " 編集中のファイルが変更されたら自動で読み直す
 set autoread
 " バッファが編集中でもその他のファイルを開けるように
@@ -152,7 +156,7 @@ function! s:remove_unnecessary_space()
     %s/\s\+$//ge
 
     " delete last blank lines
-    while getline('$') == ""
+    while getline('$') == "" && len(join(getline(0, '$')))
             $delete _
     endwhile
 endfunction
@@ -232,7 +236,7 @@ nnoremap <Esc><Esc> :nohlsearch<CR><Esc>
 " クリップボードにコピー
 if has('mac')
     set clipboard+=unnamed
-else
+elseif has('unix')
     set clipboard=unnamedplus
 endif
 
@@ -288,14 +292,16 @@ nnoremap [t :tabprevious<CR>
 nnoremap [T :tabfirst<CR>
 
 " 折り返し時に表示行単位での移動できるようにする
+vnoremap j gj
+vnoremap k gk
+vnoremap gj j
+vnoremap gk k
 nnoremap j gj
 nnoremap k gk
 nnoremap gj j
 nnoremap gk k
 
 " ヘルプ用
-nnoremap <C-h>      :<C-u>help<Space>
-nnoremap <C-h><C-h> :<C-u>help<Space><C-r><C-w><CR>
 set helplang=ja,en
 
 nnoremap <Leader>t :<C-u>:vertical terminal<CR>
@@ -343,6 +349,14 @@ if executable('ocamllsp')
     \ })
 endif
 
+" if executable('yamls')
+"   au User lsp_setup call lsp#register_server({
+"    \   'name': 'yamls',
+"    \   'allowlist': ['yaml'],
+"    \   'cmd': {server_info->['yamls']}
+"    \ })
+" endif
+
 augroup LspEFM
   au!
   autocmd User lsp_setup call lsp#register_server({
@@ -358,9 +372,6 @@ let g:lsp_settings = {
   \       'gopls': {
   \         'usePlaceholders': v:true,
   \         'completeUnimported': v:true,
-  \         'codelens': {
-  \           'test': v:true,
-  \         }
   \       },
   \       'analyses': {
   \         'fillstruct': v:true,
@@ -368,9 +379,6 @@ let g:lsp_settings = {
   \     },
   \     'initialization_options': {
   \       'usePlaceholders': v:true,
-  \       'codelens': {
-  \         'test': v:true,
-  \       },
   \       'analyses': {
   \         'fillstruct': v:true,
   \       },
@@ -381,7 +389,7 @@ let g:lsp_settings = {
   \       'yaml': {
   \         'schemas': {
   \           'https://raw.githubusercontent.com/docker/compose/master/compose/config/config_schema_v3.4.json': '/docker-compose.yml',
-  \           'kubernetes': '/deployment.yaml'
+  \           'kubernetes': '/deployment.yaml',
   \         },
   \         'completion': v:true,
   \         'hover': v:true,
@@ -634,6 +642,17 @@ augroup end
 " polyglot {{{
 let g:polyglot_disabled = ['latex']
 "}}}
+
+" gina.vim {{{
+call gina#custom#mapping#nmap(
+      \ 'blame', 'j',
+      \ 'j<Plug>(gina-blame-echo)'
+      \)
+call gina#custom#mapping#nmap(
+      \ 'blame', 'k',
+      \ 'k<Plug>(gina-blame-echo)'
+      \)
+" }}}
 
 " context_filetype {{{
 " let g:context_filetype#filetypes = {
