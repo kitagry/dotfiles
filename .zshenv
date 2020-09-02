@@ -3,7 +3,6 @@ export LC_TYPE=ja_JP.UTF-8
 export PATH="/usr/local/bin:/usr/local/sbin:/sbin/:$PATH"
 export PATH="/usr/local/opt/python@3/bin:$PATH"
 export PATH="/usr/local/lib:/usr/local/texlive/2017/bin/x86_64-darwin/tlmgr:$PATH"
-export GOROOT="/usr/local/opt/go/libexec"
 export GOPATH="$HOME/go/"
 export GO111MODULE=on
 
@@ -25,7 +24,6 @@ alias ll="ls -la"
 ###########################
 # gitコマンドのalias
 ###########################
-alias git="hub"
 alias gs="git status"
 alias gpom="git pull origin master"
 alias gcb="git switch -c"
@@ -36,8 +34,7 @@ alias gbda="git branch --merged | grep -v '*' | xargs -I % git branch -d %"
 # dockerコマンドのalias
 ###########################
 alias dc="docker-compose"
-alias dcu="docker-compose up"
-alias dcr="docker-compose run --rm"
+alias dclean='docker rm $(docker ps -aq)'
 ###########################
 
 ###########################
@@ -159,14 +156,8 @@ vi() {
   fi
 }
 
-# redis-serverのあとターミナルが占拠されないようにする
-alias redis-server='redis-server /usr/local/etc/redis.conf &'
-
 # awkをgawkにする
 alias awk="gawk"
-
-# pip3をマッピングしておく
-alias pip3="python3 -m pip"
 
 # cdのよく行くところへのalias
 alias cdg='cd $(ghq root)/github.com/kitagry'
