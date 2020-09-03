@@ -21,7 +21,9 @@ bindkey -v
 # 補完機能を有効にする
 zstyle ':completion:*:default' menu select=2
 if [ -e $HOME/.zsh/completion ]; then
-  fpath=($HOME/.zsh/completion $fpath)
+  export FPATH="/home/kitagry/.zsh/completion/:$FPATH"
+  autoload _git
+  compdef hub=git
 fi
 # 補完で小文字でも大文字にマッチさせる
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'

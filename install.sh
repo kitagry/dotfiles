@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -eu
+source ./download_file.sh
 
 if [ "$(uname)" == "Darwin" ];then
   source ./install_mac.sh
