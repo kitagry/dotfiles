@@ -29,25 +29,25 @@ if dein#load_state(s:dein_dir)
   call dein#begin(s:dein_dir)
 
   " 補完系
-  call dein#add('Shougo/dein.vim')
-  call dein#add('haya14busa/dein-command.vim')
+  call dein#add('Shougo/dein.vim', {'laze': 1})
+  call dein#add('haya14busa/dein-command.vim', {'lazy': 1})
   call dein#add('prabirshrestha/vim-lsp', {'merged': 0})
   call dein#add('mattn/vim-lsp-settings', {'merged': 0})
-  call dein#add('prabirshrestha/asyncomplete.vim')
-  call dein#add('prabirshrestha/asyncomplete-lsp.vim')
-  call dein#add('prabirshrestha/asyncomplete-buffer.vim')
-  call dein#add('hrsh7th/vim-vsnip')
-  call dein#add('hrsh7th/vim-vsnip-integ')
+  call dein#add('prabirshrestha/asyncomplete.vim', {'lazy': 1})
+  call dein#add('prabirshrestha/asyncomplete-lsp.vim', {'lazy': 1})
+  call dein#add('prabirshrestha/asyncomplete-buffer.vim', {'lazy': 1})
+  call dein#add('hrsh7th/vim-vsnip', {'lazy': 1})
+  call dein#add('hrsh7th/vim-vsnip-integ', {'lazy': 1})
   call dein#add('kitagry/vs-snippets', {'merged': 0})
   call dein#add('kitagry/vim-gotest', {'merged': 0})
   call dein#add('kitagry/asyncomplete-tabnine.vim', {'merged': 0})
 
   " 移動系
-  call dein#add('junegunn/fzf.vim')
-  call dein#add('junegunn/fzf', {'on_cmd': 'fzf#install()'})
-  call dein#add('lambdalisue/fern.vim')
-  call dein#add('lambdalisue/nerdfont.vim')
-  call dein#add('lambdalisue/fern-renderer-nerdfont.vim')
+  call dein#add('junegunn/fzf.vim', {'lazy': 1})
+  call dein#add('junegunn/fzf', {'on_cmd': 'fzf#install()', 'lazy': 1})
+  call dein#add('lambdalisue/fern.vim', {'lazy': 1})
+  call dein#add('lambdalisue/nerdfont.vim', {'lazy': 1})
+  call dein#add('lambdalisue/fern-renderer-nerdfont.vim', {'lazy': 1})
 
   " 言語系
   call dein#add('mattn/vim-goimports', {'on_ft': 'go'})
@@ -56,51 +56,51 @@ if dein#load_state(s:dein_dir)
   call dein#add('lervag/vimtex', {'on_ft': 'tex'})
   call dein#add('jalvesaq/Nvim-R', {'on_ft': 'R'})
   call dein#add('sheerun/vim-polyglot')
-  call dein#add('pprovost/vim-ps1')
+  call dein#add('pprovost/vim-ps1', {'on_ft': 'powershell'})
 
   " Git系
-  call dein#add('airblade/vim-gitgutter')
+  call dein#add('airblade/vim-gitgutter', {'lazy': 1})
 
   " 見た目系
   call dein#add('romainl/Apprentice', {'merged': 0})
-  call dein#add('itchyny/lightline.vim')
-  call dein#add('taohexxx/lightline-buffer')
+  call dein#add('itchyny/lightline.vim', {'lazy': 1})
+  call dein#add('taohexxx/lightline-buffer', {'lazy': 1})
 
   " コマンド拡張系
-  call dein#add('cohama/lexima.vim')
-  call dein#add('machakann/vim-sandwich')
-  call dein#add('tyru/caw.vim')
-  call dein#add('kana/vim-repeat')
-  call dein#add('mattn/emmet-vim')
-  call dein#add('alvan/vim-closetag')
-  call dein#add('thinca/vim-quickrun')
-  call dein#add('vim-jp/vimdoc-ja.git')
-  call dein#add('previm/previm')
-  call dein#add('kana/vim-textobj-user')
-  call dein#add('sgur/vim-textobj-parameter')
-  call dein#add('Julian/vim-textobj-variable-segment')
-  call dein#add('skywind3000/asyncrun.vim')
-  call dein#add('tyru/open-browser.vim')
-  call dein#add('lambdalisue/gina.vim')
-  call dein#add('mattn/sonictemplate-vim')
-  call dein#add('skanehira/translate.vim')
+  call dein#add('cohama/lexima.vim', {'lazy': 1})
+  call dein#add('machakann/vim-sandwich', {'lazy': 1})
+  call dein#add('tyru/caw.vim', {'lazy': 1})
+  call dein#add('kana/vim-repeat', {'lazy': 1})
+  call dein#add('mattn/emmet-vim', {'lazy': 1})
+  call dein#add('alvan/vim-closetag', {'lazy': 1})
+  call dein#add('thinca/vim-quickrun', {'lazy': 1})
+  call dein#add('vim-jp/vimdoc-ja.git', {'lazy': 1})
+  call dein#add('previm/previm', {'lazy': 1})
+  call dein#add('kana/vim-textobj-user', {'lazy': 1})
+  call dein#add('sgur/vim-textobj-parameter', {'lazy': 1})
+  call dein#add('Julian/vim-textobj-variable-segment', {'lazy': 1})
+  call dein#add('skywind3000/asyncrun.vim', {'lazy': 1})
+  call dein#add('tyru/open-browser.vim', {'lazy': 1})
+  call dein#add('lambdalisue/gina.vim', {'lazy': 1})
+  call dein#add('mattn/sonictemplate-vim', {'lazy': 1})
+  call dein#add('skanehira/translate.vim', {'lazy': 1})
 
-  call dein#add('kana/vim-operator-user')
+  call dein#add('kana/vim-operator-user', {'lazy': 1})
   call dein#add('haya14busa/vim-operator-flashy', {
   \ 'depends': 'vim-operator-user',
-  \ 'merged': 0,
+  \ 'laze': 1,
   \ })
 
-  call dein#add('vim-scripts/todo-txt.vim')
-  call dein#add('godlygeek/tabular')
-  call dein#add('plasticboy/vim-markdown')
-  call dein#add('Shougo/context_filetype.vim')
-  call dein#add('delphinus/vim-firestore')
+  call dein#add('vim-scripts/todo-txt.vim', {'lazy': 1})
+  call dein#add('godlygeek/tabular', {'lazy': 1})
+  call dein#add('plasticboy/vim-markdown', {'lazy': 1})
+  call dein#add('Shougo/context_filetype.vim', {'lazy': 1})
+  call dein#add('delphinus/vim-firestore', {'lazy': 1})
 
   " テスト用
-  call dein#add('thinca/vim-themis')
-  call dein#add('mattn/vim-go2')
-  call dein#add('mattn/webapi-vim')
+  call dein#add('thinca/vim-themis', {'lazy': 1})
+  call dein#add('mattn/vim-go2', {'lazy': 1})
+  call dein#add('mattn/webapi-vim', {'lazy': 1})
 
   call dein#end()
   call dein#save_state()
@@ -457,8 +457,8 @@ let g:vsnip_snippet_dir = expand('~/.vim/vsnip')
 let g:vsnip_snippet_dirs = split(globpath(&runtimepath, 'snippets'), '\n')
 imap <expr> <C-e>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-e>'
 smap <expr> <C-e>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-e>'
-imap <expr> <C-j>   vsnip#available(1)  ? '<Plug>(vsnip-jump-next)'      : '<C-j>'
-smap <expr> <C-j>   vsnip#available(1)  ? '<Plug>(vsnip-jump-next)'      : '<C-j>'
+imap <expr> <Tab>   vsnip#available(1)  ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
+smap <expr> <Tab>   vsnip#available(1)  ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
 imap <expr> <C-k> vsnip#available(-1)   ? '<Plug>(vsnip-jump-prev)'      : '<C-k>'
 smap <expr> <C-k> vsnip#available(-1)   ? '<Plug>(vsnip-jump-prev)'      : '<C-k>'
 " }}}
@@ -567,9 +567,26 @@ nmap <silent> [fzf]] :<C-u>call fzf#vim#ag('<C-r><C-w>', {'options': '--bind ctr
 " }}}
 
 " vimtex {{{
-let g:latex_latexmk_options = '-pdf'
-let g:vimtex_view_general_viewer = '/Applications/Skim.app/Contents/SharedSupport/displayline'
-let g:vimtex_view_general_options = '@line @pdf @tex'
+let g:tex_flavor = 'latex'
+if has('osxdarwin')
+  let g:latex_latexmk_options = '-pdf'
+  let g:vimtex_view_general_viewer = '/Applications/Skim.app/Contents/SharedSupport/displayline'
+  let g:vimtex_view_general_options = '@line @pdf @tex'
+elseif has('win32')
+  let g:vimtex_compiler_latexmk = {
+    \ 'build_dir': '',
+    \ 'callback': 1,
+    \ 'continuous': 1,
+    \ 'executable': 'latexmk',
+    \ 'hooks': [],
+    \ 'options': [
+    \   '-pdfxe'
+    \ ],
+    \}
+  " let g:latex_latexmk_options = '-pdfxe'
+  let g:vimtex_view_general_viewer = 'AcroRd32.exe'
+endif
+let g:vimtex_view_general_options_latexmk = ''
 " }}}
 
 " rust.vim {{{
@@ -644,14 +661,15 @@ let g:polyglot_disabled = ['latex']
 "}}}
 
 " gina.vim {{{
-call gina#custom#mapping#nmap(
-      \ 'blame', 'j',
-      \ 'j<Plug>(gina-blame-echo)'
-      \)
-call gina#custom#mapping#nmap(
-      \ 'blame', 'k',
-      \ 'k<Plug>(gina-blame-echo)'
-      \)
+let g:gina#command#blame#formatter#format = "%su%=by %au %ma%in"
+" call gina#custom#mapping#nmap(
+"      \ 'blame', 'j',
+"      \ 'j<Plug>(gina-blame-echo)'
+"      \)
+" call gina#custom#mapping#nmap(
+"      \ 'blame', 'k',
+"      \ 'k<Plug>(gina-blame-echo)'
+"      \)
 " }}}
 
 " context_filetype {{{
@@ -688,3 +706,19 @@ endfunction
 command! Todo call Todo()
 nnoremap <Leader>kt :<C-u>Todo<CR>
 let g:vim_markdown_folding_disabled = 1
+
+function! GinaOpenPr() abort
+  redir => s:messages
+    call gina#action#call('blame:echo')
+  redir END
+  let s:lastmsg = get(split(s:messages, "\n"), -1, "")
+  let s:commit_hash = matchstr(s:lastmsg, '\[.*\]$')
+  if strlen(s:commit_hash) < 2
+    return
+  endif
+
+  let s:commit_hash = s:commit_hash[1:strlen(s:commit_hash)-2]
+  call system(printf("git openpr %s", s:commit_hash))
+endfunction
+
+command! GinaOpenPr call GinaOpenPr()
