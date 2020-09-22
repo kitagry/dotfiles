@@ -30,20 +30,20 @@ if dein#load_state(s:dein_dir)
 
   " 補完系
   call dein#add('Shougo/dein.vim', {'laze': 1})
-  call dein#add('haya14busa/dein-command.vim', {'lazy': 1})
+  call dein#add('haya14busa/dein-command.vim')
   call dein#add('prabirshrestha/vim-lsp', {'merged': 0})
   call dein#add('mattn/vim-lsp-settings', {'merged': 0})
-  call dein#add('prabirshrestha/asyncomplete.vim', {'lazy': 1})
-  call dein#add('prabirshrestha/asyncomplete-lsp.vim', {'lazy': 1})
+  call dein#add('prabirshrestha/asyncomplete.vim', {'merged': 0})
+  call dein#add('prabirshrestha/asyncomplete-lsp.vim')
   call dein#add('prabirshrestha/asyncomplete-buffer.vim', {'lazy': 1})
-  call dein#add('hrsh7th/vim-vsnip', {'lazy': 1})
-  call dein#add('hrsh7th/vim-vsnip-integ', {'lazy': 1})
+  call dein#add('hrsh7th/vim-vsnip')
+  call dein#add('hrsh7th/vim-vsnip-integ')
   call dein#add('kitagry/vs-snippets', {'merged': 0})
   call dein#add('kitagry/vim-gotest', {'merged': 0})
   call dein#add('kitagry/asyncomplete-tabnine.vim', {'merged': 0})
 
   " 移動系
-  call dein#add('junegunn/fzf.vim', {'lazy': 1})
+  call dein#add('junegunn/fzf.vim')
   call dein#add('junegunn/fzf', {'on_cmd': 'fzf#install()', 'lazy': 1})
   call dein#add('lambdalisue/fern.vim', {'lazy': 1})
   call dein#add('lambdalisue/nerdfont.vim', {'lazy': 1})
@@ -55,8 +55,8 @@ if dein#load_state(s:dein_dir)
   call dein#add('mattn/vim-goaddtags', {'on_ft': 'go'})
   call dein#add('lervag/vimtex', {'on_ft': 'tex'})
   call dein#add('jalvesaq/Nvim-R', {'on_ft': 'R'})
-  call dein#add('sheerun/vim-polyglot')
   call dein#add('pprovost/vim-ps1', {'on_ft': 'powershell'})
+  call dein#add('rust-lang/rust.vim', {'on_ft': 'rust'})
 
   " Git系
   call dein#add('airblade/vim-gitgutter', {'lazy': 1})
@@ -67,12 +67,12 @@ if dein#load_state(s:dein_dir)
   call dein#add('taohexxx/lightline-buffer', {'lazy': 1})
 
   " コマンド拡張系
-  call dein#add('cohama/lexima.vim', {'lazy': 1})
-  call dein#add('machakann/vim-sandwich', {'lazy': 1})
-  call dein#add('tyru/caw.vim', {'lazy': 1})
-  call dein#add('kana/vim-repeat', {'lazy': 1})
-  call dein#add('mattn/emmet-vim', {'lazy': 1})
-  call dein#add('alvan/vim-closetag', {'lazy': 1})
+  call dein#add('cohama/lexima.vim')
+  call dein#add('machakann/vim-sandwich')
+  call dein#add('tyru/caw.vim')
+  call dein#add('kana/vim-repeat')
+  call dein#add('mattn/emmet-vim')
+  call dein#add('alvan/vim-closetag')
   call dein#add('thinca/vim-quickrun', {'lazy': 1})
   call dein#add('vim-jp/vimdoc-ja.git', {'lazy': 1})
   call dein#add('previm/previm', {'lazy': 1})
@@ -85,10 +85,9 @@ if dein#load_state(s:dein_dir)
   call dein#add('mattn/sonictemplate-vim', {'lazy': 1})
   call dein#add('skanehira/translate.vim', {'lazy': 1})
 
-  call dein#add('kana/vim-operator-user', {'lazy': 1})
+  call dein#add('kana/vim-operator-user')
   call dein#add('haya14busa/vim-operator-flashy', {
   \ 'depends': 'vim-operator-user',
-  \ 'laze': 1,
   \ })
 
   call dein#add('vim-scripts/todo-txt.vim', {'lazy': 1})
@@ -99,7 +98,7 @@ if dein#load_state(s:dein_dir)
 
   " テスト用
   call dein#add('thinca/vim-themis', {'lazy': 1})
-  call dein#add('mattn/vim-go2', {'lazy': 1})
+  call dein#add('mattn/vim-go2')
   call dein#add('mattn/webapi-vim', {'lazy': 1})
 
   call dein#end()
@@ -468,11 +467,11 @@ set completeopt=menuone,noinsert,noselect
 let g:asyncomplete_auto_popup = 1
 let g:asyncomplete_auto_completeopt = 0
 let g:asyncomplete_popup_delay = 200
-" call asyncomplete#register_source(asyncomplete#sources#tabnine#get_source_options({
-"  \ 'name': 'tabnine',
-"  \ 'allowlist': ['*'],
-"  \ 'completor': function('asyncomplete#sources#tabnine#completor'),
-"  \ }))
+call asyncomplete#register_source(asyncomplete#sources#tabnine#get_source_options({
+\ 'name': 'tabnine',
+\ 'allowlist': ['*'],
+\ 'completor': function('asyncomplete#sources#tabnine#completor'),
+\ }))
 "}}}
 
 " sonictemplate {{{
@@ -654,10 +653,6 @@ augroup goshortcut
   nnoremap [go]i :GoImport
   nnoremap [go]p :GoImpl
 augroup end
-"}}}
-
-" polyglot {{{
-let g:polyglot_disabled = ['latex']
 "}}}
 
 " gina.vim {{{
