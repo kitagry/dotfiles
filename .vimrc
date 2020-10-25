@@ -59,7 +59,6 @@ if dein#load_state(s:dein_dir)
   call dein#add('lambdalisue/fern-renderer-nerdfont.vim')
 
   " 言語系
-  call dein#add('mattn/vim-goimports')
   call dein#add('mattn/vim-goimpl', {'on_ft': 'go'})
   call dein#add('mattn/vim-goaddtags', {'on_ft': 'go'})
   call dein#add('lervag/vimtex', {'on_ft': 'tex'})
@@ -436,7 +435,7 @@ let g:lsp_signs_error = {'text': ''}
 let g:lsp_signs_warning = {'text': ''}
 let g:lsp_signs_hint = {'text': ''}
 
-" autocmd BufWritePre *.go call execute(['LspCodeActionSync source.organizeImports', 'LspDocumentFormatSync'])
+autocmd BufWritePre *.go call execute(['LspCodeActionSync source.organizeImports', 'LspDocumentFormatSync'])
 
 function! s:on_lsp_buffer_enabled() abort
   setlocal omnifunc=lsp#complete
@@ -605,10 +604,6 @@ elseif has('win32')
   let g:vimtex_view_general_viewer = 'AcroRd32.exe'
 endif
 let g:vimtex_view_general_options_latexmk = ''
-" }}}
-
-" vim-goimports {{{
-let g:goimports_simplify = 1
 " }}}
 
 " rust.vim {{{
