@@ -237,7 +237,7 @@ function! SetMyLspConfig() abort
   sign define LspDiagnosticsInformationSign text=I> texthl=LspDiagnosticsInformation linehl= numhl=
   sign define LspDiagnosticsHintSign text=H> texthl=LspDiagnosticsHint linehl= numhl=
 
-  autocmd BufWritePre *.go lua require"lsp".code_action("source.organizeImports"); vim.lsp.buf.formatting_sync()
+  autocmd BufWritePre *.go lua require"lsp".code_action_sync("source.organizeImports"); vim.lsp.buf.formatting_sync()
 endfunction
 
 call SetMyLspConfig()
