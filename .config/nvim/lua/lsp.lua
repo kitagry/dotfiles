@@ -39,7 +39,7 @@ local function run(_, _, actions)
   end
 end
 
-function M.code_action(action)
+function M.code_action_sync(action)
   local pre_callback = vim.lsp.callbacks['textDocument/codeAction']
   vim.lsp.callbacks['textDocument/codeAction'] = run
   local context = {}
