@@ -201,8 +201,9 @@ imap  <c-c> <Plug>(completion_prev_source)
 imap  <c-v> <Plug>(completion_next_source)
 let g:completion_chain_complete_list = {
     \   'default': [
-    \      {'complete_items': ['lsp', 'path']},
+    \      {'complete_items': ['lsp']},
     \      {'complete_items': ['snippet']},
+    \      {'complete_items': ['path'], 'triggered_only': ['/']},
     \      {'mode': '<c-p>'},
     \      {'mode': '<c-n>'}
     \   ],
