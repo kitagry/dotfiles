@@ -13,7 +13,7 @@ function M.setupLSP()
   require'nvim_lsp'.rust_analyzer.setup{}
 end
 
-local function run(_, _, actions)
+local function run(actions)
   if actions == nil or vim.tbl_isempty(actions) then
     return
   end
@@ -48,7 +48,7 @@ function M.code_action_sync(action)
   params.context = context
   local result = vim.lsp.buf_request_sync(0, 'textDocument/codeAction', params)
   if result ~= nil then
-    run(0, 0, result[1]['result'])
+    run(result[1]['result'])
   end
   vim.lsp.callbacks['textDocument/codeAction'] = pre_callback
 end
