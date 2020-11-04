@@ -137,6 +137,10 @@ if filereadable(s:nvimrc_local)
     execute 'source ' . s:nvimrc_local
 endif
 
+if has('win32')
+  set fileformat=unix
+endif
+
 if has('mac')
   set clipboard=unnamed
 endif
