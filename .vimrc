@@ -54,7 +54,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('kitagry/ctrlp-goimpl')
   call dein#add('junegunn/fzf.vim')
   call dein#add('junegunn/fzf', {'on_cmd': 'fzf#install()'})
-  call dein#add('lambdalisue/fern.vim')
+  call dein#add('lambdalisue/fern.vim', {'merged': 0})
   call dein#add('lambdalisue/nerdfont.vim')
   call dein#add('lambdalisue/fern-renderer-nerdfont.vim')
 
@@ -280,6 +280,10 @@ endif
 " yamlの時はvertical highlight
 autocmd FileType yaml setlocal cursorcolumn
 autocmd FileType yaml lcd %:h
+
+if has('win32')
+  set fileformat=unix
+endif
 " }}}
 
 " Key Mapping {{{
@@ -474,8 +478,8 @@ let g:vsnip_snippet_dir = expand('~/.vim/vsnip')
 let g:vsnip_snippet_dirs = split(globpath(&runtimepath, 'snippets'), '\n')
 imap <expr> <C-e>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-e>'
 smap <expr> <C-e>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-e>'
-imap <expr> <Tab>   vsnip#available(1)  ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
-smap <expr> <Tab>   vsnip#available(1)  ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
+imap <expr> <C-j>   vsnip#available(1)  ? '<Plug>(vsnip-jump-next)'      : '<C-j>'
+smap <expr> <C-j>   vsnip#available(1)  ? '<Plug>(vsnip-jump-next)'      : '<C-j>'
 imap <expr> <C-k> vsnip#available(-1)   ? '<Plug>(vsnip-jump-prev)'      : '<C-k>'
 smap <expr> <C-k> vsnip#available(-1)   ? '<Plug>(vsnip-jump-prev)'      : '<C-k>'
 " }}}
@@ -485,11 +489,11 @@ let g:asyncomplete_auto_popup = 1
 let g:asyncomplete_popup_delay = 200
 let g:asyncomplete_log_file = g:log_files_dir . '/asyncomplete.log'
 " imap <c-\> <plug>(asyncomplete-skk-toggle)
-call asyncomplete#register_source(asyncomplete#sources#tabnine#get_source_options({
-\ 'name': 'tabnine',
-\ 'allowlist': ['*'],
-\ 'completor': function('asyncomplete#sources#tabnine#completor'),
-\ }))
+" call asyncomplete#register_source(asyncomplete#sources#tabnine#get_source_options({
+"\ 'name': 'tabnine',
+"\ 'allowlist': ['*'],
+"\ 'completor': function('asyncomplete#sources#tabnine#completor'),
+"\ }))
 "}}}
 
 " sonictemplate {{{
