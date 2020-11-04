@@ -1,11 +1,11 @@
 #!/bin/bash
 
 set -eu
-source ./download_file.sh
 
 if [ "$(uname)" == "Darwin" ];then
   source ./install_mac.sh
 fi
+source ./download_file.sh
 
 DOT_DIRECTORY=${PWD}
 declare -a DIRECTORIES=('.config .vim .zsh')

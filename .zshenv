@@ -141,6 +141,7 @@ alias kstern='kubectl_stern'
 alias zshrc="vim ~/.zshrc"
 alias zshenv="vim ~/.zshenv"
 alias vimrc="vim ~/.vimrc"
+alias nvimrc="nvim ~/.config/nvim/init.vim"
 ###########################
 
 # viとvimを紐づける

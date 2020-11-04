@@ -2,15 +2,28 @@ local M = {}
 function M.setupLSP()
   -- gopls settings
   require'nvim_lsp'.gopls.setup{
+    on_attach=require'diagnostic'.on_attach,
     init_options = {
       usePlaceholders=true;
       gofumpt=true;
     }
   }
 
-  require'nvim_lsp'.pyls.setup{}
-  require'nvim_lsp'.vimls.setup{}
-  require'nvim_lsp'.rust_analyzer.setup{}
+  require'nvim_lsp'.pyls.setup{
+    on_attach=require'diagnostic'.on_attach,
+    pyls = {
+      configurationSources = {'flake8'}
+    }
+  }
+  require'nvim_lsp'.vimls.setup{
+    on_attach=require'diagnostic'.on_attach,
+  }
+  require'nvim_lsp'.rust_analyzer.setup{
+    on_attach=require'diagnostic'.on_attach,
+  }
+  require'nvim_lsp'.tsserver.setup{
+    on_attach=require'diagnostic'.on_attach,
+  }
 end
 
 local function run(_, _, actions)
@@ -47,7 +60,7 @@ function M.code_action_sync(action)
   local params = vim.lsp.util.make_range_params()
   params.context = context
   local result = vim.lsp.buf_request_sync(0, 'textDocument/codeAction', params)
-  if result ~= nil then
+  if result ~= nil and result[1] ~= nil then
     run(0, 0, result[1]['result'])
   end
   vim.lsp.callbacks['textDocument/codeAction'] = pre_callback
