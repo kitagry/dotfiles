@@ -48,7 +48,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('kana/vim-textobj-user')
   call dein#add('sgur/vim-textobj-parameter')
   call dein#add('Julian/vim-textobj-variable-segment')
-  call dein#add('lambdalisue/gina.vim')
+  call dein#add('lambdalisue/gina.vim', {'merged': 0})
 
   call dein#add('junegunn/fzf.vim')
   call dein#add('junegunn/fzf', {'on_cmd': 'fzf#install()'})
@@ -380,17 +380,37 @@ vmap gx <Plug>(openbrowser-open)
 let g:gina#command#blame#formatter#format = "%su%=by %au %ma%in"
 
 function! GinaOpenPr() abort
-  redir => s:messages
+  redir => l:messages
     call gina#action#call('blame:echo')
   redir END
-  let s:lastmsg = get(split(s:messages, "\n"), -1, "")
-  let s:commit_hash = matchstr(s:lastmsg, '\[.*\]$')
-  if strlen(s:commit_hash) < 2
+  let l:lastmsg = get(split(l:messages, "\n"), -1, "")
+  let l:commit_hash = matchstr(l:lastmsg, '\[.*\]$')
+  if strlen(l:commit_hash) < 2
     return
   endif
 
-  let s:commit_hash = s:commit_hash[1:strlen(s:commit_hash)-2]
-  call system(printf("git openpr %s", s:commit_hash))
+  let l:commit_hash = l:commit_hash[1:strlen(l:commit_hash)-2]
+  let l:message = system(printf("git log --oneline -n 1 --format=%%s %s", l:commit_hash))
+  if len(l:message) == 0
+    return
+  endif
+  let l:message = trim(split(l:message, '\n')[0])
+
+  let l:match = matchstrpos(l:message, '(#\d\+)$')
+  let l:pr = ''
+  if l:match[1] != -1
+    let l:pr = l:match[0][2:len(l:match[0])-2]
+  else
+    let l:message = system(printf('git log --merges --oneline --reverse --ancestry-path --format=%%s %s...master | head -n 1', l:commit_hash))
+    let l:match = matchstrpos(l:message, '^Merge pull request #\d\+')
+    if l:match[1] == -1
+      return
+    endif
+
+    let l:pr = l:match[0][len('Merge pull request #'):]
+  endif
+  let l:url = trim(system('git remote get-url origin'))
+  call gina#util#open(printf('%s/pull/%s', l:url, l:pr))
 endfunction
 
 command! GinaOpenPr call GinaOpenPr()
