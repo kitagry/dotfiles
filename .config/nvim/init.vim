@@ -136,6 +136,10 @@ let s:nvimrc_local = expand(s:nvimrc_dir . '/init.local.vim')
 if filereadable(s:nvimrc_local)
     execute 'source ' . s:nvimrc_local
 endif
+
+if has('mac')
+  set clipboard=unnamed
+endif
 " }}}
 
 " key mapping {{{
@@ -174,8 +178,8 @@ if has('win32') && executable('pwsh.exe')
     nnoremap <Leader>t :<C-u>:vsp term://pwsh.exe<CR>
     nnoremap <Leader>T :<C-u>:sp term://pwsh.exe<CR>
 else
-    nnoremap <Leader>t :<C-u>:vsp term<CR>
-    nnoremap <Leader>T :<C-u>:sp term<CR>
+    nnoremap <Leader>t :<C-u>:vsp term://zsh<CR>
+    nnoremap <Leader>T :<C-u>:sp term://zsh<CR>
 endif
 
 " '%%'でアクティブなバッファのディレクトリを開いてくれる
@@ -218,11 +222,28 @@ smap <expr> <c-k>   vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<c-k
 " }}}
 
 " built in lsp {{{
-function! SetMyLspConfig() abort
-  lua require"lsp".setupLSP()
+lua require"lsp".setupLSP()
+let g:diagnostic_enable_virtual_text = 1
+
+function! s:reset_lsp() abort
+  echomsg "restarting lsp..."
+  lua vim.lsp.stop_client(vim.lsp.get_active_clients())
+  sleep 100ms
+  edit
+endfunction
+command! LspReset call s:reset_lsp()
+
+function! s:lsp_format()
+  lua require"lsp".code_action_sync("source.organizeImports")
+  lua vim.lsp.buf.formatting_sync()
+endfunction
+
+function! s:set_lsp_buffer_enabled() abort
   setlocal omnifunc=v:lua.vim.lsp.omnifunc
   nnoremap <buffer><silent><c-]>      <cmd>lua vim.lsp.buf.definition()<CR>
   nnoremap <buffer><silent><c-k>      <cmd>lua vim.lsp.buf.signature_help()<CR>
+  nnoremap <buffer><silent>[e         :<C-u>PrevDiagnosticCycle<CR>
+  nnoremap <buffer><silent>]e         :<C-u>NextDiagnosticCycle<CR>
 
   nnoremap [vim-lsp] <Nop>
   nmap     <buffer><silent><Leader>l [vim-lsp]
@@ -232,16 +253,23 @@ function! SetMyLspConfig() abort
   nmap [vim-lsp]e <cmd>lua vim.lsp.buf.references({ includeDeclaration = true })<CR>
   nmap [vim-lsp]t <cmd>lua vim.lsp.buf.type_definition()<CR>
   nmap [vim-lsp]a <cmd>lua vim.lsp.buf.code_action()<CR>
+  nmap [vim-lsp]q :<C-u>LspReset<CR>
 
   sign define LspDiagnosticsErrorSign text=E> texthl=Error linehl= numhl=
   sign define LspDiagnosticsWarningSign text=W> texthl=WarningMsg linehl= numhl=
   sign define LspDiagnosticsInformationSign text=I> texthl=LspDiagnosticsInformation linehl= numhl=
   sign define LspDiagnosticsHintSign text=H> texthl=LspDiagnosticsHint linehl= numhl=
 
-  autocmd BufWritePre *.go lua require"lsp".code_action_sync("source.organizeImports"); vim.lsp.buf.formatting_sync()
+  augroup lsp_formatting
+    au!
+    autocmd BufWritePre *.go call s:lsp_format()
+  augroup END
 endfunction
 
-call SetMyLspConfig()
+augroup lsp_install
+    au!
+    autocmd BufEnter * call s:set_lsp_buffer_enabled()
+augroup END
 " }}}
 
 " treesitter {{{
