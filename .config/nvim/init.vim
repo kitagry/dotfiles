@@ -149,6 +149,7 @@ endif
 " key mapping {{{
 " leaderの登録
 let g:mapleader = "\<space>"
+nnoremap <Leader>q :set paste!<CR>
 
 " ヤンクの設定
 nnoremap Y y$
@@ -239,11 +240,16 @@ command! LspReset call s:reset_lsp()
 
 function! s:lsp_format()
   lua require"lsp".code_action_sync("source.organizeImports")
-  lua vim.lsp.buf.formatting_sync()
+
+  " This patch will be deleted when the following PR will be merged.
+  " https://github.com/neovim/neovim/pull/13233
+  lua require"lsp".formatting_sync()
+  " lua vim.lsp.buf.formatting_sync()
 endfunction
 
 function! s:set_lsp_buffer_enabled() abort
   setlocal omnifunc=v:lua.vim.lsp.omnifunc
+  lua vim.lsp.set_log_level("trace")
   nnoremap <buffer><silent><c-]>      <cmd>lua vim.lsp.buf.definition()<CR>
   nnoremap <buffer><silent><c-k>      <cmd>lua vim.lsp.buf.signature_help()<CR>
   nnoremap <buffer><silent>[e         :<C-u>PrevDiagnosticCycle<CR>
