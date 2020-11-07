@@ -249,7 +249,6 @@ endfunction
 
 function! s:set_lsp_buffer_enabled() abort
   setlocal omnifunc=v:lua.vim.lsp.omnifunc
-  lua vim.lsp.set_log_level("trace")
   nnoremap <buffer><silent><c-]>      <cmd>lua vim.lsp.buf.definition()<CR>
   nnoremap <buffer><silent><c-k>      <cmd>lua vim.lsp.buf.signature_help()<CR>
   nnoremap <buffer><silent>[e         :<C-u>PrevDiagnosticCycle<CR>
@@ -272,7 +271,7 @@ function! s:set_lsp_buffer_enabled() abort
 
   augroup lsp_formatting
     au!
-    autocmd BufWritePre *.go call s:lsp_format()
+    autocmd BufWritePre *.go,*.rs call s:lsp_format()
   augroup END
 endfunction
 
@@ -389,17 +388,31 @@ vmap gx <Plug>(openbrowser-open)
 " gina.vim {{{
 let g:gina#command#blame#formatter#format = "%su%=by %au %ma%in"
 
+function! s:build_base_url(remote_url) abort
+  for [domain, info] in items(g:gina#command#browse#translation_patterns)
+    for pattern in info[0]
+      let pattern = substitute(pattern, '\C' . '%domain', domain, 'g')
+      if a:remote_url =~# pattern
+        let repl = 'https://\1/\2/\3'
+        return substitute(a:remote_url, '\C' . pattern, repl, 'g')
+      endif
+    endfor
+  endfor
+  return ''
+endfunction
+
 function! GinaOpenPr() abort
-  redir => l:messages
-    call gina#action#call('blame:echo')
-  redir END
-  let l:lastmsg = get(split(l:messages, "\n"), -1, "")
-  let l:commit_hash = matchstr(l:lastmsg, '\[.*\]$')
-  if strlen(l:commit_hash) < 2
+  let l:info = gina#action#candidates()
+  if len(l:info) == 0
     return
   endif
 
-  let l:commit_hash = l:commit_hash[1:strlen(l:commit_hash)-2]
+  let l:info = get(l:info, 0)
+  let l:commit_hash = get(l:info, 'rev')
+  if l:commit_hash == 0
+    return
+  endif
+
   let l:message = system(printf("git log --oneline -n 1 --format=%%s %s", l:commit_hash))
   if len(l:message) == 0
     return
@@ -419,7 +432,11 @@ function! GinaOpenPr() abort
 
     let l:pr = l:match[0][len('Merge pull request #'):]
   endif
-  let l:url = trim(system('git remote get-url origin'))
+  let l:remote_url = trim(system('git remote get-url origin'))
+  let l:url = s:build_base_url(l:remote_url)
+  if l:url == ''
+    return
+  endif
   call gina#util#open(printf('%s/pull/%s', l:url, l:pr))
 endfunction
 
