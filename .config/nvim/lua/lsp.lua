@@ -1,28 +1,51 @@
+local nvim_lsp = require'nvim_lsp'
+local diagnostic = require'diagnostic'
+local configs = require'nvim_lsp/configs'
+local util = require 'nvim_lsp/util'
+
 local M = {}
 function M.setupLSP()
   -- gopls settings
-  require'nvim_lsp'.gopls.setup{
-    on_attach=require'diagnostic'.on_attach,
+  nvim_lsp.gopls.setup{
+    on_attach=diagnostic.on_attach,
     init_options = {
       usePlaceholders=true;
       gofumpt=true;
     }
   }
 
-  require'nvim_lsp'.pyls.setup{
-    on_attach=require'diagnostic'.on_attach,
+  nvim_lsp.pyls.setup{
+    on_attach=diagnostic.on_attach,
     pyls = {
       configurationSources = {'flake8'}
     }
   }
-  require'nvim_lsp'.vimls.setup{
-    on_attach=require'diagnostic'.on_attach,
+  nvim_lsp.vimls.setup{
+    on_attach=diagnostic.on_attach,
   }
-  require'nvim_lsp'.rust_analyzer.setup{
-    on_attach=require'diagnostic'.on_attach,
+  nvim_lsp.rust_analyzer.setup{
+    on_attach=diagnostic.on_attach,
   }
-  require'nvim_lsp'.tsserver.setup{
-    on_attach=require'diagnostic'.on_attach,
+  nvim_lsp.tsserver.setup{
+    on_attach=diagnostic.on_attach,
+  }
+  nvim_lsp.efm.setup{
+    on_attach=diagnostic.on_attach,
+    filetypes = { 'vim' },
+  }
+
+  configs.golangci_lint = {
+    default_config = {
+      cmd = { 'golangci-lint-langserver' };
+      filetypes = { 'go' };
+      root_dir = util.root_pattern("go.mod", ".git");
+      init_options = {
+        command={ 'golangci-lint', 'run', '--enable-all', '--disable', 'lll', '--out-format', 'json' };
+      };
+    };
+  }
+  nvim_lsp.golangci_lint.setup{
+    on_attach=diagnostic.on_attach,
   }
 end
 
