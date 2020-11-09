@@ -47,10 +47,7 @@ function M.setupLSP()
   nvim_lsp.golangci_lint.setup{
     on_attach=diagnostic.on_attach,
   }
-  require'nvim_lsp'.efm.setup{
-    on_attach=require'diagnostic'.on_attach,
-  }
-  require'nvim_lsp'.clangd.setup{
+  nvim_lsp.clangd.setup{
     on_attach=require'diagnostic'.on_attach,
   }
 end
