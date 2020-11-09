@@ -47,6 +47,12 @@ function M.setupLSP()
   nvim_lsp.golangci_lint.setup{
     on_attach=diagnostic.on_attach,
   }
+  require'nvim_lsp'.efm.setup{
+    on_attach=require'diagnostic'.on_attach,
+  }
+  require'nvim_lsp'.clangd.setup{
+    on_attach=require'diagnostic'.on_attach,
+  }
 end
 
 local function buf_request_sync(bufnr, method, params, timeout_ms)
