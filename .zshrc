@@ -32,8 +32,7 @@ setopt list_packed
 # 補完候補一覧をカラー表示
 zstyle ':completion:*' list-colors ''
 
-autoload -Uz compinit
-compinit -u
+autoload -Uz compinit && compinit
 
 # コマンドのスペルを訂正
 setopt correct
