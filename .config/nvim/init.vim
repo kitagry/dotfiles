@@ -34,6 +34,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('hrsh7th/vim-vsnip-integ')
   call dein#add('kitagry/vs-snippets')
   call dein#add('neovim/nvim-lspconfig')
+  call dein#add('tjdevries/nlua.nvim')
 
   call dein#add('nvim-treesitter/nvim-treesitter', {'merged': 0})
   call dein#add('itchyny/lightline.vim')
@@ -272,7 +273,9 @@ function! s:set_lsp_buffer_enabled() abort
 
   augroup lsp_formatting
     au!
-    autocmd BufWritePre *.go,*.rs call s:lsp_format()
+    autocmd BufWritePre *.go call s:lsp_format()
+    autocmd BufWritePre *.rs lua require"lsp".formatting_sync()
+    autocmd BufWritePre *.tsx,*ts,*.jsx,*js lua require"lsp".formatting_sync()
   augroup END
 endfunction
 

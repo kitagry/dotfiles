@@ -48,7 +48,10 @@ function M.setupLSP()
     on_attach=diagnostic.on_attach,
   }
   nvim_lsp.clangd.setup{
-    on_attach=require'diagnostic'.on_attach,
+    on_attach=diagnostic.on_attach,
+  }
+  nvim_lsp.sumneko_lua.setup{
+    on_attach=diagnostic.on_attach,
   }
 end
 
@@ -76,7 +79,7 @@ local function buf_request_sync(bufnr, method, params, timeout_ms)
   return request_results
 end
 
-local function run(_, _, actions)
+local function run(actions)
   if actions == nil or vim.tbl_isempty(actions) then
     return
   end
@@ -113,7 +116,7 @@ function M.code_action_sync(action)
   if not result or vim.tbl_isempty(result) then return end
   local _, code_action_result = next(result)
   result = code_action_result.result
-  run(0, 0, result)
+  run(result)
   vim.lsp.callbacks['textDocument/codeAction'] = pre_callback
 end
 
