@@ -126,6 +126,7 @@ augroup END
 
 set background=dark
 colorscheme apprentice
+set fileformat=unix
 
 let s:nvimrc_dir = '~/.config/nvim'
 if has('win32')
@@ -387,6 +388,13 @@ vmap gx <Plug>(openbrowser-open)
 
 " gina.vim {{{
 let g:gina#command#blame#formatter#format = "%su%=by %au %ma%in"
+nnoremap [gina] <Nop>
+vnoremap [gina] <Nop>
+nmap <Leader>g [gina]
+vmap <Leader>g [gina]
+nmap <silent> [gina]b :<C-u>Gina blame<CR>
+nmap <silent> [gina]x :Gina browse --exact :<CR>
+vmap <silent> [gina]x :Gina browse --exact :<CR>
 
 function! s:build_base_url(remote_url) abort
   for [domain, info] in items(g:gina#command#browse#translation_patterns)
