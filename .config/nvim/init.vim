@@ -125,6 +125,20 @@ augroup fileTypeIndent
   autocmd BufNewFile,BufRead *.go   setlocal noexpandtab
 augroup END
 
+augroup setFileType
+  autocmd!
+  autocmd BufNewFile,BufRead *.nim      setfiletype nim
+  autocmd BufNewFile,BufRead *.slim     setfiletype slim
+  autocmd BufNewFile,BufRead *.jbuilder setfiletype ruby
+  autocmd BufNewFile,BufRead Guardfile  setfiletype ruby
+  autocmd BufNewFile,BufRead .pryrc     setfiletype ruby
+  autocmd BufRead,BufNewFile *.scss     setfiletype sass
+  autocmd BufNewFile,BufRead *.jl       setfiletype julia
+  autocmd BufNewFile,BufRead *.md       setfiletype markdown
+  autocmd BufNewFile,BufRead *.tsx,*jsx setfiletype typescript.tsx
+  autocmd BufNewFile,BufRead *.launch   setfiletype xml
+  autocmd BufNewFile,BufRead *.html.*   setfiletype html
+augroup END
 
 set background=dark
 colorscheme apprentice
