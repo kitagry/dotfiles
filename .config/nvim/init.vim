@@ -32,7 +32,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('nvim-lua/diagnostic-nvim')
   call dein#add('hrsh7th/vim-vsnip')
   call dein#add('hrsh7th/vim-vsnip-integ')
-  call dein#add('kitagry/vs-snippets')
+  call dein#add('kitagry/vs-snippets', {'merged': 0})
   call dein#add('neovim/nvim-lspconfig')
   call dein#add('tjdevries/nlua.nvim')
 
