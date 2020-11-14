@@ -5,9 +5,13 @@ local util = require 'nvim_lsp/util'
 
 local M = {}
 function M.setupLSP()
+  local capabilities = vim.lsp.protocol.make_client_capabilities()
+  capabilities.textDocument.completion.completionItem.snippetSupport = true
+
   -- gopls settings
   nvim_lsp.gopls.setup{
     on_attach=diagnostic.on_attach,
+    capabilities = capabilities,
     init_options = {
       usePlaceholders=true;
       gofumpt=true;
@@ -16,21 +20,26 @@ function M.setupLSP()
 
   nvim_lsp.pyls.setup{
     on_attach=diagnostic.on_attach,
+    capabilities = capabilities,
     pyls = {
       configurationSources = {'flake8'}
     }
   }
   nvim_lsp.vimls.setup{
     on_attach=diagnostic.on_attach,
+    capabilities = capabilities,
   }
   nvim_lsp.rust_analyzer.setup{
     on_attach=diagnostic.on_attach,
+    capabilities = capabilities,
   }
   nvim_lsp.tsserver.setup{
     on_attach=diagnostic.on_attach,
+    capabilities = capabilities,
   }
   nvim_lsp.efm.setup{
     on_attach=diagnostic.on_attach,
+    capabilities = capabilities,
     filetypes = { 'vim' },
   }
 
@@ -48,9 +57,11 @@ function M.setupLSP()
     on_attach=diagnostic.on_attach,
   }
   nvim_lsp.clangd.setup{
+    capabilities = capabilities,
     on_attach=diagnostic.on_attach,
   }
   nvim_lsp.sumneko_lua.setup{
+    capabilities = capabilities,
     on_attach=diagnostic.on_attach,
   }
 end
@@ -58,7 +69,7 @@ end
 local function buf_request_sync(bufnr, method, params, timeout_ms)
   local request_results = {}
   local result_count = 0
-  local function _callback(err, _method, result, client_id)
+  local function _callback(err, _, result, client_id)
     request_results[client_id] = { error = err, result = result }
     result_count = result_count + 1
   end
@@ -68,7 +79,7 @@ local function buf_request_sync(bufnr, method, params, timeout_ms)
     expected_result_count = expected_result_count + 1
   end
 
-  local wait_result, reason = vim.wait(timeout_ms or 100, function()
+  local wait_result = vim.wait(timeout_ms or 100, function()
     return result_count >= expected_result_count
   end, 10)
 
