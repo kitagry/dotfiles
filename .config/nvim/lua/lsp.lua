@@ -1,5 +1,5 @@
 local nvim_lsp = require'nvim_lsp'
-local diagnostic = require'diagnostic'
+-- local diagnostic = require'diagnostic'
 local configs = require'nvim_lsp/configs'
 local util = require 'nvim_lsp/util'
 
@@ -10,7 +10,6 @@ function M.setupLSP()
 
   -- gopls settings
   nvim_lsp.gopls.setup{
-    on_attach=diagnostic.on_attach,
     capabilities = capabilities,
     init_options = {
       usePlaceholders=true;
@@ -19,26 +18,21 @@ function M.setupLSP()
   }
 
   nvim_lsp.pyls.setup{
-    on_attach=diagnostic.on_attach,
     capabilities = capabilities,
     pyls = {
       configurationSources = {'flake8'}
     }
   }
   nvim_lsp.vimls.setup{
-    on_attach=diagnostic.on_attach,
     capabilities = capabilities,
   }
   nvim_lsp.rust_analyzer.setup{
-    on_attach=diagnostic.on_attach,
     capabilities = capabilities,
   }
   nvim_lsp.tsserver.setup{
-    on_attach=diagnostic.on_attach,
     capabilities = capabilities,
   }
   nvim_lsp.efm.setup{
-    on_attach=diagnostic.on_attach,
     capabilities = capabilities,
     filetypes = { 'vim' },
   }
@@ -53,16 +47,27 @@ function M.setupLSP()
       };
     };
   }
-  nvim_lsp.golangci_lint.setup{
-    on_attach=diagnostic.on_attach,
+  nvim_lsp.golangci_lint.setup{}
+
+  configs.sqls = {
+    default_config = {
+      cmd = { 'sqls' };
+      filetypes = { 'sql' };
+      root_dir = util.root_pattern(".git");
+      init_options = {
+        command = { 'sqls' };
+      };
+    };
   }
+  nvim_lsp.sqls.setup{
+    capabilities = capabilities,
+  }
+
   nvim_lsp.clangd.setup{
     capabilities = capabilities,
-    on_attach=diagnostic.on_attach,
   }
   nvim_lsp.sumneko_lua.setup{
     capabilities = capabilities,
-    on_attach=diagnostic.on_attach,
   }
 end
 

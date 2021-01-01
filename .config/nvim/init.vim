@@ -28,8 +28,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('Shougo/dein.vim')
   call dein#add('haya14busa/dein-command.vim')
 
-  call dein#add('nvim-lua/completion-nvim')
-  call dein#add('nvim-lua/diagnostic-nvim')
+  call dein#add('hrsh7th/nvim-compe')
   call dein#add('hrsh7th/vim-vsnip')
   call dein#add('hrsh7th/vim-vsnip-integ')
   call dein#add('kitagry/vs-snippets', {'merged': 0})
@@ -50,9 +49,11 @@ if dein#load_state(s:dein_dir)
   call dein#add('sgur/vim-textobj-parameter')
   call dein#add('Julian/vim-textobj-variable-segment')
   call dein#add('lambdalisue/gina.vim', {'merged': 0})
+  call dein#add('kitagry/gina-openpr.vim')
+  " call dein#local(expand(s:dein_dir_ . '/repos/github.com/kitagry'), {}, ['gina-openpr.vim'])
 
-  call dein#add('junegunn/fzf.vim')
-  call dein#add('junegunn/fzf', {'on_cmd': 'fzf#install()'})
+  call dein#add('junegunn/fzf.vim', {'depends': 'fzf'})
+  call dein#add('junegunn/fzf', {'merged': 0})
   call dein#add('lambdalisue/fern.vim')
   call dein#add('lambdalisue/nerdfont.vim')
   call dein#add('lambdalisue/fern-renderer-nerdfont.vim')
@@ -65,6 +66,8 @@ if dein#load_state(s:dein_dir)
   call dein#add('hashivim/vim-terraform', {'on_ft': 'terraform'})
   call dein#add('mattn/emmet-vim')
   call dein#add('rhysd/rust-doc.vim')
+  call dein#add('vim-test/vim-test')
+  call dein#add('mattn/vim-goaddtags')
 
   call dein#end()
   call dein#save_state()
@@ -143,7 +146,6 @@ augroup END
 
 set background=dark
 colorscheme apprentice
-set fileformat=unix
 
 let s:nvimrc_dir = '~/.config/nvim'
 if has('win32')
@@ -156,7 +158,10 @@ if filereadable(s:nvimrc_local)
 endif
 
 if has('win32')
-  set fileformat=unix
+  augroup vim_setfiletype
+    autocmd!
+    autocmd BufNewFile * set fileformat=unix
+  augroup END
 endif
 
 if has('mac')
@@ -221,20 +226,14 @@ autocmd FileType qf nnoremap <buffer> q :<C-u>cclose<CR>
 
 " completion-nvim {{{
 set completeopt=menuone,noinsert,noselect
-autocmd BufEnter * lua require'completion'.on_attach()
-let g:completion_enable_snippet = 'vim-vsnip'
-let g:completion_auto_change_source = 1
-imap  <c-c> <Plug>(completion_prev_source)
-imap  <c-v> <Plug>(completion_next_source)
-let g:completion_chain_complete_list = {
-    \   'default': [
-    \      {'complete_items': ['lsp']},
-    \      {'complete_items': ['snippet']},
-    \      {'complete_items': ['path'], 'triggered_only': ['/']},
-    \      {'mode': '<c-p>'},
-    \      {'mode': '<c-n>'}
-    \   ],
-    \ }
+let g:compe_enabled = v:true
+let g:compe_min_length = 1
+inoremap <expr><CR>  compe#confirm(lexima#expand('<LT>CR>', 'i'))
+inoremap <expr><C-e> compe#close('<C-e>')
+lua require'compe_nvim_lsp'.attach()
+lua require'compe':register_lua_source('buffer', require'compe_buffer')
+call compe#source#vim_bridge#register('vsnip', compe_vsnip#source#create())
+
 " }}}
 
 " vim-vsnip {{{
@@ -246,7 +245,6 @@ smap <expr> <c-k>   vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<c-k
 
 " built in lsp {{{
 lua require"lsp".setupLSP()
-let g:diagnostic_enable_virtual_text = 1
 
 function! s:reset_lsp() abort
   echomsg "restarting lsp..."
@@ -269,8 +267,8 @@ function! s:set_lsp_buffer_enabled() abort
   setlocal omnifunc=v:lua.vim.lsp.omnifunc
   nnoremap <buffer><silent><c-]>      <cmd>lua vim.lsp.buf.definition()<CR>
   nnoremap <buffer><silent><c-k>      <cmd>lua vim.lsp.buf.signature_help()<CR>
-  nnoremap <buffer><silent>[e         :<C-u>PrevDiagnosticCycle<CR>
-  nnoremap <buffer><silent>]e         :<C-u>NextDiagnosticCycle<CR>
+  nnoremap <buffer><silent>[e         <cmd>lua vim.lsp.diagnostic.goto_prev()<CR>
+  nnoremap <buffer><silent>]e         <cmd>lua vim.lsp.diagnostic.goto_next()<CR>
 
   nnoremap [vim-lsp] <Nop>
   nmap     <buffer><silent><Leader>l [vim-lsp]
@@ -381,6 +379,16 @@ nmap <silent> [fern]f :<C-u>Fern %:h -opener=edit<CR>
 nmap <silent> [fern]v :<C-u>Fern . -opener=vsplit<CR>
 nmap <silent> [fern]h :<C-u>Fern %:h -opener=vsplit<CR>
 let g:fern#renderer = "nerdfont"
+
+function! s:init_fern() abort
+  nmap <buffer> R <Plug>(fern-action-remove)
+  nmap <buffer> r <Plug>(fern-action-rename)
+endfunction
+
+augroup my-fern
+  autocmd!
+  autocmd FileType fern call s:init_fern()
+augroup END
 " }}}
 
 " fzf {{{
@@ -414,58 +422,12 @@ vmap <Leader>g [gina]
 nmap <silent> [gina]b :<C-u>Gina blame<CR>
 nmap <silent> [gina]x :Gina browse --exact :<CR>
 vmap <silent> [gina]x :Gina browse --exact :<CR>
+" }}}
 
-function! s:build_base_url(remote_url) abort
-  for [domain, info] in items(g:gina#command#browse#translation_patterns)
-    for pattern in info[0]
-      let pattern = substitute(pattern, '\C' . '%domain', domain, 'g')
-      if a:remote_url =~# pattern
-        let repl = 'https://\1/\2/\3'
-        return substitute(a:remote_url, '\C' . pattern, repl, 'g')
-      endif
-    endfor
-  endfor
-  return ''
-endfunction
-
-function! GinaOpenPr() abort
-  let l:info = gina#action#candidates()
-  if len(l:info) == 0
-    return
-  endif
-
-  let l:info = get(l:info, 0)
-  let l:commit_hash = get(l:info, 'rev')
-  if l:commit_hash == 0
-    return
-  endif
-
-  let l:message = system(printf("git log --oneline -n 1 --format=%%s %s", l:commit_hash))
-  if len(l:message) == 0
-    return
-  endif
-  let l:message = trim(split(l:message, '\n')[0])
-
-  let l:match = matchstrpos(l:message, '(#\d\+)$')
-  let l:pr = ''
-  if l:match[1] != -1
-    let l:pr = l:match[0][2:len(l:match[0])-2]
-  else
-    let l:message = system(printf('git log --merges --oneline --reverse --ancestry-path --format=%%s %s...master | head -n 1', l:commit_hash))
-    let l:match = matchstrpos(l:message, '^Merge pull request #\d\+')
-    if l:match[1] == -1
-      return
-    endif
-
-    let l:pr = l:match[0][len('Merge pull request #'):]
-  endif
-  let l:remote_url = trim(system('git remote get-url origin'))
-  let l:url = s:build_base_url(l:remote_url)
-  if l:url == ''
-    return
-  endif
-  call gina#util#open(printf('%s/pull/%s', l:url, l:pr))
-endfunction
-
-command! GinaOpenPr call GinaOpenPr()
+" vim-test {{{
+nnoremap [vim-test] <Nop>
+nmap <Leader>e [vim-test]
+nmap <silent> [vim-test]a <cmd>TestSuit<CR>
+nmap <silent> [vim-test]f <cmd>TestFile<CR>
+nmap <silent> [vim-test]t <cmd>TestVisit<CR>
 " }}}
