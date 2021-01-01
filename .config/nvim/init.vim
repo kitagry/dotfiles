@@ -425,6 +425,48 @@ vmap <silent> [gina]x :Gina browse --exact :<CR>
 " }}}
 
 " vim-test {{{
+function! DockerComposeTransformation(cmd) abort
+  let docker_compose_project = findfile("docker-compose.yml", ".;")
+  if !empty(docker_compose_project)
+    let docker_compose = readfile(docker_compose_project)
+    let docker_compose_copy = copy(docker_compose)
+    let docker_compose = map(docker_compose, {key, val -> [key, val]})
+    let cwd = split(getcwd(), '/')[-1]
+    let context_lines = filter(docker_compose, 'v:val[1] =~ "context:"')
+    let target_context_line = filter(context_lines, printf('v:val[1] =~ "%s"', cwd))
+    if len(target_context_line) == 0
+      echohl ErrorMsg
+      echomsg 'context was not found'
+      echohl None
+      return a:cmd
+    endif
+    let target = ''
+    for i in range(target_context_line[0][0]-1, 0, -1)
+      " count tab
+      " for example
+      " services:
+      "   SERVICE_NAME:
+      " # ^ this is not space
+      "     build:
+      "       context: ./DIR_NAME  # <-- target_context_line[0][0]
+      if docker_compose_copy[i][2] != ' '
+        let target = docker_compose_copy[i][2:-2]
+        break
+      endif
+
+    endfor
+    return printf('docker-compose run --rm %s %s', target, a:cmd)
+  endif
+  return a:cmd
+endfunction
+
+let g:test#custom_transformations = {'docker': function('DockerComposeTransformation')}
+let g:test#transformation = 'docker'
+let test#strategy = 'neovim'
+let test#neovim#term_position = 'vert'
+let test#go#gotest#options = {
+  \ 'suite': '-p 1 -v',
+  \ }
 nnoremap [vim-test] <Nop>
 nmap <Leader>e [vim-test]
 nmap <silent> [vim-test]a <cmd>TestSuit<CR>
