@@ -420,7 +420,9 @@ vnoremap [gina] <Nop>
 nmap <Leader>g [gina]
 vmap <Leader>g [gina]
 nmap <silent> [gina]b :<C-u>Gina blame<CR>
-nmap <silent> [gina]x :Gina browse --exact :<CR>
+nmap <silent> [gina]s :<C-u>Gina status<CR>
+nmap <silent> [gina]c :<C-u>Gina commit<CR>
+nmap <silent> [gina]x :Gina browse<CR>
 vmap <silent> [gina]x :Gina browse --exact :<CR>
 " }}}
 
