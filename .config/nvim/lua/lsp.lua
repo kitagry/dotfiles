@@ -1,7 +1,7 @@
-local nvim_lsp = require'nvim_lsp'
+local nvim_lsp = require'lspconfig'
 -- local diagnostic = require'diagnostic'
-local configs = require'nvim_lsp/configs'
-local util = require 'nvim_lsp/util'
+local configs = require'lspconfig/configs'
+local util = require 'lspconfig/util'
 
 local M = {}
 function M.setupLSP()
@@ -126,6 +126,7 @@ function M.code_action_sync(action)
   vim.lsp.callbacks['textDocument/codeAction'] = run
   local context = {}
   context['only'] = {action}
+  context['diagnostics'] = {}
   local params = vim.lsp.util.make_range_params()
   params.context = context
   local result = vim.lsp.buf_request_sync(0, 'textDocument/codeAction', params)

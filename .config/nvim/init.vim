@@ -230,9 +230,22 @@ let g:compe_enabled = v:true
 let g:compe_min_length = 1
 inoremap <expr><CR>  compe#confirm(lexima#expand('<LT>CR>', 'i'))
 inoremap <expr><C-e> compe#close('<C-e>')
-lua require'compe_nvim_lsp'.attach()
-lua require'compe':register_lua_source('buffer', require'compe_buffer')
-call compe#source#vim_bridge#register('vsnip', compe_vsnip#source#create())
+lua <<EOF
+  require'compe'.setup {
+    enabled = true;
+    debug = false;
+    min_length = 1;
+    preselect = 'disable';
+    allow_prefix_unmatch = false;
+
+    source = {
+      path = true;
+      buffer = true;
+      vsnip = true;
+      nvim_lsp = true;
+    };
+  }
+EOF
 
 " }}}
 
@@ -289,7 +302,7 @@ function! s:set_lsp_buffer_enabled() abort
     au!
     autocmd BufWritePre *.go call s:lsp_format()
     autocmd BufWritePre *.rs lua require"lsp".formatting_sync()
-    autocmd BufWritePre *.tsx,*ts,*.jsx,*js lua require"lsp".formatting_sync()
+    autocmd BufWritePre *.tsx,*ts,*.jsx,*js call s:lsp_format()
   augroup END
 endfunction
 
