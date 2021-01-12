@@ -1,58 +1,51 @@
-local nvim_lsp = require'nvim_lsp'
-local diagnostic = require'diagnostic'
-local configs = require'nvim_lsp/configs'
-local util = require 'nvim_lsp/util'
+local lspconfig = require'lspconfig'
+local configs = require'lspconfig/configs'
+local util = require 'lspconfig/util'
 
 local M = {}
 function M.setupLSP()
+  local capabilities = vim.lsp.protocol.make_client_capabilities()
+  capabilities.textDocument.completion.completionItem.snippetSupport = true
+
   -- gopls settings
-  nvim_lsp.gopls.setup{
-    on_attach=diagnostic.on_attach,
+  lspconfig.gopls.setup{
+    capabilities=capabilities;
     init_options = {
       usePlaceholders=true;
       gofumpt=true;
     }
   }
 
-  nvim_lsp.pyls.setup{
-    on_attach=diagnostic.on_attach,
+  lspconfig.pyls.setup{
+    capabilities=capabilities;
     pyls = {
       configurationSources = {'flake8'}
     }
   }
-  nvim_lsp.vimls.setup{
-    on_attach=diagnostic.on_attach,
+  lspconfig.vimls.setup{
+    capabilities=capabilities;
   }
-  nvim_lsp.rust_analyzer.setup{
-    on_attach=diagnostic.on_attach,
+  lspconfig.rust_analyzer.setup{}
+  lspconfig.tsserver.setup{
+    capabilities=capabilities;
   }
-  nvim_lsp.tsserver.setup{
-    on_attach=diagnostic.on_attach,
-  }
-  nvim_lsp.efm.setup{
-    on_attach=diagnostic.on_attach,
+  lspconfig.efm.setup{
     filetypes = { 'vim' },
   }
 
-  configs.golangci_lint = {
-    default_config = {
-      cmd = { 'golangci-lint-langserver' };
-      filetypes = { 'go' };
-      root_dir = util.root_pattern("go.mod", ".git");
-      init_options = {
-        command={ 'golangci-lint', 'run', '--enable-all', '--disable', 'lll', '--out-format', 'json' };
-      };
-    };
-  }
-  nvim_lsp.golangci_lint.setup{
-    on_attach=diagnostic.on_attach,
-  }
-  nvim_lsp.clangd.setup{
-    on_attach=diagnostic.on_attach,
-  }
-  nvim_lsp.sumneko_lua.setup{
-    on_attach=diagnostic.on_attach,
-  }
+  -- configs.golangci_lint = {
+  --   default_config = {
+  --     cmd = { 'golangci-lint-langserver' };
+  --     filetypes = { 'go' };
+  --     root_dir = util.root_pattern("go.mod", ".git");
+  --     init_options = {
+  --       command={ 'golangci-lint', 'run', '--enable-all', '--disable', 'lll', '--out-format', 'json' };
+  --     };
+  --   };
+  -- }
+  -- lspconfig.golangci_lint.setup{}
+  lspconfig.clangd.setup{}
+  lspconfig.sumneko_lua.setup{}
 end
 
 local function buf_request_sync(bufnr, method, params, timeout_ms)

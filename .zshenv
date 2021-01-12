@@ -177,3 +177,4 @@ mkcd() {
 }
 
 [ -f "$HOME/.zshenv.local" ] && source "$HOME/.zshenv.local"
+alias python="python3"

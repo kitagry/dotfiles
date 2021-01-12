@@ -20,11 +20,11 @@ bindkey -v
 
 # 補完機能を有効にする
 zstyle ':completion:*:default' menu select=2
-if [ -e $HOME/.zsh/completion ]; then
-  export FPATH="/home/kitagry/.zsh/completion/:$FPATH"
-  autoload _git
-  compdef hub=git
-fi
+# if [ -e $HOME/.zsh/completion ]; then
+#   export FPATH="/home/kitagry/.zsh/completion/:$FPATH"
+#   autoload _git
+#   compdef hub=git
+# fi
 # 補完で小文字でも大文字にマッチさせる
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 # 補完候補を詰めて表示
@@ -32,7 +32,8 @@ setopt list_packed
 # 補完候補一覧をカラー表示
 zstyle ':completion:*' list-colors ''
 
-autoload -Uz compinit && compinit
+autoload -Uz compinit
+compinit
 
 # コマンドのスペルを訂正
 setopt correct
@@ -80,7 +81,16 @@ bindkey '^B' zaw-git-branches
 if [ $commands[kubectl] ]; then
   zinit ice pick"gh" src"kubectl.zsh"
   zinit light superbrothers/zsh-kubectl-prompt
-  RPROMPT='%F{blue}($ZSH_KUBECTL_PROMPT)%f'
+  function right_prompt() {
+    local color="blue"
+
+    if [[ "$ZSH_KUBECTL_CONTEXT" != "docker-desktop" ]]; then
+      color="red"
+    fi
+
+    echo "%F{$color}($ZSH_KUBECTL_PROMPT)%f"
+  }
+  RPROMPT='$(right_prompt)'
   source <(kubectl completion zsh)
 fi
 
