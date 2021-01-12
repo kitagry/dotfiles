@@ -28,9 +28,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('Shougo/dein.vim')
   call dein#add('haya14busa/dein-command.vim')
 
-  call dein#add('amirrezaask/fuzzy.nvim')
   call dein#add('hrsh7th/nvim-compe')
-  " call dein#add('nvim-lua/diagnostic-nvim')
   call dein#add('hrsh7th/vim-vsnip')
   call dein#add('hrsh7th/vim-vsnip-integ')
   call dein#add('kitagry/vs-snippets', {'merged': 0})
@@ -53,9 +51,11 @@ if dein#load_state(s:dein_dir)
   call dein#add('sgur/vim-textobj-parameter')
   call dein#add('Julian/vim-textobj-variable-segment')
   call dein#add('lambdalisue/gina.vim', {'merged': 0})
+  call dein#add('kitagry/gina-openpr.vim')
+  " call dein#local(expand(s:dein_dir_ . '/repos/github.com/kitagry'), {}, ['gina-openpr.vim'])
 
-  call dein#add('junegunn/fzf', {'on_cmd': 'fzf#install()', 'merged': 0})
   call dein#add('junegunn/fzf.vim', {'depends': 'fzf'})
+  call dein#add('junegunn/fzf', {'merged': 0})
   call dein#add('lambdalisue/fern.vim')
   call dein#add('lambdalisue/nerdfont.vim')
   call dein#add('lambdalisue/fern-renderer-nerdfont.vim')
@@ -70,6 +70,9 @@ if dein#load_state(s:dein_dir)
 
   call dein#add('hashivim/vim-terraform', {'on_ft': 'terraform'})
   call dein#add('mattn/emmet-vim')
+  call dein#add('rhysd/rust-doc.vim')
+  call dein#add('vim-test/vim-test')
+  call dein#add('mattn/vim-goaddtags')
 
   call dein#end()
   call dein#save_state()
@@ -131,10 +134,23 @@ augroup fileTypeIndent
   autocmd BufNewFile,BufRead *.go   setlocal noexpandtab
 augroup END
 
+augroup setFileType
+  autocmd!
+  autocmd BufNewFile,BufRead *.nim      setfiletype nim
+  autocmd BufNewFile,BufRead *.slim     setfiletype slim
+  autocmd BufNewFile,BufRead *.jbuilder setfiletype ruby
+  autocmd BufNewFile,BufRead Guardfile  setfiletype ruby
+  autocmd BufNewFile,BufRead .pryrc     setfiletype ruby
+  autocmd BufRead,BufNewFile *.scss     setfiletype sass
+  autocmd BufNewFile,BufRead *.jl       setfiletype julia
+  autocmd BufNewFile,BufRead *.md       setfiletype markdown
+  autocmd BufNewFile,BufRead *.tsx,*jsx setfiletype typescript.tsx
+  autocmd BufNewFile,BufRead *.launch   setfiletype xml
+  autocmd BufNewFile,BufRead *.html.*   setfiletype html
+augroup END
 
 set background=dark
 colorscheme apprentice
-set fileformat=unix
 
 let s:nvimrc_dir = '~/.config/nvim'
 if has('win32')
@@ -147,7 +163,10 @@ if filereadable(s:nvimrc_local)
 endif
 
 if has('win32')
-  set fileformat=unix
+  augroup vim_setfiletype
+    autocmd!
+    autocmd BufNewFile * set fileformat=unix
+  augroup END
 endif
 
 if has('mac')
@@ -212,21 +231,25 @@ autocmd FileType qf nnoremap <buffer> q :<C-u>cclose<CR>
 
 " nvim-compe {{{
 set completeopt=menuone,noinsert,noselect
+let g:compe_enabled = v:true
+let g:compe_min_length = 1
+inoremap <expr><CR>  compe#confirm(lexima#expand('<LT>CR>', 'i'))
+inoremap <expr><C-e> compe#close('<C-e>')
 lua <<EOF
-require'compe'.setup {
-  enabled = true;
-  debug = false;
-  min_length = 1;
-  auto_preselect = false;
-  allow_prefix_unmatch = true;
+  require'compe'.setup {
+    enabled = true;
+    debug = false;
+    min_length = 1;
+    preselect = 'disable';
+    allow_prefix_unmatch = false;
 
-  source = {
-    path = true;
-    buffer = true;
-    vsnip = true;
-    nvim_lsp = true;
-  };
-}
+    source = {
+      path = true;
+      buffer = true;
+      vsnip = true;
+      nvim_lsp = true;
+    };
+  }
 EOF
 " }}}
 
@@ -239,8 +262,6 @@ smap <expr> <c-k>   vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<c-k
 
 " built in lsp {{{
 lua require"lsp".setupLSP()
-" let g:diagnostic_enable_virtual_text = 1
-
 function! s:reset_lsp() abort
   echomsg "restarting lsp..."
   lua vim.lsp.stop_client(vim.lsp.get_active_clients())
@@ -284,7 +305,7 @@ function! s:set_lsp_buffer_enabled() abort
     au!
     autocmd BufWritePre *.go call s:lsp_format()
     autocmd BufWritePre *.rs lua require"lsp".formatting_sync()
-    autocmd BufWritePre *.tsx,*ts,*.jsx,*js lua require"lsp".formatting_sync()
+    autocmd BufWritePre *.tsx,*ts,*.jsx,*js call s:lsp_format()
   augroup END
 endfunction
 
@@ -374,6 +395,16 @@ nmap <silent> [fern]f :<C-u>Fern %:h -opener=edit<CR>
 nmap <silent> [fern]v :<C-u>Fern . -opener=vsplit<CR>
 nmap <silent> [fern]h :<C-u>Fern %:h -opener=vsplit<CR>
 let g:fern#renderer = "nerdfont"
+
+function! s:init_fern() abort
+  nmap <buffer> R <Plug>(fern-action-remove)
+  nmap <buffer> r <Plug>(fern-action-rename)
+endfunction
+
+augroup my-fern
+  autocmd!
+  autocmd FileType fern call s:init_fern()
+augroup END
 " }}}
 
 " fzf {{{
@@ -405,66 +436,57 @@ vnoremap [gina] <Nop>
 nmap <Leader>g [gina]
 vmap <Leader>g [gina]
 nmap <silent> [gina]b :<C-u>Gina blame<CR>
-nmap <silent> [gina]x :Gina browse --exact :<CR>
+nmap <silent> [gina]s :<C-u>Gina status<CR>
+nmap <silent> [gina]c :<C-u>Gina commit<CR>
+nmap <silent> [gina]x :Gina browse<CR>
 vmap <silent> [gina]x :Gina browse --exact :<CR>
+" }}}
 
-function! s:build_base_url(remote_url) abort
-  for [domain, info] in items(g:gina#command#browse#translation_patterns)
-    for pattern in info[0]
-      let pattern = substitute(pattern, '\C' . '%domain', domain, 'g')
-      if a:remote_url =~# pattern
-        let repl = 'https://\1/\2/\3'
-        return substitute(a:remote_url, '\C' . pattern, repl, 'g')
+" vim-test {{{
+function! DockerComposeTransformation(cmd) abort
+  let docker_compose_project = findfile("docker-compose.yml", ".;")
+  if !empty(docker_compose_project)
+    let docker_compose = readfile(docker_compose_project)
+    let docker_compose_copy = copy(docker_compose)
+    let docker_compose = map(docker_compose, {key, val -> [key, val]})
+    let cwd = split(getcwd(), '/')[-1]
+    let context_lines = filter(docker_compose, 'v:val[1] =~ "context:"')
+    let target_context_line = filter(context_lines, printf('v:val[1] =~ "%s"', cwd))
+    if len(target_context_line) == 0
+      echohl ErrorMsg
+      echomsg 'context was not found'
+      echohl None
+      return a:cmd
+    endif
+    let target = ''
+    for i in range(target_context_line[0][0]-1, 0, -1)
+      " count tab
+      " for example
+      " services:
+      "   SERVICE_NAME:
+      " # ^ this is not space
+      "     build:
+      "       context: ./DIR_NAME  # <-- target_context_line[0][0]
+      if docker_compose_copy[i][2] != ' '
+        let target = docker_compose_copy[i][2:-2]
+        break
       endif
     endfor
-  endfor
-  return ''
+    return printf('docker-compose run --rm %s %s', target, a:cmd)
+  endif
+  return a:cmd
 endfunction
 
-function! GinaOpenPr() abort
-  let l:info = gina#action#candidates()
-  if len(l:info) == 0
-    echomsg 'info was not found'
-    return
-  endif
-
-  let l:info = get(l:info, 0)
-  let l:commit_hash = get(l:info, 'rev')
-  echomsg l:commit_hash
-  if l:commit_hash == ''
-    echomsg 'commit_hash was not found'
-    return
-  endif
-
-  let l:message = system(printf("git log --oneline -n 1 --format=%%s %s", l:commit_hash))
-  if len(l:message) == 0
-    echomsg 'PR was not found'
-    return
-  endif
-  let l:message = trim(split(l:message, '\n')[0])
-
-  let l:match = matchstrpos(l:message, '(#\d\+)$')
-  let l:pr = ''
-  if l:match[1] != -1
-    let l:pr = l:match[0][2:len(l:match[0])-2]
-  else
-    let l:message = system(printf('git log --merges --oneline --reverse --ancestry-path --format=%%s %s...master | head -n 1', l:commit_hash))
-    let l:match = matchstrpos(l:message, '^Merge pull request #\d\+')
-    if l:match[1] == -1
-      echomsg 'PR was not found'
-      return
-    endif
-
-    let l:pr = l:match[0][len('Merge pull request #'):]
-  endif
-  let l:remote_url = trim(system('git remote get-url origin'))
-  let l:url = s:build_base_url(l:remote_url)
-  if l:url == ''
-    echomsg 'uri was not found'
-    return
-  endif
-  call gina#util#open(printf('%s/pull/%s', l:url, l:pr))
-endfunction
-
-command! GinaOpenPr call GinaOpenPr()
+let g:test#custom_transformations = {'docker': function('DockerComposeTransformation')}
+let g:test#transformation = 'docker'
+let test#strategy = 'neovim'
+let test#neovim#term_position = 'vert'
+let test#go#gotest#options = {
+  \ 'suite': '-p 1 -v',
+  \ }
+nnoremap [vim-test] <Nop>
+nmap <Leader>e [vim-test]
+nmap <silent> [vim-test]a <cmd>TestSuit<CR>
+nmap <silent> [vim-test]f <cmd>TestFile<CR>
+nmap <silent> [vim-test]t <cmd>TestVisit<CR>
 " }}}
