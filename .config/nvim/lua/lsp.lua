@@ -1,4 +1,4 @@
-local lspconfig = require'lspconfig'
+local nvim_lsp = require'lspconfig'
 local configs = require'lspconfig/configs'
 local util = require 'lspconfig/util'
 
@@ -8,50 +8,72 @@ function M.setupLSP()
   capabilities.textDocument.completion.completionItem.snippetSupport = true
 
   -- gopls settings
-  lspconfig.gopls.setup{
-    capabilities=capabilities;
+  nvim_lsp.gopls.setup{
+    capabilities = capabilities,
     init_options = {
       usePlaceholders=true;
       gofumpt=true;
     }
   }
 
-  lspconfig.pyls.setup{
-    capabilities=capabilities;
+  nvim_lsp.pyls.setup{
+    capabilities = capabilities,
     pyls = {
       configurationSources = {'flake8'}
     }
   }
-  lspconfig.vimls.setup{
-    capabilities=capabilities;
+  nvim_lsp.vimls.setup{
+    capabilities = capabilities,
   }
-  lspconfig.rust_analyzer.setup{}
-  lspconfig.tsserver.setup{
-    capabilities=capabilities;
+  nvim_lsp.rust_analyzer.setup{
+    capabilities = capabilities,
   }
-  lspconfig.efm.setup{
+  nvim_lsp.tsserver.setup{
+    capabilities = capabilities,
+  }
+  nvim_lsp.efm.setup{
+    capabilities = capabilities,
     filetypes = { 'vim' },
   }
 
-  -- configs.golangci_lint = {
-  --   default_config = {
-  --     cmd = { 'golangci-lint-langserver' };
-  --     filetypes = { 'go' };
-  --     root_dir = util.root_pattern("go.mod", ".git");
-  --     init_options = {
-  --       command={ 'golangci-lint', 'run', '--enable-all', '--disable', 'lll', '--out-format', 'json' };
-  --     };
-  --   };
-  -- }
-  -- lspconfig.golangci_lint.setup{}
-  lspconfig.clangd.setup{}
-  lspconfig.sumneko_lua.setup{}
+  configs.golangci_lint = {
+    default_config = {
+      cmd = { 'golangci-lint-langserver' };
+      filetypes = { 'go' };
+      root_dir = util.root_pattern("go.mod", ".git");
+      init_options = {
+        command={ 'golangci-lint', 'run', '--enable-all', '--disable', 'lll', '--out-format', 'json' };
+      };
+    };
+  }
+  nvim_lsp.golangci_lint.setup{}
+
+  configs.sqls = {
+    default_config = {
+      cmd = { 'sqls' };
+      filetypes = { 'sql' };
+      root_dir = util.root_pattern(".git");
+      init_options = {
+        command = { 'sqls' };
+      };
+    };
+  }
+  nvim_lsp.sqls.setup{
+    capabilities = capabilities,
+  }
+
+  nvim_lsp.clangd.setup{
+    capabilities = capabilities,
+  }
+  nvim_lsp.sumneko_lua.setup{
+    capabilities = capabilities,
+  }
 end
 
 local function buf_request_sync(bufnr, method, params, timeout_ms)
   local request_results = {}
   local result_count = 0
-  local function _callback(err, _method, result, client_id)
+  local function _callback(err, _, result, client_id)
     request_results[client_id] = { error = err, result = result }
     result_count = result_count + 1
   end
@@ -61,7 +83,7 @@ local function buf_request_sync(bufnr, method, params, timeout_ms)
     expected_result_count = expected_result_count + 1
   end
 
-  local wait_result, reason = vim.wait(timeout_ms or 100, function()
+  local wait_result = vim.wait(timeout_ms or 100, function()
     return result_count >= expected_result_count
   end, 10)
 
@@ -103,6 +125,7 @@ function M.code_action_sync(action)
   vim.lsp.callbacks['textDocument/codeAction'] = run
   local context = {}
   context['only'] = {action}
+  context['diagnostics'] = {}
   local params = vim.lsp.util.make_range_params()
   params.context = context
   local result = vim.lsp.buf_request_sync(0, 'textDocument/codeAction', params)
