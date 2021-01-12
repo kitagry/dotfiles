@@ -28,15 +28,17 @@ if dein#load_state(s:dein_dir)
   call dein#add('Shougo/dein.vim')
   call dein#add('haya14busa/dein-command.vim')
 
-  call dein#add('nvim-lua/completion-nvim')
-  call dein#add('nvim-lua/diagnostic-nvim')
+  call dein#add('amirrezaask/fuzzy.nvim')
+  call dein#add('hrsh7th/nvim-compe')
+  " call dein#add('nvim-lua/diagnostic-nvim')
   call dein#add('hrsh7th/vim-vsnip')
   call dein#add('hrsh7th/vim-vsnip-integ')
-  call dein#add('kitagry/vs-snippets')
+  call dein#add('kitagry/vs-snippets', {'merged': 0})
   call dein#add('neovim/nvim-lspconfig')
-  call dein#add('tjdevries/nlua.nvim')
+  " call dein#add('tjdevries/nlua.nvim', {'merged': 0})
 
   call dein#add('nvim-treesitter/nvim-treesitter', {'merged': 0})
+  call dein#add('romgrk/nvim-treesitter-context')
   call dein#add('itchyny/lightline.vim')
   call dein#add('taohexxx/lightline-buffer')
 
@@ -45,17 +47,21 @@ if dein#load_state(s:dein_dir)
   call dein#add('cohama/lexima.vim')
   call dein#add('machakann/vim-sandwich')
   call dein#add('tyru/caw.vim')
+  call dein#add('tyru/open-browser.vim')
   call dein#add('kana/vim-repeat')
   call dein#add('kana/vim-textobj-user')
   call dein#add('sgur/vim-textobj-parameter')
   call dein#add('Julian/vim-textobj-variable-segment')
   call dein#add('lambdalisue/gina.vim', {'merged': 0})
 
-  call dein#add('junegunn/fzf.vim')
-  call dein#add('junegunn/fzf', {'on_cmd': 'fzf#install()'})
+  call dein#add('junegunn/fzf', {'on_cmd': 'fzf#install()', 'merged': 0})
+  call dein#add('junegunn/fzf.vim', {'depends': 'fzf'})
   call dein#add('lambdalisue/fern.vim')
   call dein#add('lambdalisue/nerdfont.vim')
   call dein#add('lambdalisue/fern-renderer-nerdfont.vim')
+  call dein#add('lambdalisue/fern-hijack.vim')
+  call dein#add('mattn/vim-goaddtags')
+  call dein#add('mattn/vim-goimpl')
 
   call dein#add('kana/vim-operator-user')
   call dein#add('haya14busa/vim-operator-flashy', {
@@ -204,22 +210,24 @@ autocmd FileType help nnoremap <buffer> q <C-w>c
 autocmd FileType qf nnoremap <buffer> q :<C-u>cclose<CR>
 " }}}
 
-" completion-nvim {{{
+" nvim-compe {{{
 set completeopt=menuone,noinsert,noselect
-autocmd BufEnter * lua require'completion'.on_attach()
-let g:completion_enable_snippet = 'vim-vsnip'
-let g:completion_auto_change_source = 1
-imap  <c-c> <Plug>(completion_prev_source)
-imap  <c-v> <Plug>(completion_next_source)
-let g:completion_chain_complete_list = {
-    \   'default': [
-    \      {'complete_items': ['lsp']},
-    \      {'complete_items': ['snippet']},
-    \      {'complete_items': ['path'], 'triggered_only': ['/']},
-    \      {'mode': '<c-p>'},
-    \      {'mode': '<c-n>'}
-    \   ],
-    \ }
+lua <<EOF
+require'compe'.setup {
+  enabled = true;
+  debug = false;
+  min_length = 1;
+  auto_preselect = false;
+  allow_prefix_unmatch = true;
+
+  source = {
+    path = true;
+    buffer = true;
+    vsnip = true;
+    nvim_lsp = true;
+  };
+}
+EOF
 " }}}
 
 " vim-vsnip {{{
@@ -231,7 +239,7 @@ smap <expr> <c-k>   vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<c-k
 
 " built in lsp {{{
 lua require"lsp".setupLSP()
-let g:diagnostic_enable_virtual_text = 1
+" let g:diagnostic_enable_virtual_text = 1
 
 function! s:reset_lsp() abort
   echomsg "restarting lsp..."
@@ -254,8 +262,8 @@ function! s:set_lsp_buffer_enabled() abort
   setlocal omnifunc=v:lua.vim.lsp.omnifunc
   nnoremap <buffer><silent><c-]>      <cmd>lua vim.lsp.buf.definition()<CR>
   nnoremap <buffer><silent><c-k>      <cmd>lua vim.lsp.buf.signature_help()<CR>
-  nnoremap <buffer><silent>[e         :<C-u>PrevDiagnosticCycle<CR>
-  nnoremap <buffer><silent>]e         :<C-u>NextDiagnosticCycle<CR>
+  nnoremap <buffer><silent>[e         <cmd>lua vim.lsp.diagnostic.goto_prev()<CR>
+  nnoremap <buffer><silent>]e         <cmd>lua vim.lsp.diagnostic.goto_next()<CR>
 
   nnoremap [vim-lsp] <Nop>
   nmap     <buffer><silent><Leader>l [vim-lsp]
@@ -295,18 +303,18 @@ lua require"treesitter".setupTreesitter()
 set hidden  " allow buffer switching without saving
 set showtabline=2  " always show tabline
 function! LightlineLSPWarnings() abort
-  let l:counts = luaeval("vim.lsp.util.buf_diagnostics_count([[Warning]])")
+  let l:counts = luaeval("vim.lsp.diagnostic.get_count([[Warning]])")
   return l:counts == 0 ? '' : printf('W:%d', l:counts)
 endfunction
 
 function! LightlineLSPErrors() abort
-  let l:counts = luaeval("vim.lsp.util.buf_diagnostics_count([[Error]])")
+  let l:counts = luaeval("vim.lsp.diagnostic.get_count([[Error]])")
   let l:result = l:counts == 0 ? '' : printf('E:%d', l:counts)
   return l:result
 endfunction
 
 function! LightlineLSPOk() abort
-  let l:counts = luaeval("vim.lsp.util.buf_diagnostics_count([[Warning, Error]])")
+  let l:counts = luaeval("vim.lsp.diagnostic.get_count([[Warning, Error]])")
   return l:counts == 0 ? 'OK' : ''
 endfunction
 
@@ -416,17 +424,21 @@ endfunction
 function! GinaOpenPr() abort
   let l:info = gina#action#candidates()
   if len(l:info) == 0
+    echomsg 'info was not found'
     return
   endif
 
   let l:info = get(l:info, 0)
   let l:commit_hash = get(l:info, 'rev')
-  if l:commit_hash == 0
+  echomsg l:commit_hash
+  if l:commit_hash == ''
+    echomsg 'commit_hash was not found'
     return
   endif
 
   let l:message = system(printf("git log --oneline -n 1 --format=%%s %s", l:commit_hash))
   if len(l:message) == 0
+    echomsg 'PR was not found'
     return
   endif
   let l:message = trim(split(l:message, '\n')[0])
@@ -439,6 +451,7 @@ function! GinaOpenPr() abort
     let l:message = system(printf('git log --merges --oneline --reverse --ancestry-path --format=%%s %s...master | head -n 1', l:commit_hash))
     let l:match = matchstrpos(l:message, '^Merge pull request #\d\+')
     if l:match[1] == -1
+      echomsg 'PR was not found'
       return
     endif
 
@@ -447,6 +460,7 @@ function! GinaOpenPr() abort
   let l:remote_url = trim(system('git remote get-url origin'))
   let l:url = s:build_base_url(l:remote_url)
   if l:url == ''
+    echomsg 'uri was not found'
     return
   endif
   call gina#util#open(printf('%s/pull/%s', l:url, l:pr))
