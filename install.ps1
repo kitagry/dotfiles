@@ -17,3 +17,12 @@ if ( -Not $(Test-Path $to_efm_dir) ) {
 Get-ChildItem $from_efm_dir | ForEach-Object {
   New-Item -Path $to_efm_dir -Name $_.Name -Value $_.FullName -ItemType SymbolicLink
 }
+
+$from_alacritty_dir = '.config\alacritty'
+$to_alacritty_dir = "$env:APPDATA/alacritty"
+if ( -Not $(Test-Path $to_alacritty_dir) ) {
+  New-Item $to_alacritty_dir -ItemType Directory
+}
+Get-ChildItem $from_alacritty_dir | ForEach-Object {
+  New-Item -Path $to_alacritty_dir -Name $_.Name -Value $_.FullName -ItemType SymbolicLink
+}

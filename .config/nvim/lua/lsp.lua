@@ -37,17 +37,17 @@ function M.setupLSP()
     filetypes = { 'vim' },
   }
 
-  configs.golangci_lint = {
-    default_config = {
-      cmd = { 'golangci-lint-langserver' };
-      filetypes = { 'go' };
-      root_dir = util.root_pattern("go.mod", ".git");
-      init_options = {
-        command={ 'golangci-lint', 'run', '--enable-all', '--disable', 'lll', '--out-format', 'json' };
-      };
-    };
-  }
-  nvim_lsp.golangci_lint.setup{}
+  -- configs.golangci_lint = {
+  --   default_config = {
+  --     cmd = { 'golangci-lint-langserver' };
+  --     filetypes = { 'go' };
+  --     root_dir = util.root_pattern("go.mod", ".git");
+  --     init_options = {
+  --       command={ 'golangci-lint', 'run', '--enable-all', '--disable', 'lll', '--out-format', 'json' };
+  --     };
+  --   };
+  -- }
+  -- nvim_lsp.golangci_lint.setup{}
 
   configs.sqls = {
     default_config = {
