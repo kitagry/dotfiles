@@ -38,6 +38,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('nvim-telescope/telescope.nvim', {'merged': 0})
 
   call dein#add('nvim-treesitter/nvim-treesitter', {'merged': 0})
+  call dein#add('romgrk/nvim-treesitter-context')
   call dein#add('itchyny/lightline.vim')
   call dein#add('taohexxx/lightline-buffer')
 
@@ -46,6 +47,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('cohama/lexima.vim')
   call dein#add('machakann/vim-sandwich')
   call dein#add('tyru/caw.vim')
+  call dein#add('tyru/open-browser.vim')
   call dein#add('kana/vim-repeat')
   call dein#add('kana/vim-textobj-user')
   call dein#add('sgur/vim-textobj-parameter')
@@ -54,11 +56,12 @@ if dein#load_state(s:dein_dir)
   call dein#add('kitagry/gina-openpr.vim')
   " call dein#local(expand(s:dein_dir_ . '/repos/github.com/kitagry'), {}, ['gina-openpr.vim'])
 
-  " call dein#add('junegunn/fzf.vim', {'depends': 'fzf'})
-  " call dein#add('junegunn/fzf', {'merged': 0})
   call dein#add('lambdalisue/fern.vim')
   call dein#add('lambdalisue/nerdfont.vim')
   call dein#add('lambdalisue/fern-renderer-nerdfont.vim')
+  call dein#add('lambdalisue/fern-hijack.vim')
+  call dein#add('mattn/vim-goaddtags')
+  call dein#add('mattn/vim-goimpl')
 
   call dein#add('kana/vim-operator-user')
   call dein#add('haya14busa/vim-operator-flashy', {
@@ -69,7 +72,6 @@ if dein#load_state(s:dein_dir)
   call dein#add('mattn/emmet-vim')
   call dein#add('rhysd/rust-doc.vim')
   call dein#add('vim-test/vim-test')
-  call dein#add('mattn/vim-goaddtags')
 
   call dein#end()
   call dein#save_state()
@@ -227,7 +229,7 @@ autocmd FileType help nnoremap <buffer> q <C-w>c
 autocmd FileType qf nnoremap <buffer> q :<C-u>cclose<CR>
 " }}}
 
-" completion-nvim {{{
+" nvim-compe {{{
 set completeopt=menuone,noinsert,noselect
 let g:compe_enabled = v:true
 let g:compe_min_length = 1
@@ -249,7 +251,6 @@ lua <<EOF
     };
   }
 EOF
-
 " }}}
 
 " vim-vsnip {{{
@@ -261,7 +262,6 @@ smap <expr> <c-k>   vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<c-k
 
 " built in lsp {{{
 lua require"lsp".setupLSP()
-
 function! s:reset_lsp() abort
   echomsg "restarting lsp..."
   lua vim.lsp.stop_client(vim.lsp.get_active_clients())
@@ -324,18 +324,18 @@ lua require"treesitter".setupTreesitter()
 set hidden  " allow buffer switching without saving
 set showtabline=2  " always show tabline
 function! LightlineLSPWarnings() abort
-  let l:counts = luaeval("vim.lsp.util.buf_diagnostics_count([[Warning]])")
+  let l:counts = luaeval("vim.lsp.diagnostic.get_count([[Warning]])")
   return l:counts == 0 ? '' : printf('W:%d', l:counts)
 endfunction
 
 function! LightlineLSPErrors() abort
-  let l:counts = luaeval("vim.lsp.util.buf_diagnostics_count([[Error]])")
+  let l:counts = luaeval("vim.lsp.diagnostic.get_count([[Error]])")
   let l:result = l:counts == 0 ? '' : printf('E:%d', l:counts)
   return l:result
 endfunction
 
 function! LightlineLSPOk() abort
-  let l:counts = luaeval("vim.lsp.util.buf_diagnostics_count([[Warning, Error]])")
+  let l:counts = luaeval("vim.lsp.diagnostic.get_count([[Warning, Error]])")
   return l:counts == 0 ? 'OK' : ''
 endfunction
 
@@ -472,7 +472,6 @@ function! DockerComposeTransformation(cmd) abort
         let target = docker_compose_copy[i][2:-2]
         break
       endif
-
     endfor
     return printf('docker-compose run --rm %s %s', target, a:cmd)
   endif
