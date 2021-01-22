@@ -33,7 +33,9 @@ if dein#load_state(s:dein_dir)
   call dein#add('hrsh7th/vim-vsnip-integ')
   call dein#add('kitagry/vs-snippets', {'merged': 0})
   call dein#add('neovim/nvim-lspconfig')
-  " call dein#add('tjdevries/nlua.nvim', {'merged': 0})
+  call dein#add('nvim-lua/popup.nvim')
+  call dein#add('nvim-lua/plenary.nvim')
+  call dein#add('nvim-telescope/telescope.nvim', {'merged': 0})
 
   call dein#add('nvim-treesitter/nvim-treesitter', {'merged': 0})
   call dein#add('romgrk/nvim-treesitter-context')
@@ -54,8 +56,6 @@ if dein#load_state(s:dein_dir)
   call dein#add('kitagry/gina-openpr.vim')
   " call dein#local(expand(s:dein_dir_ . '/repos/github.com/kitagry'), {}, ['gina-openpr.vim'])
 
-  call dein#add('junegunn/fzf.vim', {'depends': 'fzf'})
-  call dein#add('junegunn/fzf', {'merged': 0})
   call dein#add('lambdalisue/fern.vim')
   call dein#add('lambdalisue/nerdfont.vim')
   call dein#add('lambdalisue/fern-renderer-nerdfont.vim')
@@ -162,6 +162,7 @@ if filereadable(s:nvimrc_local)
 endif
 
 if has('win32')
+  set termguicolors
   augroup vim_setfiletype
     autocmd!
     autocmd BufNewFile * set fileformat=unix
@@ -406,14 +407,15 @@ augroup my-fern
 augroup END
 " }}}
 
-" fzf {{{
-nnoremap [fzf] <Nop>
-nmap <Leader>f [fzf]
-nmap <silent> [fzf]f :<C-u>Files<CR>
-nmap <silent> [fzf]c :<C-u>Files %%<CR>
-nmap <silent> [fzf]m :<C-u>Marks<CR>
-nmap <silent> [fzf]g :<C-u>call fzf#vim#ag('', {'options': '--bind ctrl-a:select-all,ctrl-d:deselect-all'})<CR>
-nmap <silent> [fzf]] :<C-u>call fzf#vim#ag('<C-r><C-w>', {'options': '--bind ctrl-a:select-all,ctrl-d:deselect-all'})<CR>
+" telescope {{{
+lua require('telescope').setup{
+ \  file_previewer = require'telescope.previewers'.cat.new,
+ \ }
+nnoremap [telescope] <Nop>
+nmap <Leader>f [telescope]
+nmap <silent> [telescope]f <cmd>lua require('telescope.builtin').find_files()<CR>
+nmap <silent> [telescope]g <cmd>lua require('telescope.builtin').live_grep()<CR>
+nmap <silent> [telescope]] <cmd>lua require('telescope.builtin').grep_string()<CR>
 " }}}
 
 " flasy.vim {{{
@@ -476,12 +478,45 @@ function! DockerComposeTransformation(cmd) abort
   return a:cmd
 endfunction
 
+function! CbExit(job_id, status_code, event) abort
+  let vim_test_buf_id = get(b:, 'vim_test_buf_id', 0)
+  if vim_test_buf_id == 0
+    return
+  endif
+
+  if !hlexists('StatusLineTermSuccess')
+    highlight! StatusLineTermSuccess ctermbg=Green guibg=#ff0000
+    highlight! StatusLineTermFail    ctermbg=Red   guibg=#ff0000
+  endif
+
+  " https://github.com/neovim/neovim/pull/13664
+  " これ待ちになりそう
+  if a:status_code
+    set statusline=Fail%#StatusLineTermFail#
+  else
+    set statusline=Success%#StatusLineTermSuccess#
+  endif
+endfunction
+
+function! s:custom_strategy(cmd) abort
+  let term_position = get(g:, 'test#neovim#term_position', 'botright')
+  execute term_position . ' new'
+  let b:vim_test_buf_id = bufnr('%')
+  let l:job_id =  termopen(a:cmd, {
+    \ 'on_exit': function('CbExit'),
+    \ })
+  au BufDelete <buffer> wincmd p " switch back to last window
+  startinsert
+endfunction
+
 let g:test#custom_transformations = {'docker': function('DockerComposeTransformation')}
 let g:test#transformation = 'docker'
-let test#strategy = 'neovim'
+let g:test#custom_strategies = {'custom': function('s:custom_strategy')}
+let test#strategy = 'custom'
 let test#neovim#term_position = 'vert'
 let test#go#gotest#options = {
-  \ 'suite': '-p 1 -v',
+  \ 'file': '-p 1',
+  \ 'suite': '-p 1',
   \ }
 nnoremap [vim-test] <Nop>
 nmap <Leader>e [vim-test]
