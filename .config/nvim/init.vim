@@ -73,7 +73,6 @@ if dein#load_state(s:dein_dir)
   call dein#add('mattn/emmet-vim')
   call dein#add('rhysd/rust-doc.vim')
   call dein#add('vim-test/vim-test')
-  call dein#add('mattn/vim-goaddtags')
   call dein#add('sainnhe/sonokai')
   call dein#add('segeljakt/vim-silicon')
 
