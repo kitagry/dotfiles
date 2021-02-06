@@ -1,5 +1,4 @@
 local nvim_lsp = require'lspconfig'
--- local diagnostic = require'diagnostic'
 local configs = require'lspconfig/configs'
 local util = require 'lspconfig/util'
 

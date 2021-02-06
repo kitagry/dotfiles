@@ -179,3 +179,4 @@ mkcd() {
 
 [ -f "$HOME/.zshenv.local" ] && source "$HOME/.zshenv.local"
 source "$HOME/.cargo/env"
+alias python="python3"
