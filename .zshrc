@@ -32,7 +32,8 @@ setopt list_packed
 # 補完候補一覧をカラー表示
 zstyle ':completion:*' list-colors ''
 
-autoload -Uz compinit && compinit
+autoload -Uz compinit
+compinit
 
 # コマンドのスペルを訂正
 setopt correct
@@ -57,6 +58,7 @@ source "$HOME/.zinit/bin/zinit.zsh"
 autoload -Uz _zinit
 (( ${+_comps} )) && _comps[zinit]=_zinit
 
+zinit ice proto'git' pick'init.sh'
 zinit light b4b4r07/enhancd
 export ENHANCD_FILTER=fzf
 

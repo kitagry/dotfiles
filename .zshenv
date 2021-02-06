@@ -44,6 +44,7 @@ alias dclean='docker rm $(docker ps -aq)'
 alias k='kubectl'
 alias kc='kubectx'
 alias kn='kubens'
+alias sourceenv='(){set -a; source $1; set +a}'
 
 kustomize_build() {
   kustomize_file_path=$(find . -name kustomization.yaml -o -name kustomization.yml -o -name Kustomization -type f | fzf)
@@ -177,3 +178,4 @@ mkcd() {
 }
 
 [ -f "$HOME/.zshenv.local" ] && source "$HOME/.zshenv.local"
+source "$HOME/.cargo/env"

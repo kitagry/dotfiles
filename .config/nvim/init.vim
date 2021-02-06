@@ -35,7 +35,8 @@ if dein#load_state(s:dein_dir)
   call dein#add('neovim/nvim-lspconfig')
   call dein#add('nvim-lua/popup.nvim')
   call dein#add('nvim-lua/plenary.nvim')
-  call dein#add('nvim-telescope/telescope.nvim', {'merged': 0})
+  call dein#add('nvim-telescope/telescope.nvim')
+  call dein#add('nvim-telescope/telescope-github.nvim')
 
   call dein#add('nvim-treesitter/nvim-treesitter', {'merged': 0})
   call dein#add('itchyny/lightline.vim')
@@ -70,6 +71,8 @@ if dein#load_state(s:dein_dir)
   call dein#add('rhysd/rust-doc.vim')
   call dein#add('vim-test/vim-test')
   call dein#add('mattn/vim-goaddtags')
+  call dein#add('sainnhe/sonokai')
+  call dein#add('segeljakt/vim-silicon')
 
   call dein#end()
   call dein#save_state()
@@ -121,6 +124,9 @@ set tabstop=2
 " 行頭でのTab文字の表示幅
 set shiftwidth=2
 
+set ignorecase
+set inccommand=split
+
 augroup fileTypeIndent
   autocmd!
   autocmd BufNewFile,BufRead *.py   setlocal tabstop=4 softtabstop=4 shiftwidth=4
@@ -147,7 +153,9 @@ augroup setFileType
 augroup END
 
 set background=dark
-colorscheme apprentice
+let g:sonokai_style = 'shusia'
+set termguicolors
+colorscheme sonokai
 
 let s:nvimrc_dir = '~/.config/nvim'
 if has('win32')
@@ -261,6 +269,7 @@ smap <expr> <c-k>   vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<c-k
 
 " built in lsp {{{
 lua require"lsp".setupLSP()
+" lua vim.lsp.set_log_level(0)
 
 function! s:reset_lsp() abort
   echomsg "restarting lsp..."
@@ -272,11 +281,7 @@ command! LspReset call s:reset_lsp()
 
 function! s:lsp_format()
   lua require"lsp".code_action_sync("source.organizeImports")
-
-  " This patch will be deleted when the following PR will be merged.
-  " https://github.com/neovim/neovim/pull/13233
-  lua require"lsp".formatting_sync()
-  " lua vim.lsp.buf.formatting_sync()
+  lua vim.lsp.buf.formatting_sync()
 endfunction
 
 function! s:set_lsp_buffer_enabled() abort
@@ -295,6 +300,7 @@ function! s:set_lsp_buffer_enabled() abort
   nmap [vim-lsp]t <cmd>lua vim.lsp.buf.type_definition()<CR>
   nmap [vim-lsp]a <cmd>lua vim.lsp.buf.code_action()<CR>
   nmap [vim-lsp]q :<C-u>LspReset<CR>
+  nmap [vim-lsp]s :<C-u>LspInfo<CR>
 
   sign define LspDiagnosticsErrorSign text=E> texthl=Error linehl= numhl=
   sign define LspDiagnosticsWarningSign text=W> texthl=WarningMsg linehl= numhl=
@@ -304,7 +310,7 @@ function! s:set_lsp_buffer_enabled() abort
   augroup lsp_formatting
     au!
     autocmd BufWritePre *.go call s:lsp_format()
-    autocmd BufWritePre *.rs lua require"lsp".formatting_sync()
+    autocmd BufWritePre *.rs call s:lsp_format()
     autocmd BufWritePre *.tsx,*ts,*.jsx,*js call s:lsp_format()
   augroup END
 endfunction
@@ -345,7 +351,7 @@ augroup LightLineOnLSP
 augroup END
 
 let g:lightline = {
-      \ 'colorscheme': 'wombat',
+      \ 'colorscheme': 'sonokai',
       \ 'active': {
       \   'left': [
       \     [ 'mode', 'paste' ],
@@ -416,6 +422,8 @@ nmap <Leader>f [telescope]
 nmap <silent> [telescope]f <cmd>lua require('telescope.builtin').find_files()<CR>
 nmap <silent> [telescope]g <cmd>lua require('telescope.builtin').live_grep()<CR>
 nmap <silent> [telescope]] <cmd>lua require('telescope.builtin').grep_string()<CR>
+nmap <silent> [telescope]d <cmd>lua require('telescope.builtin').lsp_document_symbols()<CR>
+nmap <silent> [telescope]b <cmd>lua require('telescope.builtin').git_branches()<CR>
 " }}}
 
 " flasy.vim {{{

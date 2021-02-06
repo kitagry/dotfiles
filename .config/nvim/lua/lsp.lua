@@ -34,7 +34,13 @@ function M.setupLSP()
   }
   nvim_lsp.efm.setup{
     capabilities = capabilities,
-    filetypes = { 'vim' },
+    filetypes = { 'vim', 'plaintex', 'tex', 'markdown' },
+    default_config = {
+      cmd = { 'efm-langserver', '-c', 'C:\\Users\\kitad\\AppData\\Roaming\\efm-langserver\\config.yaml', '-logfile', 'C:\\Users\\kitad\\AppData\\Local\\Temp\\nvim\\efm.log' }
+    }
+  }
+  nvim_lsp.texlab.setup{
+    capabilities = capabilities,
   }
 
   -- configs.golangci_lint = {

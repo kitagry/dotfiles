@@ -11,9 +11,34 @@ tools:
     lint-command: 'vint -'
     lint-stdin: true
 
+  textlint: &textlint
+    lint-command: 'yarn run textlint --format unix --stdin --stdin-filename ${INPUT}'
+    lint-ignore-exit-code: true
+    lint-stdin: true
+    lint-formats:
+      - '%f:%l:%c: %m [%trror/%r]'
+      - '%f:%l:%c: 【%r】 %m'
+      - '%E%f:%l:%c: %m'
+      - '%Z%m [%trror/%r]'
+      - '%C%m'
+    root-markers:
+      - .textlintrc
+    commands:
+      - command: 'yarn run textlint --fix ${INPUT}'
+        title: 'textlint fix'
+
 languages:
   go:
     - <<: *golint
 
   vim:
     - <<: *vint
+
+  tex:
+    - <<: *textlint
+
+  plaintex:
+    - <<: *textlint
+
+  markdown:
+    - <<: *textlint
