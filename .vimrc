@@ -386,8 +386,8 @@ augroup LspEFM
   au!
   autocmd User lsp_setup call lsp#register_server({
       \ 'name': 'efm-langserver',
-      \ 'cmd': {server_info->['efm-langserver', '-c=' . expand($HOME . '/.config/efm-langserver/config.yaml'), '-logfile=' . expand(g:log_files_dir . '/efm-langserver.log')]},
-      \ 'allowlist': ['go', 'python', 'vim', 'markdown'],
+      \ 'cmd': {server_info->['efm-langserver', '-c=' . expand($APPDATA . '/efm-langserver/config.yaml'), '-logfile=' . expand(g:log_files_dir . '/efm-langserver.log')]},
+      \ 'allowlist': ['go', 'python', 'vim', 'markdown', 'tex'],
       \ })
 augroup END
 
@@ -399,6 +399,11 @@ let g:lsp_settings = {
   \       'staticcheck': v:true,
   \       'analyses': {
   \         'fillstruct': v:true,
+  \       },
+  \       'codelens': {
+  \         'vendor': v:true,
+  \         'tidy': v:true,
+  \         'test': v:true,
   \       },
   \     },
   \   },
