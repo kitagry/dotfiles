@@ -45,7 +45,6 @@ if dein#load_state(s:dein_dir)
 
   call dein#add('romainl/Apprentice')
 
-  call dein#add('cohama/lexima.vim')
   call dein#add('machakann/vim-sandwich')
   call dein#add('tyru/caw.vim')
   call dein#add('tyru/open-browser.vim')
@@ -75,6 +74,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('vim-test/vim-test')
   call dein#add('sainnhe/sonokai')
   call dein#add('segeljakt/vim-silicon')
+  call dein#add('windwp/nvim-autopairs')
 
   call dein#end()
   call dein#save_state()
@@ -241,7 +241,7 @@ autocmd FileType qf nnoremap <buffer> q :<C-u>cclose<CR>
 set completeopt=menuone,noinsert,noselect
 let g:compe_enabled = v:true
 let g:compe_min_length = 1
-inoremap <expr><CR>  compe#confirm(lexima#expand('<LT>CR>', 'i'))
+" inoremap <expr><CR>  compe#confirm(lexima#expand('<LT>CR>', 'i'))
 inoremap <expr><C-e> compe#close('<C-e>')
 lua <<EOF
   require'compe'.setup {
@@ -532,4 +532,13 @@ nmap <Leader>e [vim-test]
 nmap <silent> [vim-test]a <cmd>TestSuit<CR>
 nmap <silent> [vim-test]f <cmd>TestFile<CR>
 nmap <silent> [vim-test]t <cmd>TestVisit<CR>
+" }}}
+
+" {{{ nvim-autopairs
+lua <<EOF
+require('nvim-autopairs').setup({
+  ignored_next_char = "[%w]"
+})
+require('autopairs')
+EOF
 " }}}
