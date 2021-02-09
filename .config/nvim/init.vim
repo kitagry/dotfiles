@@ -501,9 +501,9 @@ function! CbExit(job_id, status_code, event) abort
   " https://github.com/neovim/neovim/pull/13664
   " これ待ちになりそう
   if a:status_code
-    set statusline=Fail%#StatusLineTermFail#
+    set statusline=%#StatusLineTermFail#Fail
   else
-    set statusline=Success%#StatusLineTermSuccess#
+    set statusline=%#StatusLineTermSuccess#Success
   endif
 endfunction
 
