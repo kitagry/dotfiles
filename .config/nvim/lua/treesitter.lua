@@ -1,9 +1,38 @@
 local M = {}
 function M.setupTreesitter()
-  require'nvim-treesitter.configs'.setup {
-    ensure_installed = "all",     -- one of "all", "language", or a list of languages
+  -- require 'nvim-treesitter'.define_modules {
+  --   goaddtags = {
+  --     attach = function(bufnr, lang)
+  --       print(bufnr)
+  --     end,
+  --     detach = function(bufnr)
+  --     end,
+  --     is_supported = function(lang)
+  --       print(lang)
+  --       return lang == 'go'
+  --     end,
+  --   }
+  -- }
+
+  require 'nvim-treesitter.configs'.setup {
+    ensure_installed = "all",
     highlight = {
-      enable = true,              -- false will disable the whole extension
+      enable = true,
+    },
+    indent = {
+      enable = true,
+    },
+    playground = {
+      enable = true,
+      disable = {},
+      updatetime = 25, -- Debounced time for highlighting nodes in the playground from source code
+      persist_queries = false -- Whether the query persists across vim sessions
+    },
+    goaddtags = {
+      enable = true,
+      keymap = {
+        goaddtags = "gt"
+      },
     },
   }
 end
