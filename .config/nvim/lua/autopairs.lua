@@ -1,6 +1,11 @@
 local remap = vim.api.nvim_set_keymap
 local npairs = require('nvim-autopairs')
 
+-- setup
+npairs.setup({
+  ignored_next_char = "[%w]"
+})
+
 -- skip it, if you use another global object
 _G.MUtils= {}
 
@@ -12,7 +17,7 @@ MUtils.completion_confirm=function()
       return npairs.esc("<c-y>")
     else
       vim.defer_fn(function()
-        vim.fn["compe#confirm"]("<cr>")
+        vim.fn["compe#confirm"]("<CR>")
       end, 20)
       return npairs.esc("<c-n>")
     end
@@ -21,4 +26,4 @@ MUtils.completion_confirm=function()
   end
 end
 
-remap('i' , '<CR>','v:lua.MUtils.completion_confirm()', {expr = true , noremap = true})
+-- remap('i', '<CR>', 'v:lua.MUtils.completion_confirm()', {expr = true , noremap = true})

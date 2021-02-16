@@ -39,7 +39,8 @@ if dein#load_state(s:dein_dir)
   call dein#add('nvim-telescope/telescope-github.nvim')
 
   call dein#add('nvim-treesitter/nvim-treesitter', {'merged': 0})
-  call dein#add('romgrk/nvim-treesitter-context')
+  call dein#add('nvim-treesitter/playground', {'merged': 0})
+  call dein#add('romgrk/nvim-treesitter-context', {'merged': 0})
   call dein#add('itchyny/lightline.vim')
   call dein#add('taohexxx/lightline-buffer')
 
@@ -54,13 +55,13 @@ if dein#load_state(s:dein_dir)
   call dein#add('Julian/vim-textobj-variable-segment')
   call dein#add('lambdalisue/gina.vim', {'merged': 0})
   call dein#add('kitagry/gina-openpr.vim')
-  " call dein#local(expand(s:dein_dir_ . '/repos/github.com/kitagry'), {}, ['gina-openpr.vim'])
+  call dein#local(expand(s:dein_dir_ . '/repos/github.com/kitagry'), {}, ['nvim-treesitter-goaddtags'])
 
   call dein#add('lambdalisue/fern.vim')
   call dein#add('lambdalisue/nerdfont.vim')
   call dein#add('lambdalisue/fern-renderer-nerdfont.vim')
   call dein#add('lambdalisue/fern-hijack.vim')
-  call dein#add('mattn/vim-goaddtags')
+  call dein#add('mattn/vim-goaddtags', {'merged': 0})
   call dein#add('mattn/vim-goimpl')
 
   call dein#add('kana/vim-operator-user')
@@ -241,8 +242,10 @@ autocmd FileType qf nnoremap <buffer> q :<C-u>cclose<CR>
 set completeopt=menuone,noinsert,noselect
 let g:compe_enabled = v:true
 let g:compe_min_length = 1
-" inoremap <expr><CR>  compe#confirm(lexima#expand('<LT>CR>', 'i'))
+inoremap <expr><CR>  compe#confirm('<CR>')
 inoremap <expr><C-e> compe#close('<C-e>')
+inoremap <silent><expr> <C-f>     compe#scroll({ 'delta': +4 })
+inoremap <silent><expr> <C-d>     compe#scroll({ 'delta': -4 })
 lua <<EOF
   require'compe'.setup {
     enabled = true;
@@ -256,6 +259,7 @@ lua <<EOF
       buffer = true;
       vsnip = true;
       nvim_lsp = true;
+      nvim_lua = true;
     };
   }
 EOF
@@ -312,7 +316,7 @@ function! s:set_lsp_buffer_enabled() abort
     au!
     autocmd BufWritePre *.go call s:lsp_format()
     autocmd BufWritePre *.rs call s:lsp_format()
-    autocmd BufWritePre *.tsx,*ts,*.jsx,*js call s:lsp_format()
+    autocmd BufWritePre *.tsx,*ts,*.jsx,*js lua vim.lsp.buf.formatting_sync()
   augroup END
 endfunction
 
@@ -539,6 +543,5 @@ lua <<EOF
 require('nvim-autopairs').setup({
   ignored_next_char = "[%w]"
 })
-require('autopairs')
 EOF
 " }}}
