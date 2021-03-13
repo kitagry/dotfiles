@@ -32,7 +32,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('hrsh7th/vim-vsnip')
   call dein#add('hrsh7th/vim-vsnip-integ')
   call dein#add('kitagry/vs-snippets', {'merged': 0})
-  call dein#add('neovim/nvim-lspconfig')
+  call dein#add('neovim/nvim-lspconfig', {'merged': 0})
   call dein#add('nvim-lua/popup.nvim')
   call dein#add('nvim-lua/plenary.nvim')
   call dein#add('nvim-telescope/telescope.nvim')
@@ -55,7 +55,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('Julian/vim-textobj-variable-segment')
   call dein#add('lambdalisue/gina.vim', {'merged': 0})
   call dein#add('kitagry/gina-openpr.vim')
-  call dein#local(expand(s:dein_dir_ . '/repos/github.com/kitagry'), {}, ['nvim-treesitter-goaddtags'])
+  call dein#local(expand(s:dein_dir_ . '/repos/github.com/kitagry'), {}, ['nvim-treesitter-goaddtags', 'dps-markdown-previewer'])
 
   call dein#add('lambdalisue/fern.vim')
   call dein#add('lambdalisue/nerdfont.vim')
@@ -76,6 +76,8 @@ if dein#load_state(s:dein_dir)
   call dein#add('sainnhe/sonokai')
   call dein#add('segeljakt/vim-silicon')
   call dein#add('windwp/nvim-autopairs')
+  call dein#add('lambdalisue/suda.vim')
+  call dein#add('vim-denops/denops.vim')
 
   call dein#end()
   call dein#save_state()
@@ -150,7 +152,6 @@ augroup setFileType
   autocmd BufRead,BufNewFile *.scss     setfiletype sass
   autocmd BufNewFile,BufRead *.jl       setfiletype julia
   autocmd BufNewFile,BufRead *.md       setfiletype markdown
-  autocmd BufNewFile,BufRead *.tsx,*jsx setfiletype typescript.tsx
   autocmd BufNewFile,BufRead *.launch   setfiletype xml
   autocmd BufNewFile,BufRead *.html.*   setfiletype html
 augroup END
@@ -236,6 +237,22 @@ nnoremap <Esc><Esc> :nohlsearch<CR><Esc>
 autocmd FileType vim setlocal foldmethod=marker
 autocmd FileType help nnoremap <buffer> q <C-w>c
 autocmd FileType qf nnoremap <buffer> q :<C-u>cclose<CR>
+
+function s:specific_keymap_init() abort
+  " 言語特有のkeymapping
+  nnoremap [special_lang] <Nop>
+  nmap     <buffer><silent><Leader>h [special_lang]
+endfunction
+
+function s:golang_set() abort
+  call s:specific_keymap_init()
+  nmap <buffer> [special_lang]t <cmd>lua require("go").toggle_test_file()<CR>
+endfunction
+
+augroup lang_specific_settings
+  au!
+  autocmd FileType go call s:golang_set()
+augroup END
 " }}}
 
 " nvim-compe {{{
@@ -320,9 +337,16 @@ function! s:set_lsp_buffer_enabled() abort
   augroup END
 endfunction
 
+function s:set_typescript_shortcut() abort
+  nnoremap <buffer><silent><c-]>      <cmd>lua require('lspconfig').denols.definition()<CR>
+
+  nmap [vim-lsp]e <cmd>lua require('lspconfig').denols.references({ includeDeclaration = true })<CR>
+endfunction
+
 augroup lsp_install
     au!
     autocmd BufEnter * call s:set_lsp_buffer_enabled()
+    autocmd BufEnter *.ts,*.tsx call s:set_typescript_shortcut()
 augroup END
 " }}}
 
