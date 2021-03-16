@@ -106,7 +106,7 @@ local function code_action_sync_handler(actions)
 end
 
 function M.code_action_sync(action)
-  local pre_callback = vim.lsp.callbacks['textDocument/codeAction']
+  local pre_callback = vim.lsp.handlers['textDocument/codeAction']
   local context = {}
   context['only'] = {action}
   context['diagnostics'] = {}
