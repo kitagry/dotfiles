@@ -247,7 +247,7 @@ endfunction
 
 function s:golang_set() abort
   call s:specific_keymap_init()
-  nmap <buffer> [special_lang]t <cmd>lua require("go").toggle_test_file()<CR>
+  nmap <buffer> [special_lang]t <cmd>lua require("kitagry.go").toggle_test_file()<CR>
 endfunction
 
 augroup lang_specific_settings
@@ -291,7 +291,7 @@ smap <expr> <c-k>   vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<c-k
 " }}}
 
 " built in lsp {{{
-lua require"lsp".setupLSP()
+lua require"kitagry.lsp".setupLSP()
 " lua vim.lsp.set_log_level(0)
 
 function! s:reset_lsp() abort
@@ -303,7 +303,7 @@ endfunction
 command! LspReset call s:reset_lsp()
 
 function! s:lsp_format()
-  lua require"lsp".code_action_sync("source.organizeImports")
+  lua require"kitagry.lsp".code_action_sync("source.organizeImports")
   lua vim.lsp.buf.formatting_sync()
 endfunction
 
@@ -353,7 +353,7 @@ augroup END
 
 " treesitter {{{
 " ./after/lua/treesitter.lua
-lua require"treesitter".setupTreesitter()
+lua require"kitagry.treesitter".setupTreesitter()
 " }}}
 
 " lightline {{{
@@ -444,9 +444,7 @@ augroup END
 " }}}
 
 " telescope {{{
-lua require('telescope').setup{
- \  file_previewer = require'telescope.previewers'.cat.new,
- \ }
+lua require("kitagry.telescope")
 nnoremap [telescope] <Nop>
 nmap <Leader>f [telescope]
 nmap <silent> [telescope]f <cmd>lua require('telescope.builtin').find_files()<CR>
