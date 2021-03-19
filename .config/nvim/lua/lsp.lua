@@ -34,11 +34,21 @@ function M.setupLSP()
   -- nvim_lsp.denols.setup{
   --   capabilities = capabilities,
   -- }
+  local efm_config
+  local efm_logfile
+  if vim.fn.has('win32') == 1 then
+    efm_config = 'C:\\Users\\kitad\\AppData\\Roaming\\efm-langserver\\config.yaml'
+    efm_logfile = 'C:\\Users\\kitad\\AppData\\Local\\Temp\\nvim\\efm.log'
+  else
+    efm_config = '~/.config/efm-langserver/config.yaml'
+    efm_logfile = '~/.cache/nvim/efm.log'
+  end
   nvim_lsp.efm.setup{
     capabilities = capabilities,
     filetypes = { 'vim', 'plaintex', 'tex', 'markdown' },
+    root_dir = util.root_pattern(".git");
     default_config = {
-      cmd = { 'efm-langserver', '-c', 'C:\\Users\\kitad\\AppData\\Roaming\\efm-langserver\\config.yaml', '-logfile', 'C:\\Users\\kitad\\AppData\\Local\\Temp\\nvim\\efm.log' }
+      cmd = { 'efm-langserver', '-c', efm_config, '-logfile', efm_logfile };
     }
   }
   nvim_lsp.texlab.setup{
