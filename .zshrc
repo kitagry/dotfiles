@@ -80,6 +80,7 @@ bindkey '^B' zaw-git-branches
 
 ## kubernetes completes
 if [ $commands[kubectl] ]; then
+  source <(kubectl completion zsh)
   zinit ice pick"gh" src"kubectl.zsh"
   zinit light superbrothers/zsh-kubectl-prompt
   function right_prompt() {
