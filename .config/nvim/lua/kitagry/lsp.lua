@@ -54,6 +54,19 @@ function M.setupLSP()
   nvim_lsp.texlab.setup{
     capabilities = capabilities,
   }
+  nvim_lsp.terraformls.setup{
+    capabilities = capabilities,
+  }
+  nvim_lsp.yamlls.setup{
+    capabilities = capabilities,
+    settings = {
+      yaml = {
+        schemas = {
+          kubernetes = {"/k8s/*"};
+        }
+      }
+    }
+  }
 
   -- configs.golangci_lint = {
   --   default_config = {

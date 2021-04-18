@@ -7,8 +7,8 @@ fi
 
 # ヒストリの設定
 HISTFILE=~/.zsh_history
-HISTSIZE=10000
-SAVEHIST=10000
+HISTSIZE=100000000
+SAVEHIST=100000000
 # 直前のコマンドの重複を削除
 setopt hist_ignore_dups
 # 同じコマンドをヒストリに残さない
@@ -20,11 +20,6 @@ bindkey -v
 
 # 補完機能を有効にする
 zstyle ':completion:*:default' menu select=2
-# if [ -e $HOME/.zsh/completion ]; then
-#   export FPATH="/home/kitagry/.zsh/completion/:$FPATH"
-#   autoload _git
-#   compdef hub=git
-# fi
 # 補完で小文字でも大文字にマッチさせる
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 # 補完候補を詰めて表示
@@ -86,12 +81,13 @@ if [ $commands[kubectl] ]; then
   function right_prompt() {
     local color="blue"
 
-    if [[ "$ZSH_KUBECTL_CONTEXT" != "docker-desktop" ]]; then
+    if [[ "$ZSH_KUBECTL_CONTEXT" != "docker-for-desktop" ]]; then
       color="red"
     fi
 
     echo "%F{$color}($ZSH_KUBECTL_PROMPT)%f"
   }
+
   RPROMPT='$(right_prompt)'
   source <(kubectl completion zsh)
 fi

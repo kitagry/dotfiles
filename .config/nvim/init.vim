@@ -568,3 +568,9 @@ require('nvim-autopairs').setup({
 })
 EOF
 " }}}
+
+" {{{ silicon
+let g:silicon = {
+    \   'background':         '#FFFFFF',
+    \ }
+" }}}
