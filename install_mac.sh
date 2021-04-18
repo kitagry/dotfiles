@@ -7,14 +7,7 @@ if !(type "brew" > /dev/null 2>&1); then
   /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 fi
 
-if !(type "$(brew config | grep HOMEBREW_REPOSITORY | cut -d ' ' -f 2)/bin/zsh" > /dev/null 2>&1); then
-  brew install zsh
-  echo "$(brew config | grep HOMEBREW_REPOSITORY | cut -d ' ' -f 2)/bin/zsh" > /etc/shells
-  chsh -s "$(brew config | grep HOMEBREW_REPOSITORY | cut -d ' ' -f 2)/bin/zsh"
-  zsh
-fi
-
-declare -a BREW_INSTALL_PLUGINS=('vim git go ghq wget')
+declare -a BREW_INSTALL_PLUGINS=('git go ghq wget')
 declare -a BREW_INSTALLED_PLUGINS=$(brew list)
 
 array_check() {

@@ -12,7 +12,10 @@ export NVIM_LISTEN_ADDRESS="/tmp/nvimsocket"
 export PATH="/usr/local/opt/llvm/bin:$PATH"
 export QT_HOMEBREW=true
 
-export PATH="$HOME/.cargo/bin:$PATH"
+if [ $commands[cargo] ]; then
+  export PATH="$HOME/.cargo/bin:$PATH"
+  source "$HOME/.cargo/env"
+fi
 
 ###########################
 # unixコマンドのalias
@@ -161,6 +164,7 @@ vi() {
 
 # awkをgawkにする
 alias awk="gawk"
+alias tf="terraform"
 
 # cdのよく行くところへのalias
 alias cdg='cd $(ghq root)/github.com/kitagry'
@@ -178,5 +182,3 @@ mkcd() {
 }
 
 [ -f "$HOME/.zshenv.local" ] && source "$HOME/.zshenv.local"
-source "$HOME/.cargo/env"
-alias python="python3"
