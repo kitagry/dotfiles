@@ -3,6 +3,7 @@ local configs = require'lspconfig/configs'
 local util = require 'lspconfig/util'
 
 local M = {}
+
 function M.setupLSP()
   local capabilities = vim.lsp.protocol.make_client_capabilities()
   capabilities.textDocument.completion.completionItem.snippetSupport = true
@@ -16,10 +17,19 @@ function M.setupLSP()
     }
   }
 
-  nvim_lsp.pyls.setup{
+  local virtual_env_path = vim.trim(vim.fn.system('poetry config virtualenvs.path'))
+  local virtual_env_dirctory = vim.trim(vim.fn.system('poetry env list'))
+
+  local python_path = 'python'
+  if #vim.split(virtual_env_dirctory, '\n') == 1 then
+    python_path = string.format("%s/%s/bin/python", virtual_env_path, virtual_env_dirctory)
+  end
+  nvim_lsp.pyright.setup{
     capabilities = capabilities,
-    pyls = {
-      configurationSources = {'flake8'}
+    settings = {
+      python = {
+        pythonPath = python_path;
+      }
     }
   }
   nvim_lsp.vimls.setup{
@@ -45,7 +55,7 @@ function M.setupLSP()
   end
   nvim_lsp.efm.setup{
     capabilities = capabilities,
-    filetypes = { 'vim', 'plaintex', 'tex', 'markdown' },
+    filetypes = { 'vim', 'plaintex', 'tex', 'markdown', 'python' },
     root_dir = util.root_pattern(".git");
     default_config = {
       cmd = { 'efm-langserver', '-c', efm_config, '-logfile', efm_logfile };

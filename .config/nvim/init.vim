@@ -78,7 +78,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('segeljakt/vim-silicon')
   call dein#add('windwp/nvim-autopairs')
   call dein#add('lambdalisue/suda.vim')
-  call dein#add('vim-denops/denops.vim')
+  " call dein#add('vim-denops/denops.vim')
 
   call dein#end()
   call dein#save_state()
@@ -335,6 +335,7 @@ function! s:set_lsp_buffer_enabled() abort
     autocmd BufWritePre *.go call s:lsp_format()
     autocmd BufWritePre *.rs call s:lsp_format()
     autocmd BufWritePre *.tsx,*ts,*.jsx,*js lua vim.lsp.buf.formatting_sync()
+    autocmd BufWritePre *.py lua vim.lsp.buf.formatting_sync({}, 300)
   augroup END
 endfunction
 

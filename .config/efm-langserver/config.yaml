@@ -27,6 +27,16 @@ tools:
       - command: 'yarn run textlint --fix ${INPUT}'
         title: 'textlint fix'
 
+  python-flake8: &python-flake8
+    lint-command: 'flake8 --stdin-display-name ${INPUT} -'
+    lint-stdin: true
+    lint-formats:
+      - '%f:%l:%c: %m'
+
+  python-yapf: &python-yapf
+    format-command: 'yapf --quiet'
+    format-stdin: true
+
 languages:
   go:
     - <<: *golint
@@ -42,3 +52,7 @@ languages:
 
   markdown:
     - <<: *textlint
+
+  python:
+    - <<: *python-flake8
+    - <<: *python-yapf
