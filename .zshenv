@@ -31,7 +31,7 @@ alias git="hub"
 alias gs="git status"
 alias gpom="git pull origin master"
 alias gcb="git switch -c"
-alias gbda="git branch --merged | grep -v '*' | xargs -I % git branch -d %"
+alias gbda="git branch --merged | grep -v '*' | grep -v master | grep -v main | xargs -I % git branch -d %"
 ###########################
 
 ###########################
