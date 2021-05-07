@@ -22,6 +22,7 @@ function M.setupLSP()
 
   local python_path = 'python'
   if #vim.split(virtual_env_dirctory, '\n') == 1 then
+    local virtual_env_dirctory = vim.split(virtual_env_dirctory, ' ')[1]
     python_path = string.format("%s/%s/bin/python", virtual_env_path, virtual_env_dirctory)
   end
   nvim_lsp.pyright.setup{
