@@ -79,6 +79,9 @@ if dein#load_state(s:dein_dir)
   call dein#add('windwp/nvim-autopairs')
   call dein#add('lambdalisue/suda.vim')
   " call dein#add('vim-denops/denops.vim')
+  call dein#add('Shougo/deol.nvim')
+  call dein#add('lambdalisue/pastefix.vim')
+  call dein#add('tamago324/compe-zsh')
 
   call dein#end()
   call dein#save_state()
@@ -222,8 +225,8 @@ if has('win32') && executable('pwsh.exe')
     nnoremap <Leader>t :<C-u>:vsp term://pwsh.exe<CR>
     nnoremap <Leader>T :<C-u>:sp term://pwsh.exe<CR>
 else
-    nnoremap <Leader>t :<C-u>:vsp term://zsh<CR>
-    nnoremap <Leader>T :<C-u>:sp term://zsh<CR>
+    nnoremap <Leader>t :Deol -split=vertical<CR>
+    nnoremap <Leader>T :Deol -split=floating -winheight=70 -winwidth=120<CR>
 endif
 
 " '%%'でアクティブなバッファのディレクトリを開いてくれる
@@ -278,6 +281,7 @@ lua <<EOF
       vsnip = true;
       nvim_lsp = true;
       nvim_lua = true;
+      zsh = true;
     };
   }
 EOF

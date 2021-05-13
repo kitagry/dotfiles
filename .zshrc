@@ -12,7 +12,9 @@ SAVEHIST=100000000
 # 直前のコマンドの重複を削除
 setopt hist_ignore_dups
 # 同じコマンドをヒストリに残さない
-setopt hist_ignore_all_dups # 同時に起動したzshの間でヒストリを共有 setopt share_history
+setopt hist_ignore_all_dups
+# 同時に起動したzshの間でヒストリを共有
+setopt share_history
 # ディレクトリ名だけで移動
 setopt auto_cd
 # キーバインドをviにする
