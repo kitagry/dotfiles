@@ -73,7 +73,16 @@ zinit light zsh-users/zaw
 bindkey '^R' zaw-history
 bindkey '^B' zaw-git-branches
 
-[ -f "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
+zinit ice lucid depth"1" blockf
+zinit light yuki-yano/zeno.zsh
+export ZENO_GIT_CAT="bat --color=always"
+export ZENO_GIT_TREE="gtree"
+bindkey ' ' zeno-auto-snippet
+bindkey '^m' zeno-auto-snippet-and-accept-line
+bindkey '^i' zeno-completion
+bindkey '^r' zeno-history-selection
+bindkey '^x^s' zeno-insert-snippet
+bindkey '^g' zeno-ghq-cd
 
 ## kubernetes completes
 if [ $commands[kubectl] ]; then
@@ -94,4 +103,5 @@ if [ $commands[kubectl] ]; then
   source <(kubectl completion zsh)
 fi
 
+[ -f "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
