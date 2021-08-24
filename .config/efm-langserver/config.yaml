@@ -69,3 +69,6 @@ languages:
 
   sh:
     - <<: *sh-shellcheck
+
+  review:
+    - <<: *textlint

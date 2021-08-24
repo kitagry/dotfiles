@@ -42,6 +42,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('nvim-lua/plenary.nvim')
   call dein#add('nvim-telescope/telescope.nvim')
   call dein#add('nvim-telescope/telescope-github.nvim')
+  call dein#add('nvim-telescope/telescope-ghq.nvim')
 
   call dein#add('nvim-treesitter/nvim-treesitter', {'merged': 0})
   call dein#add('nvim-treesitter/playground', {'merged': 0})
@@ -60,7 +61,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('Julian/vim-textobj-variable-segment')
   call dein#add('lambdalisue/gina.vim', {'merged': 0})
   call dein#add('kitagry/gina-openpr.vim')
-  call dein#local(expand(s:dein_dir_ . '/repos/github.com/kitagry'), {}, ['nvim-treesitter-goaddtags', 'dps-markdown-previewer', 'magma-nvim'])
+  call dein#local(expand(s:dein_dir_ . '/repos/github.com/kitagry'), {}, ['nvim-treesitter-goaddtags', 'dpsh-vim'])
 
   call dein#add('lambdalisue/fern.vim')
   call dein#add('lambdalisue/nerdfont.vim')
@@ -82,12 +83,13 @@ if dein#load_state(s:dein_dir)
   call dein#add('segeljakt/vim-silicon')
   call dein#add('windwp/nvim-autopairs')
   call dein#add('lambdalisue/suda.vim')
-  " call dein#add('vim-denops/denops.vim')
+  call dein#add('vim-denops/denops.vim')
   call dein#add('Shougo/deol.nvim')
   call dein#add('lambdalisue/pastefix.vim')
   call dein#add('tversteeg/registers.nvim')
   call dein#add('norcalli/nvim-colorizer.lua')
   call dein#add('lambdalisue/reword.vim')
+  call dein#add('tokorom/vim-review')
 
   call dein#end()
   call dein#save_state()
@@ -231,6 +233,7 @@ if has('win32') && executable('pwsh.exe')
     nnoremap <Leader>t :<C-u>:vsp term://pwsh.exe<CR>
     nnoremap <Leader>T :<C-u>:sp term://pwsh.exe<CR>
 else
+    let g:deol#prompt_pattern = "❯ "
     nnoremap <Leader>t :Deol -split=vertical<CR>
     nnoremap <Leader>T :Deol -split=floating -winheight=70 -winwidth=120<CR>
 endif
@@ -275,6 +278,7 @@ lua <<EOF
         vim.fn['vsnip#anonymous'](args.body)
       end
     },
+
     mapping = {
       ['<C-p>'] = cmp.mapping.select_prev_item(),
       ['<C-n>'] = cmp.mapping.select_next_item(),
@@ -287,11 +291,13 @@ lua <<EOF
         select = true,
       })
     },
+
     sources = {
       { name = 'nvim_lsp' },
       { name = 'vsnip' },
       { name = 'buffer' },
     },
+
     formatting = {
       format = function(entry, vim_item)
         vim_item.menu = ({
@@ -301,11 +307,10 @@ lua <<EOF
         })[entry.source.name]
         return vim_item
       end
-    },
+    }
   }
 EOF
 
-" Setup buffer configuration (nvim-lua source only enables in Lua filetype).
 autocmd FileType lua lua require'cmp'.setup.buffer {
 \   sources = {
 \     { name = 'buffer' },

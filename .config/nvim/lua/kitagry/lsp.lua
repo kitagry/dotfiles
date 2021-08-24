@@ -4,6 +4,78 @@ local util = require 'lspconfig/util'
 
 local M = {}
 
+function file_exists(name)
+   local f=io.open(name,"r")
+   if f~=nil then io.close(f) return true else return false end
+end
+
+local is_windows = vim.loop.os_uname().version:match("Windows")
+local path_sep = is_windows and "\\" or "/"
+
+local is_fs_root
+if is_windows then
+  is_fs_root = function(path)
+    return path:match("^%a:$")
+  end
+else
+  is_fs_root = function(path)
+    return path == "/"
+  end
+end
+
+local dirname
+do
+  local strip_dir_pat = path_sep.."([^"..path_sep.."]+)$"
+  local strip_sep_pat = path_sep.."$"
+  dirname = function(path)
+    if not path then return end
+    local result = path:gsub(strip_sep_pat, ""):gsub(strip_dir_pat, "")
+    if #result == 0 then
+      return "/"
+    end
+    return result
+  end
+end
+
+local function iterate_parents(path)
+  path = vim.loop.fs_realpath(path)
+  local function it(s, v)
+    if not v then return end
+    if is_fs_root(v) then return end
+    return dirname(v), path
+  end
+  return it, path, path
+end
+
+local function path_join(...)
+  local result =
+    table.concat(
+      vim.tbl_flatten {...}, path_sep):gsub(path_sep.."+", path_sep)
+  return result
+end
+
+function M.search_ancestors(startpath, func)
+  vim.validate { func = {func, 'f'} }
+  if func(startpath) then return startpath end
+  for path in iterate_parents(startpath) do
+    if func(path) then return path end
+  end
+end
+
+function M.search_files(...)
+  local patterns = vim.tbl_flatten {...}
+  local function matcher(path)
+    for _, pattern in ipairs(patterns) do
+      for _, p in ipairs(vim.fn.glob(path_join(path, pattern), true, true)) do
+        if M.path.exists(p) then
+          return path
+        end
+      end
+    end
+  end
+  return M.search_ancestors(vim.fn.expand("%:p:h"), matcher)
+end
+
 function M.setupLSP()
   local capabilities = vim.lsp.protocol.make_client_capabilities()
   capabilities.textDocument.completion.completionItem.snippetSupport = true
@@ -52,12 +124,18 @@ function M.setupLSP()
   nvim_lsp.rust_analyzer.setup{
     capabilities = capabilities,
   }
-  nvim_lsp.tsserver.setup{
-    capabilities = capabilities,
-  }
-  -- nvim_lsp.denols.setup{
-  --   capabilities = capabilities,
-  -- }
+
+  local package_json = M.search_files({'package.json'})
+  if package_json then
+    nvim_lsp.tsserver.setup{
+      capabilities = capabilities,
+    }
+  else
+    nvim_lsp.denols.setup{
+      capabilities = capabilities,
+    }
+  end
+
   local efm_config
   local efm_logfile
   if vim.fn.has('win32') == 1 then
