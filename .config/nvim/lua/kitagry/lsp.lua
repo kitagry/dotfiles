@@ -7,6 +7,19 @@ local M = {}
 function M.setupLSP()
   local capabilities = vim.lsp.protocol.make_client_capabilities()
   capabilities.textDocument.completion.completionItem.snippetSupport = true
+  capabilities.textDocument.completion.completionItem.preselectSupport = true
+  capabilities.textDocument.completion.completionItem.insertReplaceSupport = true
+  capabilities.textDocument.completion.completionItem.labelDetailsSupport = true
+  capabilities.textDocument.completion.completionItem.deprecatedSupport = true
+  capabilities.textDocument.completion.completionItem.commitCharactersSupport = true
+  capabilities.textDocument.completion.completionItem.tagSupport = { valueSet = { 1 } }
+  capabilities.textDocument.completion.completionItem.resolveSupport = {
+    properties = {
+      'documentation',
+      'detail',
+      'additionalTextEdits',
+    }
+  }
 
   -- gopls settings
   nvim_lsp.gopls.setup{
@@ -56,8 +69,8 @@ function M.setupLSP()
   end
   nvim_lsp.efm.setup{
     capabilities = capabilities,
-    filetypes = { 'vim', 'plaintex', 'tex', 'markdown', 'python' },
-    root_dir = util.root_pattern(".git");
+    filetypes = { 'vim', 'plaintex', 'tex', 'markdown', 'python', 'sh' },
+    root_dir = util.root_pattern(".git", "tox.ini", "pyproject.toml");
     default_config = {
       cmd = { 'efm-langserver', '-c', efm_config, '-logfile', efm_logfile };
     }
@@ -77,6 +90,10 @@ function M.setupLSP()
         }
       }
     }
+  }
+
+  nvim_lsp.solargraph.setup{
+    capabilities = capabilities,
   }
 
   -- configs.golangci_lint = {

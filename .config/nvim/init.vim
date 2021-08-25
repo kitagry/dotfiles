@@ -28,7 +28,11 @@ if dein#load_state(s:dein_dir)
   call dein#add('Shougo/dein.vim')
   call dein#add('haya14busa/dein-command.vim')
 
-  call dein#add('hrsh7th/nvim-compe')
+  call dein#add('hrsh7th/nvim-cmp')
+  call dein#add('hrsh7th/cmp-buffer')
+  call dein#add('hrsh7th/cmp-vsnip')
+  call dein#add('hrsh7th/cmp-nvim-lua')
+  call dein#add('hrsh7th/cmp-nvim-lsp')
   call dein#add('hrsh7th/vim-vsnip')
   call dein#add('hrsh7th/vim-vsnip-integ')
   call dein#add('kitagry/vs-snippets', {'merged': 0})
@@ -56,7 +60,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('Julian/vim-textobj-variable-segment')
   call dein#add('lambdalisue/gina.vim', {'merged': 0})
   call dein#add('kitagry/gina-openpr.vim')
-  call dein#local(expand(s:dein_dir_ . '/repos/github.com/kitagry'), {}, ['nvim-treesitter-goaddtags', 'dps-markdown-previewer'])
+  call dein#local(expand(s:dein_dir_ . '/repos/github.com/kitagry'), {}, ['nvim-treesitter-goaddtags', 'dps-markdown-previewer', 'magma-nvim'])
 
   call dein#add('lambdalisue/fern.vim')
   call dein#add('lambdalisue/nerdfont.vim')
@@ -81,7 +85,9 @@ if dein#load_state(s:dein_dir)
   " call dein#add('vim-denops/denops.vim')
   call dein#add('Shougo/deol.nvim')
   call dein#add('lambdalisue/pastefix.vim')
-  call dein#add('tamago324/compe-zsh')
+  call dein#add('tversteeg/registers.nvim')
+  call dein#add('norcalli/nvim-colorizer.lua')
+  call dein#add('lambdalisue/reword.vim')
 
   call dein#end()
   call dein#save_state()
@@ -259,32 +265,53 @@ augroup lang_specific_settings
 augroup END
 " }}}
 
-" nvim-compe {{{
+" nvim-cmp {{{
 set completeopt=menuone,noinsert,noselect
-let g:compe_enabled = v:true
-let g:compe_min_length = 1
-inoremap <expr><CR>  compe#confirm('<CR>')
-inoremap <expr><C-e> compe#close('<C-e>')
-inoremap <silent><expr> <C-f>     compe#scroll({ 'delta': +4 })
-inoremap <silent><expr> <C-d>     compe#scroll({ 'delta': -4 })
 lua <<EOF
-  require'compe'.setup {
-    enabled = true;
-    debug = false;
-    min_length = 1;
-    preselect = 'disable';
-    allow_prefix_unmatch = false;
-
-    source = {
-      path = true;
-      buffer = true;
-      vsnip = true;
-      nvim_lsp = true;
-      nvim_lua = true;
-      zsh = true;
-    };
+  local cmp = require('cmp')
+  cmp.setup {
+    snippet = {
+      expand = function(args)
+        vim.fn['vsnip#anonymous'](args.body)
+      end
+    },
+    mapping = {
+      ['<C-p>'] = cmp.mapping.select_prev_item(),
+      ['<C-n>'] = cmp.mapping.select_next_item(),
+      ['<C-d>'] = cmp.mapping.scroll_docs(-4),
+      ['<C-f>'] = cmp.mapping.scroll_docs(4),
+      ['<C-Space>'] = cmp.mapping.complete(),
+      ['<C-e>'] = cmp.mapping.close(),
+      ['<CR>'] = cmp.mapping.confirm({
+        behavior = cmp.ConfirmBehavior.Insert,
+        select = true,
+      })
+    },
+    sources = {
+      { name = 'nvim_lsp' },
+      { name = 'vsnip' },
+      { name = 'buffer' },
+    },
+    formatting = {
+      format = function(entry, vim_item)
+        vim_item.menu = ({
+          nvim_lsp = '[LSP]',
+          vsnip = '[vsnip]',
+          buffer = '[Buffer]',
+        })[entry.source.name]
+        return vim_item
+      end
+    },
   }
 EOF
+
+" Setup buffer configuration (nvim-lua source only enables in Lua filetype).
+autocmd FileType lua lua require'cmp'.setup.buffer {
+\   sources = {
+\     { name = 'buffer' },
+\     { name = 'nvim_lua' },
+\   },
+\ }
 " }}}
 
 " vim-vsnip {{{
@@ -578,4 +605,8 @@ EOF
 let g:silicon = {
     \   'background':         '#FFFFFF',
     \ }
+" }}}
+
+" {{{ nvim-colorizer.lua
+lua require'colorizer'.setup()
 " }}}
