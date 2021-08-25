@@ -32,12 +32,20 @@ tools:
     lint-stdin: true
     lint-formats:
       - '%f:%l:%c: %m'
-    root-markers:
-      - tox.ini
+    # root-markers:
+    #   - tox.ini
 
   python-yapf: &python-yapf
     format-command: 'yapf --quiet --style="{based_on_style: pep8, column_limit: 160}"'
     format-stdin: true
+
+  sh-shellcheck: &sh-shellcheck
+    lint-command: 'shellcheck -f gcc -x'
+    lint-source: 'shellcheck'
+    lint-formats:
+      - '%f:%l:%c: %trror: %m'
+      - '%f:%l:%c: %tarning: %m'
+      - '%f:%l:%c: %tote: %m'
 
 languages:
   go:
@@ -58,3 +66,6 @@ languages:
   python:
     - <<: *python-tox-flake8
     - <<: *python-yapf
+
+  sh:
+    - <<: *sh-shellcheck

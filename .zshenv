@@ -28,10 +28,11 @@ alias ll="ls -la"
 # gitコマンドのalias
 ###########################
 alias git="hub"
-alias gs="git status"
+# alias gs="git status"
 alias gpom="git pull origin master"
 alias gcb="git switch -c"
 alias gbda="git branch --merged | grep -v '*' | grep -v master | grep -v main | xargs -I % git branch -d %"
+alias gcr="git log --oneline | head -n 2 | tail -n 1 | cut -d ' ' -f1 | xargs git reset --hard"
 ###########################
 
 ###########################
@@ -49,6 +50,10 @@ alias k='kubectl'
 alias kc='kubectx'
 alias kn='kubens'
 alias sourceenv='(){set -a; source $1; set +a}'
+
+kjf() {
+  kubectl get cronjobs --all-namespaces | tr -s ' ' | cut -d ' ' -f 1,2 | tail -n +2 | fzf | xargs kj
+}
 
 kustomize_build() {
   kustomize_file_path=$(find . -name kustomization.yaml -o -name kustomization.yml -o -name Kustomization -type f | fzf)

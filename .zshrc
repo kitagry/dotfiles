@@ -92,7 +92,7 @@ if [ $commands[kubectl] ]; then
   function right_prompt() {
     local color="blue"
 
-    if [[ "$ZSH_KUBECTL_CONTEXT" != "docker-for-desktop" ]]; then
+    if [[ "$ZSH_KUBECTL_CONTEXT" != "docker-for-desktop" && "$ZSH_KUBECTL_CONTEXT" != "raspi" ]]; then
       color="red"
     fi
 
