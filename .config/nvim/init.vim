@@ -307,7 +307,9 @@ lua <<EOF
         })[entry.source.name]
         return vim_item
       end
-    }
+    },
+
+    preselect = cmp.PreselectMode.None,
   }
 EOF
 

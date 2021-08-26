@@ -1,0 +1,15 @@
+[ghq]
+	root = /home/kitagry/.config/dein/repos
+	root = /mnt/c/Users/kitad/go/src
+	root = /home/kitagry/go/src
+[user]
+	email = kitadrum50@gmail.com
+	name = Ryo Kitagawa
+[core]
+	editor = vim
+[alias]
+	openpr = "!f() { hub browse -- `git log --merges --oneline --reverse --ancestry-path $1...master | grep 'Merge pull request' | head -n 1 | cut -f5 -d' ' | sed -e 's%#%pull/%'`; }; f"
+[push]
+	default = current
+[url "git@github.com:"]
+	insteadOf = https://github.com/
