@@ -67,7 +67,9 @@ function M.search_files(...)
   local function matcher(path)
     for _, pattern in ipairs(patterns) do
       for _, p in ipairs(vim.fn.glob(path_join(path, pattern), true, true)) do
-        if M.path.exists(p) then
+        f = io.open(p, "r")
+        if f ~= nil then
+          f.close()
           return path
         end
       end
@@ -102,13 +104,11 @@ function M.setupLSP()
     }
   }
 
-  local virtual_env_path = vim.trim(vim.fn.system('poetry config virtualenvs.path'))
-  local virtual_env_dirctory = vim.trim(vim.fn.system('poetry env list'))
+  local virtual_env_path = vim.trim(vim.fn.system('poetry env info -p'))
 
   local python_path = 'python'
-  if #vim.split(virtual_env_dirctory, '\n') == 1 then
-    local virtual_env_dirctory = vim.split(virtual_env_dirctory, ' ')[1]
-    python_path = string.format("%s/%s/bin/python", virtual_env_path, virtual_env_dirctory)
+  if #vim.split(virtual_env_path, '\n') == 1 then
+    python_path = string.format("%s/bin/python", virtual_env_path)
   end
   nvim_lsp.pyright.setup{
     capabilities = capabilities,

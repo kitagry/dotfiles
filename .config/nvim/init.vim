@@ -308,7 +308,6 @@ lua <<EOF
         return vim_item
       end
     },
-
     preselect = cmp.PreselectMode.None,
   }
 EOF
