@@ -1,6 +1,5 @@
 [ghq]
 	root = /home/kitagry/.config/dein/repos
-	root = /mnt/c/Users/kitad/go/src
 	root = /home/kitagry/go/src
 [user]
 	email = kitadrum50@gmail.com

@@ -90,6 +90,8 @@ if dein#load_state(s:dein_dir)
   call dein#add('norcalli/nvim-colorizer.lua')
   call dein#add('lambdalisue/reword.vim')
   call dein#add('tokorom/vim-review')
+  call dein#add('kabouzeid/nvim-lspinstall')
+  call dein#add('simrat39/rust-tools.nvim')
 
   call dein#end()
   call dein#save_state()
@@ -615,4 +617,8 @@ let g:silicon = {
 
 " {{{ nvim-colorizer.lua
 lua require'colorizer'.setup()
+" }}}
+
+" {{{ rust-tools
+lua require('kitagry.rust')
 " }}}
