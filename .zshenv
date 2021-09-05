@@ -27,7 +27,6 @@ alias ll="ls -la"
 ###########################
 # gitコマンドのalias
 ###########################
-alias git="hub"
 # alias gs="git status"
 alias gpom="git pull origin master"
 alias gcb="git switch -c"

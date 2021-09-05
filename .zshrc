@@ -104,4 +104,3 @@ if [ $commands[kubectl] ]; then
 fi
 
 [ -f "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
