@@ -27,8 +27,7 @@ alias ll="ls -la"
 ###########################
 # gitコマンドのalias
 ###########################
-# alias gs="git status"
-alias gpom="git pull origin master"
+alias gp="git push -u"
 alias gcb="git switch -c"
 alias gbda="git branch --merged | grep -v '*' | grep -v master | grep -v main | xargs -I % git branch -d %"
 alias gcr="git log --oneline | head -n 2 | tail -n 1 | cut -d ' ' -f1 | xargs git reset --hard"
