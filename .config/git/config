@@ -9,6 +9,6 @@
 [alias]
 	openpr = "!f() { hub browse -- `git log --merges --oneline --reverse --ancestry-path $1...master | grep 'Merge pull request' | head -n 1 | cut -f5 -d' ' | sed -e 's%#%pull/%'`; }; f"
 [push]
-	default = current
+	default = simple
 [url "git@github.com:"]
 	insteadOf = https://github.com/
