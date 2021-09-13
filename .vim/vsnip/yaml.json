@@ -1,0 +1,83 @@
+{
+  "configmap": {
+    "prefix": "configmap",
+    "body": [
+      "apiVersion: v1",
+      "kind: ConfigMap",
+      "metadata:",
+      "  name: $1",
+      "data:",
+      "  $0"
+    ],
+    "description": "k8s configmap"
+  },
+  "berglas": {
+    "prefix": "berglas",
+    "body": [
+      "apiVersion: batch.kitagry.github.io/v1alpha1",
+      "kind: BerglasSecret",
+      "metadata:",
+      "  name: $1",
+      "spec:",
+      "  data:",
+      "    $0"
+    ],
+    "description": "k8s berglas secret"
+  },
+  "deployment": {
+    "prefix": "deployment",
+    "body": [
+      "apiVersion: apps/v1",
+      "kind: Deployment",
+      "metadata:",
+      "  name: $1",
+      "  labels:",
+      "    app: $1",
+      "spec:",
+      "  replicas: 1",
+      "  selector:",
+      "    matchLabels:",
+      "      app: $1",
+      "  template:",
+      "    metadata:",
+      "      labels:",
+      "        app: $1",
+      "    spec:",
+      "      containers:",
+      "      - name: $1",
+      "        image: $2",
+      "        ports:",
+      "        - containerPort: 80"
+    ],
+    "description": "k8s deployment"
+  },
+  "service": {
+    "prefix": "service",
+    "body": [
+      "apiVersion: v1",
+      "kind: Service",
+      "metadata:",
+      "  name: $1",
+      "spec:",
+      "  selector:",
+      "    app: $1",
+      "  ports:",
+      "  - protocol: TCP",
+      "    port: 80",
+      "    targetPort: $2"
+    ],
+    "description": "k8s service"
+  },
+  "service_account": {
+    "prefix": "service_account",
+    "body": [
+      "apiVersion: v1",
+      "kind: ServiceAccount",
+      "metadata:",
+      "  name: $1",
+      "  annotations:",
+      "    iam.gke.io/gcp-service-account: $2",
+    ],
+    "description": "k8s service"
+  }
+}
