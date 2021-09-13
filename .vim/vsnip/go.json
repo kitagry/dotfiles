@@ -3,7 +3,17 @@
     "prefix": "test",
     "body": [
       "func Test${1}(t *testing.T) {",
-      "\t$0",
+      "\ttests := map[string]struct{",
+      "\t\t$2",
+      "\t}{",
+      "\t\t\"$3\":{$4},",
+      "\t}",
+      "\t",
+      "\tfor n, tt := range tests {",
+      "\t\tt.Run(n, func(t *testing.T) {",
+      "\t\t\t$5",
+      "\t\t})",
+      "\t}$0",
       "}"
     ],
     "description": "test function"
@@ -11,14 +21,16 @@
   "table test": {
     "prefix": "tabletest",
     "body": [
-      "tests := []struct{",
+      "tests := map[string]struct{",
       "\t$1",
       "}{",
-      "\t{$2},",
+      "\t\"$2\":{$3},",
       "}",
       "",
-      "for _, tt := range tests {",
-      "\t$3",
+      "for n, tt := range tests {",
+      "\tt.Run(n, func(t *testing.T) {",
+      "\t\t$4",
+      "\t})",
       "}$0"
     ],
     "description": "table test"
