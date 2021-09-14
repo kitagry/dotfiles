@@ -1,4 +1,14 @@
 {
+  "namespace": {
+    "prefix": "namespace",
+    "body": [
+      "apiVersion: v1",
+      "kind: Namespace",
+      "metadata:",
+      "  name: $1"
+    ],
+    "description": "k8s namespace"
+  },
   "configmap": {
     "prefix": "configmap",
     "body": [
