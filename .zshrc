@@ -68,11 +68,6 @@ zinit light sindresorhus/pure
 export PURE_GIT_PULL=1
 export PURE_GIT_UNTRACKED_DIRTY=1
 
-zinit ice from"gh"
-zinit light zsh-users/zaw
-bindkey '^R' zaw-history
-bindkey '^B' zaw-git-branches
-
 zinit ice lucid depth"1" blockf
 zinit light yuki-yano/zeno.zsh
 export ZENO_GIT_CAT="bat --color=always"
@@ -102,5 +97,9 @@ if [ $commands[kubectl] ]; then
   RPROMPT='$(right_prompt)'
   source <(kubectl completion zsh)
 fi
+
+zle -N git-switch-branch _git_switch_branch
+bindkey '^B' git-switch-branch
+bindkey '^b' git-switch-branch
 
 [ -f "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
