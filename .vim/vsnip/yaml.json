@@ -76,8 +76,8 @@
       "metadata:",
       "  name: $1",
       "  annotations:",
-      "    iam.gke.io/gcp-service-account: $2",
+      "    iam.gke.io/gcp-service-account: $2"
     ],
-    "description": "k8s service"
+    "description": "k8s service_account"
   }
 }
