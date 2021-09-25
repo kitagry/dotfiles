@@ -77,7 +77,8 @@ bindkey '^m' zeno-auto-snippet-and-accept-line
 bindkey '^i' zeno-completion
 bindkey '^r' zeno-history-selection
 bindkey '^x^s' zeno-insert-snippet
-bindkey '^g' zeno-ghq-cd
+zle -N ghq-cd _ghq_cd
+bindkey '^g' ghq-cd
 
 ## kubernetes completes
 if [ $commands[kubectl] ]; then
