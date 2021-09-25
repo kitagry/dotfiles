@@ -11,6 +11,7 @@ export NVIM_LISTEN_ADDRESS="/tmp/nvimsocket"
 
 export PATH="/usr/local/opt/llvm/bin:$PATH"
 export QT_HOMEBREW=true
+export EDITOR=nvim
 
 if [ $commands[cargo] ]; then
   export PATH="$HOME/.cargo/bin:$PATH"
@@ -159,6 +160,7 @@ alias zshrc="vim ~/.zshrc"
 alias zshenv="vim ~/.zshenv"
 alias vimrc="vim ~/.vimrc"
 alias nvimrc="nvim ~/.config/nvim/init.vim"
+alias ls="exa"
 ###########################
 
 # viとvimを紐づける
@@ -181,11 +183,28 @@ alias tf="terraform"
 
 # cdのよく行くところへのalias
 alias cdg='cd $(ghq root)/github.com/kitagry'
-g() {
-  local src=$(ghq list | fzf --preview "bat --color=always --style=header,grid --line-range :80 $(ghq root)/{}/README.*")
-  if [ -n "$src" ]; then
-    repo=$(ghq list --full-path --exact $src)
-    cd $repo
+_ghq_cd() {
+  local project dir repository session current_session
+  dir=$(ghq list -p | sed -e "s|${HOME}|~|" | ${ZENO_FZF_COMMAND} ${ZENO_FZF_TMUX_OPTIONS} --prompt='Project >' --preview "bat --color=always --style=numbers --line-range=:500 \$(eval echo {})/README.md" --bind ctrl-d:preview-page-down,ctrl-u:preview-page-up)
+
+  if [[ $dir == "" ]]; then
+    return 1
+  fi
+
+  if [[ ! -z ${TMUX} ]]; then
+    repository=${dir##*/}
+    session=${repository//./-}
+
+    BUFFER="cd ${dir}"
+    zle accept-line
+
+    current_session=$(tmux list-sessions | grep 'attached' | cut -d":" -f1)
+    if [[ $session -eq $current_session ]]; then
+      tmux rename-session "${session}"
+    fi
+  else
+    BUFFER="cd ${dir}"
+    zle accept-line
   fi
 }
 
