@@ -376,6 +376,7 @@ function! s:set_lsp_buffer_enabled() abort
   nmap [vim-lsp]a <cmd>lua vim.lsp.buf.code_action()<CR>
   nmap [vim-lsp]q :<C-u>LspReset<CR>
   nmap [vim-lsp]s :<C-u>LspInfo<CR>
+  nmap [vim-lsp]a <cmd>lua require'telescope.builtin'.lsp_code_actions()<CR>
 
   sign define LspDiagnosticsErrorSign text=E> texthl=Error linehl= numhl=
   sign define LspDiagnosticsWarningSign text=W> texthl=WarningMsg linehl= numhl=
