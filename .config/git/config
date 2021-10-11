@@ -5,7 +5,7 @@
 	email = kitadrum50@gmail.com
 	name = Ryo Kitagawa
 [core]
-	editor = vim
+	editor = nvim
 [alias]
 	openpr = "!f() { hub browse -- `git log --merges --oneline --reverse --ancestry-path $1...master | grep 'Merge pull request' | head -n 1 | cut -f5 -d' ' | sed -e 's%#%pull/%'`; }; f"
 [push]
