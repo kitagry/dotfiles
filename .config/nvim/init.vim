@@ -500,11 +500,14 @@ augroup END
 lua require("kitagry.telescope")
 nnoremap [telescope] <Nop>
 nmap <Leader>f [telescope]
+nmap <silent> [telescope]r <cmd>lua require('telescope.builtin').resume()<CR>
 nmap <silent> [telescope]f <cmd>lua require('telescope.builtin').find_files()<CR>
 nmap <silent> [telescope]g <cmd>lua require('telescope.builtin').live_grep()<CR>
 nmap <silent> [telescope]] <cmd>lua require('telescope.builtin').grep_string()<CR>
 nmap <silent> [telescope]d <cmd>lua require('telescope.builtin').lsp_document_symbols()<CR>
 nmap <silent> [telescope]b <cmd>lua require('telescope.builtin').git_branches()<CR>
+nmap <silent> [telescope]t <cmd>lua require('telescope.builtin').filetypes()<CR>
+nmap <silent> [telescope]h <cmd>lua require('telescope.builtin').help_tags()<CR>
 " }}}
 
 " flasy.vim {{{
