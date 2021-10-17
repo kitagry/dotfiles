@@ -29,7 +29,6 @@ alias ll="ls -la"
 # gitコマンドのalias
 ###########################
 alias gp="git push -u"
-alias gb="git switch"
 alias gbda="git branch --merged | grep -v '*' | grep -v master | grep -v main | xargs -I % git branch -d %"
 alias gcr="git log --oneline | head -n 2 | tail -n 1 | cut -d ' ' -f1 | xargs git reset --hard"
 _git_switch_branch() {
