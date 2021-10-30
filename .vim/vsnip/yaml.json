@@ -61,6 +61,27 @@
     ],
     "description": "k8s deployment"
   },
+  "cronjob": {
+    "prefix": "cronjob",
+    "body": [
+      "apiVersion: batch/v1",
+      "kind: CronJob",
+      "metadata:",
+      "  name: $1",
+      "spec:",
+      "  schedule: \"$2\"",
+      "  jobTemplate:",
+      "    spec:",
+      "      template:",
+      "        spec:",
+      "          containers:",
+      "          - name: $1",
+      "            image: $3",
+      "            command:",
+      "            - $4",
+      "          restartPolicy: OnFailure"
+    ]
+  },
   "service": {
     "prefix": "service",
     "body": [
