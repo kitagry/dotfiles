@@ -206,6 +206,9 @@ function M.setupLSP()
   nvim_lsp.sumneko_lua.setup{
     capabilities = capabilities,
   }
+  nvim_lsp.clangd.setup{
+    capabilities = capabilities,
+  }
 end
 
 local function code_action_sync_handler(actions)
