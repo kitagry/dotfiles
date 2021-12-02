@@ -184,6 +184,13 @@ if filereadable(s:nvimrc_local)
     execute 'source ' . s:nvimrc_local
 endif
 
+set cursorline
+
+augroup setCursorColumn
+  autocmd!
+  autocmd BufNewFile,BufRead *.yaml set cursorcolumn
+augroup END
+
 if has('win32')
   set termguicolors
   augroup vim_setfiletype
