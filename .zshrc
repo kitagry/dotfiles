@@ -61,12 +61,15 @@ export ENHANCD_FILTER=fzf
 
 zinit light zsh-users/zsh-autosuggestions
 bindkey '^l' autosuggest-accept
-zinit light zsh-users/zsh-syntax-highlighting
+zinit light zdharma-continuum/fast-syntax-highlighting
 
 zinit ice pick"async.zsh" src"pure.zsh"
 zinit light sindresorhus/pure
 export PURE_GIT_PULL=1
 export PURE_GIT_UNTRACKED_DIRTY=1
+
+zinit ice luicid depth"1" blockf
+zinit light "chitoku-k/fzf-zsh-completions"
 
 zinit ice lucid depth"1" blockf
 zinit light yuki-yano/zeno.zsh
