@@ -33,6 +33,8 @@ if dein#load_state(s:dein_dir)
   call dein#add('hrsh7th/cmp-vsnip')
   call dein#add('hrsh7th/cmp-nvim-lua')
   call dein#add('hrsh7th/cmp-nvim-lsp')
+  call dein#add('hrsh7th/cmp-cmdline')
+  call dein#add('hrsh7th/cmp-path')
   call dein#add('hrsh7th/vim-vsnip')
   call dein#add('hrsh7th/vim-vsnip-integ')
   call dein#add('kitagry/vs-snippets', {'merged': 0})
@@ -310,7 +312,7 @@ lua <<EOF
       { name = 'vsnip' },
       {
         name = 'buffer',
-        opts = {
+        options = {
           get_bufnrs = get_bufnrs
         }
       },
@@ -321,6 +323,8 @@ lua <<EOF
         vim_item.menu = ({
           nvim_lsp = '[LSP]',
           vsnip = '[vsnip]',
+          cmdline = '[cmdline]',
+          path = '[path]',
           buffer = '[Buffer]',
         })[entry.source.name]
         return vim_item
@@ -328,6 +332,19 @@ lua <<EOF
     },
     preselect = cmp.PreselectMode.None,
   }
+
+  cmp.setup.cmdline(':', {
+    sources = {
+      { name = 'cmdline' },
+      { name = 'paths' },
+    }
+  })
+
+  cmp.setup.cmdline('/', {
+    sources = {
+      { name = 'buffer' }
+    }
+  })
 EOF
 
 autocmd FileType lua lua require'cmp'.setup.buffer {
@@ -418,18 +435,18 @@ lua require"kitagry.treesitter".setupTreesitter()
 set hidden  " allow buffer switching without saving
 set showtabline=2  " always show tabline
 function! LightlineLSPWarnings() abort
-  let l:counts = luaeval("vim.lsp.diagnostic.get_count([[Warning]])")
+  let l:counts = luaeval("vim.diagnostic.get([[Warning]])")
   return l:counts == 0 ? '' : printf('W:%d', l:counts)
 endfunction
 
 function! LightlineLSPErrors() abort
-  let l:counts = luaeval("vim.lsp.diagnostic.get_count([[Error]])")
+  let l:counts = luaeval("vim.diagnostic.get([[Error]])")
   let l:result = l:counts == 0 ? '' : printf('E:%d', l:counts)
   return l:result
 endfunction
 
 function! LightlineLSPOk() abort
-  let l:counts = luaeval("vim.lsp.diagnostic.get_count([[Warning, Error]])")
+  let l:counts = luaeval("vim.diagnostic.get([[Warning, Error]])")
   return l:counts == 0 ? 'OK' : ''
 endfunction
 
@@ -510,7 +527,7 @@ nmap <silent> [telescope]f <cmd>lua require('telescope.builtin').find_files()<CR
 nmap <silent> [telescope]g <cmd>lua require('telescope.builtin').live_grep()<CR>
 nmap <silent> [telescope]] <cmd>lua require('telescope.builtin').grep_string()<CR>
 nmap <silent> [telescope]d <cmd>lua require('telescope.builtin').lsp_document_symbols()<CR>
-nmap <silent> [telescope]b <cmd>lua require('telescope.builtin').git_branches()<CR>
+nmap <silent> [telescope]b <cmd>lua require('telescope.builtin').buffers()<CR>
 nmap <silent> [telescope]t <cmd>lua require('telescope.builtin').filetypes()<CR>
 nmap <silent> [telescope]h <cmd>lua require('telescope.builtin').help_tags()<CR>
 " }}}
