@@ -191,7 +191,7 @@ set cursorline
 
 augroup setCursorColumn
   autocmd!
-  autocmd BufNewFile,BufRead *.yaml set cursorcolumn
+  autocmd BufNewFile,BufRead *.yaml setlocal cursorcolumn
 augroup END
 
 if has('win32')
