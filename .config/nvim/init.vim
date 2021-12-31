@@ -410,6 +410,7 @@ function! s:set_lsp_buffer_enabled() abort
     autocmd BufWritePre *.rs call s:lsp_format()
     autocmd BufWritePre *.tsx,*ts,*.jsx,*js lua vim.lsp.buf.formatting_sync()
     autocmd BufWritePre *.py lua vim.lsp.buf.formatting_sync({}, 300)
+    autocmd BufWritePre *.rego lua vim.lsp.buf.formatting_sync()
   augroup END
 endfunction
 

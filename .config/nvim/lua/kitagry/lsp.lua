@@ -147,7 +147,7 @@ function M.setupLSP()
   end
   nvim_lsp.efm.setup{
     capabilities = capabilities,
-    filetypes = { 'vim', 'plaintex', 'tex', 'markdown', 'python', 'sh' },
+    filetypes = { 'vim', 'plaintex', 'tex', 'markdown', 'python', 'sh', 'rego' },
     root_dir = util.root_pattern(".git", "tox.ini", "pyproject.toml");
     default_config = {
       cmd = { 'efm-langserver', '-c', efm_config, '-logfile', efm_logfile };

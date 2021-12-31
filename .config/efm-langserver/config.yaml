@@ -5,7 +5,6 @@ tools:
     lint-ignore-exit-code: true
     lint-formats:
       - '%t:%f:%l:%c:%m'
-    format-command: gofmt -s
 
   vint: &vint
     lint-command: 'vint -'
@@ -47,6 +46,10 @@ tools:
       - '%f:%l:%c: %tarning: %m'
       - '%f:%l:%c: %tote: %m'
 
+  rego: &rego
+    format-command: opa fmt
+    format-stdin: true
+
 languages:
   go:
     - <<: *golint
@@ -72,3 +75,6 @@ languages:
 
   review:
     - <<: *textlint
+
+  rego:
+    - <<: *rego
