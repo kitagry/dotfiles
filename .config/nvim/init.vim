@@ -155,6 +155,7 @@ augroup fileTypeIndent
   autocmd BufNewFile,BufRead *.java setlocal tabstop=4 softtabstop=4 shiftwidth=4
   autocmd BufNewFile,BufRead *.vim  setlocal tabstop=2 softtabstop=2 shiftwidth=2
   autocmd BufNewFile,BufRead *.go   setlocal noexpandtab
+  autocmd BufNewFile,BufRead *.rego   setlocal noexpandtab
 augroup END
 
 augroup setFileType
