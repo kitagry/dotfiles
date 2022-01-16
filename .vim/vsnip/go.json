@@ -131,5 +131,13 @@
       "}"
     ],
     "description": "Queue snippets"
+  },
+  "cmp-diff": {
+    "prefix": ["cmp-diff"],
+    "body": [
+      "if diff := cmp.Diff(expect, got); diff != \"\" {",
+      "\tt.Errorf(\"$1 result diff (-expect, +got)\\n%s\", diff)",
+      "}$0"
+    ]
   }
 }

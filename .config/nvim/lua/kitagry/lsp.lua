@@ -1,6 +1,6 @@
 local nvim_lsp = require'lspconfig'
-local configs = require'lspconfig/configs'
-local util = require 'lspconfig/util'
+local configs = require'lspconfig.configs'
+local util = require 'lspconfig.util'
 
 local M = {}
 
@@ -147,7 +147,7 @@ function M.setupLSP()
   end
   nvim_lsp.efm.setup{
     capabilities = capabilities,
-    filetypes = { 'vim', 'plaintex', 'tex', 'markdown', 'python', 'sh', 'rego' },
+    filetypes = { 'vim', 'plaintex', 'tex', 'markdown', 'python', 'sh' },
     root_dir = util.root_pattern(".git", "tox.ini", "pyproject.toml");
     default_config = {
       cmd = { 'efm-langserver', '-c', efm_config, '-logfile', efm_logfile };
@@ -185,6 +185,22 @@ function M.setupLSP()
   --   };
   -- }
   -- nvim_lsp.golangci_lint.setup{}
+
+  if not configs.regols then
+    configs.regols = {
+      default_config = {
+        cmd = { 'regols' };
+        filetypes = { 'rego' };
+        root_dir = util.root_pattern(".git");
+        init_options = {
+          command = { 'regols' };
+        };
+      };
+    }
+  end
+  nvim_lsp.regols.setup{
+    capabilities = capabilities,
+  }
 
   configs.sqls = {
     default_config = {

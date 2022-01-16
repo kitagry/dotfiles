@@ -46,7 +46,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('nvim-telescope/telescope-github.nvim')
   call dein#add('nvim-telescope/telescope-ghq.nvim')
 
-  call dein#add('nvim-treesitter/nvim-treesitter')
+  call dein#add('nvim-treesitter/nvim-treesitter', {'merged': 0})
   call dein#add('nvim-treesitter/playground')
   call dein#add('romgrk/nvim-treesitter-context')
   call dein#add('itchyny/lightline.vim')
@@ -94,6 +94,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('kabouzeid/nvim-lspinstall')
   call dein#add('simrat39/rust-tools.nvim')
   call dein#add('thinca/vim-quickrun')
+  call dein#add('oky-123/marksign.vim', {'merged': 0})
 
   call dein#end()
   call dein#save_state()
@@ -346,6 +347,22 @@ lua <<EOF
       { name = 'buffer' }
     }
   })
+
+  _G.vimrc = _G.vimrc or {}
+  _G.vimrc.cmp = _G.vimrc.cmp or {}
+  _G.vimrc.cmp.lsp = function()
+    cmp.complete({
+      config = {
+        sources = {
+          { name = 'nvim_lsp' }
+        }
+      }
+    })
+  end
+
+  vim.cmd([[
+    inoremap <C-x><C-o> <Cmd>lua vimrc.cmp.lsp()<CR>
+  ]])
 EOF
 
 autocmd FileType lua lua require'cmp'.setup.buffer {
