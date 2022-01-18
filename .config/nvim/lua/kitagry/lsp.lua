@@ -174,6 +174,10 @@ function M.setupLSP()
     capabilities = capabilities,
   }
 
+  nvim_lsp.graphql.setup{
+    capabilities = capabilities,
+  }
+
   -- configs.golangci_lint = {
   --   default_config = {
   --     cmd = { 'golangci-lint-langserver' };
@@ -201,7 +205,6 @@ function M.setupLSP()
   nvim_lsp.regols.setup{
     capabilities = capabilities,
   }
-
   configs.sqls = {
     default_config = {
       cmd = { 'sqls' };
