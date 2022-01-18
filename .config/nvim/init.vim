@@ -336,6 +336,10 @@ lua <<EOF
   }
 
   cmp.setup.cmdline(':', {
+    mapping = {
+      ['<C-p>'] = cmp.mapping.select_prev_item(),
+      ['<C-n>'] = cmp.mapping.select_next_item(),
+    },
     sources = {
       { name = 'cmdline' },
       { name = 'paths' },
@@ -343,6 +347,10 @@ lua <<EOF
   })
 
   cmp.setup.cmdline('/', {
+    mapping = {
+      ['<C-p>'] = cmp.mapping.select_prev_item(),
+      ['<C-n>'] = cmp.mapping.select_next_item(),
+    },
     sources = {
       { name = 'buffer' }
     }
@@ -432,16 +440,16 @@ function! s:set_lsp_buffer_enabled() abort
   augroup END
 endfunction
 
-function s:set_typescript_shortcut() abort
-  nnoremap <buffer><silent><c-]>      <cmd>lua require('lspconfig').denols.definition()<CR>
-
-  nmap [vim-lsp]e <cmd>lua require('lspconfig').denols.references({ includeDeclaration = true })<CR>
-endfunction
+" function s:set_typescript_shortcut() abort
+"   " nnoremap <buffer><silent><c-]>      <cmd>lua require('lspconfig').denols.definition()<CR>
+"
+"   nmap [vim-lsp]e <cmd>lua require('lspconfig').denols.references({ includeDeclaration = true })<CR>
+" endfunction
 
 augroup lsp_install
     au!
     autocmd BufEnter * call s:set_lsp_buffer_enabled()
-    autocmd BufEnter *.ts,*.tsx call s:set_typescript_shortcut()
+    " autocmd BufEnter *.ts,*.tsx call s:set_typescript_shortcut()
 augroup END
 " }}}
 
@@ -454,18 +462,18 @@ lua require"kitagry.treesitter".setupTreesitter()
 set hidden  " allow buffer switching without saving
 set showtabline=2  " always show tabline
 function! LightlineLSPWarnings() abort
-  let l:counts = luaeval("vim.diagnostic.get([[Warning]])")
+  let l:counts = luaeval("#vim.diagnostic.get(0, { severity = vim.diagnostic.severity.WARN })")
   return l:counts == 0 ? '' : printf('W:%d', l:counts)
 endfunction
 
 function! LightlineLSPErrors() abort
-  let l:counts = luaeval("vim.diagnostic.get([[Error]])")
+  let l:counts = luaeval("#vim.diagnostic.get(0, { severity = vim.diagnostic.severity.ERROR })")
   let l:result = l:counts == 0 ? '' : printf('E:%d', l:counts)
   return l:result
 endfunction
 
 function! LightlineLSPOk() abort
-  let l:counts = luaeval("vim.diagnostic.get([[Warning, Error]])")
+  let l:counts = luaeval("#vim.diagnostic.get(0, { severity = { min = vim.diagnostic.severity.WARN }})")
   return l:counts == 0 ? 'OK' : ''
 endfunction
 
@@ -479,6 +487,7 @@ let g:lightline = {
       \ 'active': {
       \   'left': [
       \     [ 'mode', 'paste' ],
+      \     [ 'current_branch' ],
       \   ],
       \   'right': [
       \     [ 'lsp_errors', 'lsp_warnings', 'lsp_ok' ],
@@ -491,9 +500,9 @@ let g:lightline = {
       \ },
       \ 'tabline': {
       \   'left': [ [ 'bufferbefore', 'buffercurrent', 'bufferafter' ]],
-      \   'right': [ [ 'close' ], ],
       \ },
       \ 'component_expand': {
+      \   'current_branch': 'gina#component#repo#branch',
       \   'buffercurrent': 'lightline#buffer#buffercurrent',
       \   'bufferbefore': 'lightline#buffer#bufferbefore',
       \   'bufferafter': 'lightline#buffer#bufferafter',
@@ -502,6 +511,7 @@ let g:lightline = {
       \   'lsp_ok':       'LightlineLSPOk',
       \ },
       \ 'component_type': {
+      \   'current_branch': 'middle',
       \   'buffercurrent': 'tabsel',
       \   'bufferbefore': 'raw',
       \   'bufferafter': 'raw',
