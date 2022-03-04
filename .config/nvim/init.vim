@@ -47,8 +47,6 @@ if dein#load_state(s:dein_dir)
   call dein#add('nvim-telescope/telescope-ghq.nvim')
 
   call dein#add('nvim-treesitter/nvim-treesitter', {'merged': 0})
-  call dein#add('nvim-treesitter/playground')
-  call dein#add('romgrk/nvim-treesitter-context')
   call dein#add('itchyny/lightline.vim')
   call dein#add('taohexxx/lightline-buffer')
 
@@ -95,6 +93,8 @@ if dein#load_state(s:dein_dir)
   call dein#add('simrat39/rust-tools.nvim')
   call dein#add('thinca/vim-quickrun')
   call dein#add('oky-123/marksign.vim', {'merged': 0})
+  call dein#add('monaqa/dial.nvim')
+  call dein#add('yuki-yano/fuzzy-motion.vim')
 
   call dein#end()
   call dein#save_state()
@@ -314,7 +314,7 @@ lua <<EOF
       { name = 'vsnip' },
       {
         name = 'buffer',
-        options = {
+        option = {
           get_bufnrs = get_bufnrs
         }
       },
@@ -697,4 +697,8 @@ if executable('poetry')
   let s:python_path = trim(system('poetry env info -p'))
   let g:quickrun_config.python = { 'command': s:python_path }
 endif
+" }}}
+
+" {{{ fuzzy-motion
+nnoremap ss :FuzzyMotion<CR>
 " }}}

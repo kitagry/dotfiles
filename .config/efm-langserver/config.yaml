@@ -35,7 +35,7 @@ tools:
     #   - tox.ini
 
   python-yapf: &python-yapf
-    format-command: 'yapf --quiet --style="{based_on_style: pep8, column_limit: 160}"'
+    format-command: 'poetry run yapf --quiet --style="{based_on_style: pep8, column_limit: 160}"'
     format-stdin: true
 
   sh-shellcheck: &sh-shellcheck
