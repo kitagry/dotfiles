@@ -342,7 +342,7 @@ lua <<EOF
     },
     sources = {
       { name = 'cmdline' },
-      { name = 'paths' },
+      { name = 'path' },
     }
   })
 
