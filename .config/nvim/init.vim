@@ -574,16 +574,20 @@ vmap gx <Plug>(openbrowser-open)
 " }}}
 
 " gina.vim {{{
+set diffopt=vertical
 let g:gina#command#blame#formatter#format = "%su%=by %au %ma%in"
 nnoremap [gina] <Nop>
 vnoremap [gina] <Nop>
 nmap <Leader>g [gina]
 vmap <Leader>g [gina]
 nmap <silent> [gina]b :<C-u>Gina blame<CR>
-nmap <silent> [gina]s :<C-u>Gina status<CR>
+nmap <silent> [gina]s :<C-u>Gina status --opener=vsplit<CR>
 nmap <silent> [gina]c :<C-u>Gina commit<CR>
-nmap <silent> [gina]x :Gina browse<CR>
+nmap <silent> [gina]d :<C-u>Gina diff<CR>
+nmap <silent> [gina]x :Gina browse :<CR>
+nmap <silent> [gina]y :Gina browse --yank :<CR>
 vmap <silent> [gina]x :Gina browse --exact :<CR>
+vmap <silent> [gina]y :Gina browse --yank --exact :<CR>
 " }}}
 
 " vim-test {{{
