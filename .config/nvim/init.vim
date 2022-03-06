@@ -60,7 +60,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('sgur/vim-textobj-parameter')
   call dein#add('Julian/vim-textobj-variable-segment')
   call dein#add('lambdalisue/gina.vim', {'merged': 0})
-  call dein#add('kitagry/gina-openpr.vim')
+  call dein#add('kitagry/gina-openpr.vim', {'merged': 0})
   call dein#local(expand(s:dein_dir_ . '/repos/github.com/kitagry'), {}, ['nvim-treesitter-goaddtags', 'dpsh-vim'])
 
   call dein#add('lambdalisue/fern.vim')
@@ -581,8 +581,8 @@ vnoremap [gina] <Nop>
 nmap <Leader>g [gina]
 vmap <Leader>g [gina]
 nmap <silent> [gina]b :<C-u>Gina blame<CR>
-nmap <silent> [gina]s :<C-u>Gina status --opener=vsplit<CR>
-nmap <silent> [gina]c :<C-u>Gina commit<CR>
+nmap <silent> [gina]s :<C-u>Gina status --opener=vsplit --group=gina<CR>
+nmap <silent> [gina]c :<C-u>Gina commit --group=gina<CR>
 nmap <silent> [gina]d :<C-u>Gina diff<CR>
 nmap <silent> [gina]x :Gina browse :<CR>
 nmap <silent> [gina]y :Gina browse --yank :<CR>
