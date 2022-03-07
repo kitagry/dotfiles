@@ -51,6 +51,19 @@ alias dct='(){docker-compose run --rm $1 sh -c "curl -L https://github.com/c9s/g
 ###########################
 
 ###########################
+# neovimコマンドのalias
+###########################
+rgvim() {
+  file=$(rg --color=never --no-heading -n $@ | fzf)
+  if [ $file ]; then
+    file_name=$(echo $file | cut -d ':' -f 1)
+    line=$(echo $file | cut -d ':' -f 2)
+    $EDITOR $file_name -c ":${line}"
+  fi
+}
+###########################
+
+###########################
 # kubernetesコマンドのalias
 ###########################
 alias k='kubectl'
@@ -162,10 +175,10 @@ alias kstern='kubectl_stern'
 ###########################
 # 便利系
 ###########################
-alias zshrc="vim ~/.zshrc"
-alias zshenv="vim ~/.zshenv"
-alias vimrc="vim ~/.vimrc"
-alias nvimrc="nvim ~/.config/nvim/init.vim"
+alias zshrc="$EDITOR ~/.zshrc"
+alias zshenv="$EDITOR ~/.zshenv"
+alias vimrc="$EDITOR ~/.vimrc"
+alias nvimrc="$EDITOR ~/.config/nvim/init.vim"
 alias ls="exa"
 ###########################
 
