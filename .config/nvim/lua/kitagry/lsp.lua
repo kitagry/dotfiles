@@ -78,6 +78,29 @@ function M.search_files(...)
   return M.search_ancestors(vim.fn.expand("%:p:h"), matcher)
 end
 
+function M.setupPythonLSP()
+  if M.pyright_setup_done then
+    return
+  end
+  local virtual_env_path = vim.trim(vim.fn.system('poetry env info -p'))
+
+  local python_path = 'python'
+  if #vim.split(virtual_env_path, '\n') == 1 then
+    python_path = string.format("%s/bin/python", virtual_env_path)
+  end
+  nvim_lsp.pyright.setup{
+    capabilities = M.capabilities,
+    settings = {
+      python = {
+        pythonPath = python_path;
+      }
+    }
+  }
+
+  vim.cmd('LspStart pyright')
+  M.pyright_setup_done = true
+end
+
 function M.setupLSP()
   local capabilities = vim.lsp.protocol.make_client_capabilities()
   capabilities.textDocument.completion.completionItem.snippetSupport = true
@@ -94,6 +117,7 @@ function M.setupLSP()
       'additionalTextEdits',
     }
   }
+  M.capabilities = capabilities
 
   -- gopls settings
   nvim_lsp.gopls.setup{
@@ -104,20 +128,13 @@ function M.setupLSP()
     }
   }
 
-  local virtual_env_path = vim.trim(vim.fn.system('poetry env info -p'))
+  vim.cmd([[
+    augroup SetupPythonLSP
+      autocmd!
+      autocmd FileType python lua require"kitagry.lsp".setupPythonLSP()
+    augroup END
+  ]])
 
-  local python_path = 'python'
-  if #vim.split(virtual_env_path, '\n') == 1 then
-    python_path = string.format("%s/bin/python", virtual_env_path)
-  end
-  nvim_lsp.pyright.setup{
-    capabilities = capabilities,
-    settings = {
-      python = {
-        pythonPath = python_path;
-      }
-    }
-  }
   nvim_lsp.vimls.setup{
     capabilities = capabilities,
   }

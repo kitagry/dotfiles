@@ -185,7 +185,7 @@ endif
 
 let s:nvimrc_local = expand(s:nvimrc_dir . '/init.local.vim')
 if filereadable(s:nvimrc_local)
-    execute 'source ' . s:nvimrc_local
+    runtime s:nvimrc_local
 endif
 
 set cursorline
@@ -695,12 +695,12 @@ lua require('kitagry.rust')
 " }}}
 
 " {{{ quickrun
-let g:quickrun_config = {}
-
-if executable('poetry')
-  let s:python_path = trim(system('poetry env info -p'))
-  let g:quickrun_config.python = { 'command': s:python_path }
-endif
+" let g:quickrun_config = {}
+"
+" if executable('poetry')
+"   let s:python_path = trim(system('poetry env info -p'))
+"   let g:quickrun_config.python = { 'command': s:python_path }
+" endif
 " }}}
 
 " {{{ fuzzy-motion
