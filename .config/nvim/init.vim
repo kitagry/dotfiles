@@ -78,7 +78,6 @@ if dein#load_state(s:dein_dir)
   call dein#add('hashivim/vim-terraform', {'on_ft': 'terraform'})
   call dein#add('mattn/emmet-vim')
   call dein#add('rhysd/rust-doc.vim')
-  call dein#add('vim-test/vim-test')
   call dein#add('sainnhe/sonokai')
   call dein#add('segeljakt/vim-silicon')
   call dein#add('windwp/nvim-autopairs')
@@ -185,7 +184,7 @@ endif
 
 let s:nvimrc_local = expand(s:nvimrc_dir . '/init.local.vim')
 if filereadable(s:nvimrc_local)
-    runtime s:nvimrc_local
+    execute('source ' . s:nvimrc_local)
 endif
 
 set cursorline
@@ -551,14 +550,14 @@ augroup END
 lua require("kitagry.telescope")
 nnoremap [telescope] <Nop>
 nmap <Leader>f [telescope]
-nmap <silent> [telescope]r <cmd>lua require('telescope.builtin').resume()<CR>
-nmap <silent> [telescope]f <cmd>lua require('telescope.builtin').find_files()<CR>
-nmap <silent> [telescope]g <cmd>lua require('telescope.builtin').live_grep()<CR>
-nmap <silent> [telescope]] <cmd>lua require('telescope.builtin').grep_string()<CR>
-nmap <silent> [telescope]d <cmd>lua require('telescope.builtin').lsp_document_symbols()<CR>
-nmap <silent> [telescope]b <cmd>lua require('telescope.builtin').buffers()<CR>
-nmap <silent> [telescope]t <cmd>lua require('telescope.builtin').filetypes()<CR>
-nmap <silent> [telescope]h <cmd>lua require('telescope.builtin').help_tags()<CR>
+nmap <silent> [telescope]r <cmd>lua require('telescope.builtin').resume(require('telescope.themes').get_ivy())<CR>
+nmap <silent> [telescope]f <cmd>lua require('telescope.builtin').find_files(require('telescope.themes').get_ivy())<CR>
+nmap <silent> [telescope]g <cmd>lua require('telescope.builtin').live_grep(require('telescope.themes').get_ivy())<CR>
+nmap <silent> [telescope]] <cmd>lua require('telescope.builtin').grep_string(require('telescope.themes').get_ivy())<CR>
+nmap <silent> [telescope]d <cmd>lua require('telescope.builtin').lsp_document_symbols(require('telescope.themes').get_ivy())<CR>
+nmap <silent> [telescope]b <cmd>lua require('telescope.builtin').buffers(require('telescope.themes').get_ivy())<CR>
+nmap <silent> [telescope]t <cmd>lua require('telescope.builtin').filetypes(require('telescope.themes').get_ivy())<CR>
+nmap <silent> [telescope]h <cmd>lua require('telescope.builtin').help_tags(require('telescope.themes').get_ivy())<CR>
 " }}}
 
 " flasy.vim {{{
@@ -584,92 +583,28 @@ nmap <silent> [gina]b :<C-u>Gina blame<CR>
 nmap <silent> [gina]s :<C-u>Gina status --group=gina<CR>
 nmap <silent> [gina]c :<C-u>Gina commit<CR>
 nmap <silent> [gina]d :<C-u>Gina diff --group=gina<CR>
+nmap <silent> [gina]p :<C-u>GitPush<CR>
 nmap <silent> [gina]x :Gina browse :<CR>
 nmap <silent> [gina]y :Gina browse --yank :<CR>
 vmap <silent> [gina]x :Gina browse --exact :<CR>
 vmap <silent> [gina]y :Gina browse --yank --exact :<CR>
-" }}}
 
-" vim-test {{{
-function! DockerComposeTransformation(cmd) abort
-  let docker_compose_project = findfile("docker-compose.yml", ".;")
-  if !empty(docker_compose_project)
-    let docker_compose = readfile(docker_compose_project)
-    let docker_compose_copy = copy(docker_compose)
-    let docker_compose = map(docker_compose, {key, val -> [key, val]})
-    let cwd = split(getcwd(), '/')[-1]
-    let context_lines = filter(docker_compose, 'v:val[1] =~ "context:"')
-    let target_context_line = filter(context_lines, printf('v:val[1] =~ "%s"', cwd))
-    if len(target_context_line) == 0
-      echohl ErrorMsg
-      echomsg 'context was not found'
-      echohl None
-      return a:cmd
-    endif
-    let target = ''
-    for i in range(target_context_line[0][0]-1, 0, -1)
-      " count tab
-      " for example
-      " services:
-      "   SERVICE_NAME:
-      " # ^ this is not space
-      "     build:
-      "       context: ./DIR_NAME  # <-- target_context_line[0][0]
-      if docker_compose_copy[i][2] != ' '
-        let target = docker_compose_copy[i][2:-2]
-        break
-      endif
-    endfor
-    return printf('docker-compose run --rm %s %s', target, a:cmd)
-  endif
-  return a:cmd
+command! -nargs=0 GitPush call s:git_push()
+command! -nargs=0 GitCreatePR call s:create_pr()
+function! s:git_push() abort
+  let l:current_branch = gina#component#repo#branch()
+  execute('Gina! push -u origin ' . l:current_branch)
 endfunction
 
-function! CbExit(job_id, status_code, event) abort
-  let vim_test_buf_id = get(b:, 'vim_test_buf_id', 0)
-  if vim_test_buf_id == 0
-    return
-  endif
-
-  if !hlexists('StatusLineTermSuccess')
-    highlight! StatusLineTermSuccess ctermbg=Green guibg=#ff0000
-    highlight! StatusLineTermFail    ctermbg=Red   guibg=#ff0000
-  endif
-
-  " https://github.com/neovim/neovim/pull/13664
-  " これ待ちになりそう
-  if a:status_code
-    set statusline=%#StatusLineTermFail#Fail
+function! s:create_pr() abort
+  let l:remote_url = system('git remote get-url origin')
+  if stridx(l:remote_url, "github.com") != -1
+    call system('gh pr create --web')
   else
-    set statusline=%#StatusLineTermSuccess#Success
+    " TODO: change the command
+    call system('lab mr browse')
   endif
 endfunction
-
-function! s:custom_strategy(cmd) abort
-  let term_position = get(g:, 'test#neovim#term_position', 'botright')
-  execute term_position . ' new'
-  let b:vim_test_buf_id = bufnr('%')
-  let l:job_id =  termopen(a:cmd, {
-    \ 'on_exit': function('CbExit'),
-    \ })
-  au BufDelete <buffer> wincmd p " switch back to last window
-  startinsert
-endfunction
-
-let g:test#custom_transformations = {'docker': function('DockerComposeTransformation')}
-let g:test#transformation = 'docker'
-let g:test#custom_strategies = {'custom': function('s:custom_strategy')}
-let test#strategy = 'custom'
-let test#neovim#term_position = 'vert'
-let test#go#gotest#options = {
-  \ 'file': '-p 1',
-  \ 'suite': '-p 1',
-  \ }
-nnoremap [vim-test] <Nop>
-nmap <Leader>e [vim-test]
-nmap <silent> [vim-test]a <cmd>TestSuit<CR>
-nmap <silent> [vim-test]f <cmd>TestFile<CR>
-nmap <silent> [vim-test]t <cmd>TestVisit<CR>
 " }}}
 
 " {{{ nvim-autopairs
