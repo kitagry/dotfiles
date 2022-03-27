@@ -558,6 +558,7 @@ nmap <silent> [telescope]d <cmd>lua require('telescope.builtin').lsp_document_sy
 nmap <silent> [telescope]b <cmd>lua require('telescope.builtin').buffers(require('telescope.themes').get_ivy())<CR>
 nmap <silent> [telescope]t <cmd>lua require('telescope.builtin').filetypes(require('telescope.themes').get_ivy())<CR>
 nmap <silent> [telescope]h <cmd>lua require('telescope.builtin').help_tags(require('telescope.themes').get_ivy())<CR>
+nmap <silent> [telescope]a <cmd>lua require('telescope.builtin').git_branches(require('telescope.themes').get_ivy())<CR>
 " }}}
 
 " flasy.vim {{{
