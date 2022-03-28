@@ -391,8 +391,11 @@ let g:vsnip_snippet_dir="~/.vim/vsnip/"
 " }}}
 
 " built in lsp {{{
-lua require"kitagry.lsp".setupLSP()
-lua vim.lsp.set_log_level(0)
+if !exists('g:loaded_kitagry_lsp')
+  lua require"kitagry.lsp".setupLSP()
+  lua vim.lsp.set_log_level(0)
+endif
+let g:loaded_kitagry_lsp = 1
 
 function! s:reset_lsp() abort
   echomsg "restarting lsp..."
@@ -598,11 +601,11 @@ command! -nargs=0 GitCreatePR call s:create_pr()
 function! s:git_push() abort
   let l:current_branch = gina#component#repo#branch()
   if l:current_branch == 'master' || l:current_branch == 'main'
-    if tolower(input(printf('this will push to %s? [y/N]', l:current_branch), 'n')) != 'y'
+    if tolower(input(printf('this will push to %s? [y/N]', l:current_branch))) != 'y'
       echo 'canceled'
       return
-    fi
-  fi
+    endif
+  endif
   execute('Gina! push -u origin ' . l:current_branch)
 endfunction
 
