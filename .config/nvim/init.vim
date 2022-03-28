@@ -35,6 +35,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('hrsh7th/cmp-nvim-lsp')
   call dein#add('hrsh7th/cmp-cmdline')
   call dein#add('hrsh7th/cmp-path')
+  call dein#add('hrsh7th/cmp-nvim-lsp-signature-help')
   call dein#add('hrsh7th/vim-vsnip')
   call dein#add('hrsh7th/vim-vsnip-integ')
   call dein#add('kitagry/vs-snippets', {'merged': 0})
@@ -317,6 +318,7 @@ lua <<EOF
           get_bufnrs = get_bufnrs
         }
       },
+      { name = 'nvim_lsp_signature_help' },
     },
 
     formatting = {
@@ -390,7 +392,7 @@ let g:vsnip_snippet_dir="~/.vim/vsnip/"
 
 " built in lsp {{{
 lua require"kitagry.lsp".setupLSP()
-" lua vim.lsp.set_log_level(0)
+lua vim.lsp.set_log_level(0)
 
 function! s:reset_lsp() abort
   echomsg "restarting lsp..."
@@ -559,6 +561,7 @@ nmap <silent> [telescope]b <cmd>lua require('telescope.builtin').buffers(require
 nmap <silent> [telescope]t <cmd>lua require('telescope.builtin').filetypes(require('telescope.themes').get_ivy())<CR>
 nmap <silent> [telescope]h <cmd>lua require('telescope.builtin').help_tags(require('telescope.themes').get_ivy())<CR>
 nmap <silent> [telescope]a <cmd>lua require('telescope.builtin').git_branches(require('telescope.themes').get_ivy())<CR>
+nmap <silent> [telescope]c <cmd>lua require('telescope.builtin').command_history(require('telescope.themes').get_ivy())<CR>
 " }}}
 
 " flasy.vim {{{

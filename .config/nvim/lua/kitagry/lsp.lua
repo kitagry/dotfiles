@@ -82,12 +82,25 @@ function M.setupPythonLSP()
   if M.pyright_setup_done then
     return
   end
-  local virtual_env_path = vim.trim(vim.fn.system('poetry env info -p'))
 
-  local python_path = 'python'
-  if #vim.split(virtual_env_path, '\n') == 1 then
-    python_path = string.format("%s/bin/python", virtual_env_path)
+  python_path = 'python3'
+
+  local poetry_lock = M.search_files({'poetry.lock'})
+  if poetry_lock then
+    local virtual_env_path = vim.trim(vim.fn.system('poetry env info -p'))
+    if #vim.split(virtual_env_path, '\n') == 1 then
+      python_path = string.format("%s/bin/python", virtual_env_path)
+    end
   end
+
+  local pipfile_lock = M.search_files({'Pipfile.lock'})
+  if pipfile_lock then
+    local virtual_env_path = vim.trim(vim.fn.system('pipenv --venv'))
+    if #vim.split(virtual_env_path, '\n') == 1 then
+      python_path = string.format("%s/bin/python", virtual_env_path)
+    end
+  end
+
   nvim_lsp.pyright.setup{
     capabilities = M.capabilities,
     settings = {
@@ -256,35 +269,56 @@ local function code_action_sync_handler(actions)
     return
   end
 
-  local action_chosen = actions[1]
+  if actions[1].result == nil or #actions[1].result ~= 1 then
+    return
+  end
 
-  -- textDocument/codeAction can return either Command[] or CodeAction[].
-  -- If it is a CodeAction, it can have either an edit, a command or both.
-  -- Edits should be executed first
-  if action_chosen.edit or type(action_chosen.command) == "table" then
-    if action_chosen.edit then
-      vim.lsp.util.apply_workspace_edit(action_chosen.edit)
+  ---@private
+  local function apply_action(action, client)
+    if action.edit then
+      vim.lsp.util.apply_workspace_edit(action.edit, client.offset_encoding)
     end
-    if type(action_chosen.command) == "table" then
-      vim.lsp.buf.execute_command(action_chosen.command)
+    if action.command then
+      local command = type(action.command) == 'table' and action.command or action
+      local fn = client.commands[command.command] or vim.lsp.commands[command.command]
+      if fn then
+        local enriched_ctx = vim.deepcopy(ctx)
+        enriched_ctx.client_id = client.id
+        fn(command, enriched_ctx)
+      else
+        M.execute_command(command)
+      end
     end
+  end
+
+  local client = vim.lsp.get_client_by_id(1)
+  local action_chosen = actions[1].result[1]
+  if not action_chosen.edit
+      and client
+      and type(client.resolved_capabilities.code_action) == 'table'
+      and client.resolved_capabilities.code_action.resolveProvider then
+
+    client.request('codeAction/resolve', action_chosen, function(err, resolved_action)
+      if err then
+        vim.notify(err.code .. ': ' .. err.message, vim.log.levels.ERROR)
+        return
+      end
+      apply_action(resolved_action, client)
+    end)
   else
-    vim.lsp.buf.execute_command(action_chosen)
+    apply_action(action_chosen, client)
   end
 end
 
 function M.code_action_sync(action)
-  local pre_callback = vim.lsp.handlers['textDocument/codeAction']
   local context = {}
   context['only'] = {action}
   context['diagnostics'] = {}
   local params = vim.lsp.util.make_range_params()
   params.context = context
-  local result = vim.lsp.buf_request_sync(0, 'textDocument/codeAction', params)
-  if not result or vim.tbl_isempty(result) then return end
-  local _, code_action_result = next(result)
-  result = code_action_result.result
-  code_action_sync_handler(result)
+  vim.lsp.buf_request_all(0, 'textDocument/codeAction', params, function(results)
+    code_action_sync_handler(results)
+  end)
 end
 
 return M
