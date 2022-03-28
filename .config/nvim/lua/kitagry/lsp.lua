@@ -82,12 +82,25 @@ function M.setupPythonLSP()
   if M.pyright_setup_done then
     return
   end
-  local virtual_env_path = vim.trim(vim.fn.system('poetry env info -p'))
 
-  local python_path = 'python'
-  if #vim.split(virtual_env_path, '\n') == 1 then
-    python_path = string.format("%s/bin/python", virtual_env_path)
+  python_path = 'python3'
+
+  local poetry_lock = M.search_files({'poetry.lock'})
+  if poetry_lock then
+    local virtual_env_path = vim.trim(vim.fn.system('poetry env info -p'))
+    if #vim.split(virtual_env_path, '\n') == 1 then
+      python_path = string.format("%s/bin/python", virtual_env_path)
+    end
   end
+
+  local pipfile_lock = M.search_files({'Pipfile.lock'})
+  if pipfile_lock then
+    local virtual_env_path = vim.trim(vim.fn.system('pipenv --venv'))
+    if #vim.split(virtual_env_path, '\n') == 1 then
+      python_path = string.format("%s/bin/python", virtual_env_path)
+    end
+  end
+
   nvim_lsp.pyright.setup{
     capabilities = M.capabilities,
     settings = {
