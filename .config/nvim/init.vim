@@ -597,6 +597,12 @@ command! -nargs=0 GitPush call s:git_push()
 command! -nargs=0 GitCreatePR call s:create_pr()
 function! s:git_push() abort
   let l:current_branch = gina#component#repo#branch()
+  if l:current_branch == 'master' || l:current_branch == 'main'
+    if tolower(input(printf('this will push to %s? [y/N]', l:current_branch), 'n')) != 'y'
+      echo 'canceled'
+      return
+    fi
+  fi
   execute('Gina! push -u origin ' . l:current_branch)
 endfunction
 
