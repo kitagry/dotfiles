@@ -615,7 +615,7 @@ function! s:create_pr() abort
     call system('gh pr create --web')
   else
     " TODO: change the command
-    call system('lab mr browse')
+    call system('glab mr create --web')
   endif
 endfunction
 " }}}
