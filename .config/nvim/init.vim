@@ -35,11 +35,13 @@ if dein#load_state(s:dein_dir)
   call dein#add('hrsh7th/cmp-nvim-lsp')
   call dein#add('hrsh7th/cmp-cmdline')
   call dein#add('hrsh7th/cmp-path')
+  call dein#add('lukas-reineke/cmp-rg')
   call dein#add('hrsh7th/cmp-nvim-lsp-signature-help')
   call dein#add('hrsh7th/vim-vsnip')
   call dein#add('hrsh7th/vim-vsnip-integ')
   call dein#add('kitagry/vs-snippets', {'merged': 0})
   call dein#add('neovim/nvim-lspconfig', {'merged': 0})
+  call dein#add('williamboman/nvim-lsp-installer')
   call dein#add('nvim-lua/lsp_extensions.nvim')
   call dein#add('nvim-lua/popup.nvim')
   call dein#add('nvim-lua/plenary.nvim')
@@ -319,6 +321,7 @@ lua <<EOF
         }
       },
       { name = 'nvim_lsp_signature_help' },
+      { name = 'rg' },
     },
 
     formatting = {
@@ -329,6 +332,7 @@ lua <<EOF
           cmdline = '[cmdline]',
           path = '[path]',
           buffer = '[Buffer]',
+          rg = '[rg]'
         })[entry.source.name]
         return vim_item
       end
@@ -393,7 +397,7 @@ let g:vsnip_snippet_dir="~/.vim/vsnip/"
 " built in lsp {{{
 if !exists('g:loaded_kitagry_lsp')
   lua require"kitagry.lsp".setupLSP()
-  lua vim.lsp.set_log_level(0)
+  " lua vim.lsp.set_log_level(0)
 endif
 let g:loaded_kitagry_lsp = 1
 
@@ -614,7 +618,6 @@ function! s:create_pr() abort
   if stridx(l:remote_url, "github.com") != -1
     call system('gh pr create --web')
   else
-    " TODO: change the command
     call system('glab mr create --web')
   endif
 endfunction

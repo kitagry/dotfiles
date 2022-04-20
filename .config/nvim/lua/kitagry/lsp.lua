@@ -1,6 +1,7 @@
 local nvim_lsp = require'lspconfig'
 local configs = require'lspconfig.configs'
 local util = require 'lspconfig.util'
+local lsp_installer = require("nvim-lsp-installer")
 
 local M = {}
 
@@ -132,14 +133,30 @@ function M.setupLSP()
   }
   M.capabilities = capabilities
 
-  -- gopls settings
-  nvim_lsp.gopls.setup{
-    capabilities = capabilities,
-    init_options = {
-      usePlaceholders=true;
-      gofumpt=true;
-    }
-  }
+  lsp_installer.on_server_ready(function(server)
+    local opts = {}
+
+    opts.capabilities = capabilities
+
+    if server.name == "gopls" then
+      opts.init_options = {
+        usePlaceholders=true;
+        gofumpt=true;
+      }
+    end
+
+    if server.name == "yamlls" then
+      opts.settings = {
+        yaml = {
+          schemas = {
+            kubernetes = {"/k8s/*"};
+          }
+        }
+      }
+    end
+
+    server:setup(opts)
+  end)
 
   vim.cmd([[
     augroup SetupPythonLSP
@@ -147,13 +164,6 @@ function M.setupLSP()
       autocmd FileType python lua require"kitagry.lsp".setupPythonLSP()
     augroup END
   ]])
-
-  nvim_lsp.vimls.setup{
-    capabilities = capabilities,
-  }
-  nvim_lsp.rust_analyzer.setup{
-    capabilities = capabilities,
-  }
 
   local package_json = M.search_files({'package.json'})
   if package_json then
@@ -183,42 +193,6 @@ function M.setupLSP()
       cmd = { 'efm-langserver', '-c', efm_config, '-logfile', efm_logfile };
     }
   }
-  nvim_lsp.texlab.setup{
-    capabilities = capabilities,
-  }
-  nvim_lsp.terraformls.setup{
-    capabilities = capabilities,
-  }
-  nvim_lsp.yamlls.setup{
-    capabilities = capabilities,
-    settings = {
-      yaml = {
-        schemas = {
-          kubernetes = {"/k8s/*"};
-        }
-      }
-    }
-  }
-
-  nvim_lsp.solargraph.setup{
-    capabilities = capabilities,
-  }
-
-  nvim_lsp.graphql.setup{
-    capabilities = capabilities,
-  }
-
-  -- configs.golangci_lint = {
-  --   default_config = {
-  --     cmd = { 'golangci-lint-langserver' };
-  --     filetypes = { 'go' };
-  --     root_dir = util.root_pattern("go.mod", ".git");
-  --     init_options = {
-  --       command={ 'golangci-lint', 'run', '--enable-all', '--disable', 'lll', '--out-format', 'json' };
-  --     };
-  --   };
-  -- }
-  -- nvim_lsp.golangci_lint.setup{}
 
   if not configs.regols then
     configs.regols = {
@@ -246,16 +220,6 @@ function M.setupLSP()
     };
   }
   nvim_lsp.sqls.setup{
-    capabilities = capabilities,
-  }
-
-  nvim_lsp.clangd.setup{
-    capabilities = capabilities,
-  }
-  nvim_lsp.sumneko_lua.setup{
-    capabilities = capabilities,
-  }
-  nvim_lsp.clangd.setup{
     capabilities = capabilities,
   }
 end
