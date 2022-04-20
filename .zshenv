@@ -133,12 +133,14 @@ kubectl_log() {
             ;;
       esac
   done
+# オプション部分を切り捨てる。
+  shift `expr $OPTIND - 1`
   target_pod=$(kubectl get pods | sed -e '1d' | fzf | cut -d ' ' -f 1)
   if [ $target_pod ]; then
     result="$(kubectl logs $target_pod $1 |& xargs echo)"
     if [ "`echo $result | grep 'a container name must be specified for'`" ]; then
       target_container=$(kubectl get pods/$target_pod -o "jsonpath={['..containers','..initContainers'][*].name}" | tr ' ' '\n' | fzf)
-      kubectl logs $FOLLOW $target_pod $target_container
+      kubectl logs $FOLLOW $target_pod -c $target_container
     else
       # TODO: NOT RERUN COMMAND
       kubectl logs $FOLLOW $target_pod $1
@@ -169,6 +171,12 @@ kubectl_stern() {
     stern $target_pod
   fi
 }
+
+kubectl_exec() {
+  target_pod=$(kubectl get pods | sed -e '1d' | fzf | cut -d ' ' -f 1)
+  kubectl exec $target_pod -it -- bash
+}
+alias kexec='kubectl_exec'
 alias kstern='kubectl_stern'
 ###########################
 
