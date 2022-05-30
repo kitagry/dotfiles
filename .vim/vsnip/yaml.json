@@ -82,6 +82,23 @@
       "          restartPolicy: OnFailure"
     ]
   },
+  "job": {
+    "prefix": "job",
+    "body": [
+      "apiVersion: batch/v1",
+      "kind: Job",
+      "metadata:",
+      " name: $1",
+      "spec:",
+      " template:",
+      "   spec:",
+      "     restartPolicy: OnFailure",
+      "     containers:",
+      "     - name: $1",
+      "       image: $2",
+      "       command: $3"
+    ]
+  },
   "service": {
     "prefix": "service",
     "body": [

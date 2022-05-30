@@ -1,3 +1,4 @@
+local vim = vim
 local nvim_lsp = require'lspconfig'
 local configs = require'lspconfig.configs'
 local util = require 'lspconfig.util'
@@ -84,7 +85,7 @@ function M.setupPythonLSP()
     return
   end
 
-  python_path = 'python3'
+  local python_path = 'python3'
 
   local poetry_lock = M.search_files({'poetry.lock'})
   if poetry_lock then
@@ -149,8 +150,13 @@ function M.setupLSP()
       opts.settings = {
         yaml = {
           schemas = {
-            kubernetes = {"/k8s/*"};
-          }
+            ["https://raw.githubusercontent.com/instrumenta/kubernetes-json-schema/master/v1.18.0-standalone-strict/all.json"] = {"/k8s/**/*.yaml", "/*.k8s.yaml"},
+            ["http://json.schemastore.org/kustomization"] = "kustomization.yaml",
+          },
+          format = {
+            enable = true,
+          },
+          validate = true,
         }
       }
     end
