@@ -98,6 +98,9 @@ if dein#load_state(s:dein_dir)
   call dein#add('monaqa/dial.nvim')
   call dein#add('yuki-yano/fuzzy-motion.vim')
 
+  call dein#add('lambdalisue/gin.vim')
+  call dein#add('kosayoda/nvim-lightbulb')
+
   call dein#end()
   call dein#save_state()
 endif
@@ -415,23 +418,36 @@ function! s:lsp_format()
 endfunction
 
 function! s:set_lsp_buffer_enabled() abort
-  setlocal omnifunc=v:lua.vim.lsp.omnifunc
-  nnoremap <buffer><silent><c-]>      <cmd>lua vim.lsp.buf.definition()<CR>
-  nnoremap <buffer><silent><c-k>      <cmd>lua vim.lsp.buf.signature_help()<CR>
-  nnoremap <buffer><silent>[e         <cmd>lua vim.lsp.diagnostic.goto_prev()<CR>
-  nnoremap <buffer><silent>]e         <cmd>lua vim.lsp.diagnostic.goto_next()<CR>
-
   nnoremap [vim-lsp] <Nop>
   nmap     <buffer><silent><Leader>l [vim-lsp]
-  nmap [vim-lsp]h <cmd>lua vim.lsp.buf.hover()<CR>
-  nmap [vim-lsp]r <cmd>lua vim.lsp.buf.rename()<CR>
-  nmap [vim-lsp]f <cmd>lua vim.lsp.buf.formatting()<CR>
-  nmap [vim-lsp]e <cmd>lua vim.lsp.buf.references({ includeDeclaration = true })<CR>
-  nmap [vim-lsp]t <cmd>lua vim.lsp.buf.type_definition()<CR>
-  nmap [vim-lsp]a <cmd>lua vim.lsp.buf.code_action()<CR>
-  nmap [vim-lsp]q :<C-u>LspReset<CR>
-  nmap [vim-lsp]s :<C-u>LspInfo<CR>
-  nmap [vim-lsp]a <cmd>lua require'telescope.builtin'.lsp_code_actions()<CR>
+  if exists('g:vscode')
+    nnoremap <buffer><silent><c-]>      <cmd>call VSCodeNotify('editor.action.revealDefinition')<CR>
+    nnoremap <buffer><silent>[e         <cmd>call VSCodeNotify('editor.action.marker.prev')<CR>
+    nnoremap <buffer><silent>]e         <cmd>call VSCodeNotify('editor.action.marker.next')<CR>
+
+    nmap [vim-lsp]h <cmd>call VSCodeNotify('editor.action.showHover')<CR>
+    nmap [vim-lsp]r <cmd>call VSCodeNotify('editor.action.rename')<CR>
+    nmap [vim-lsp]r <cmd>call VSCodeNotify('editor.action.formatDocument')<CR>
+    nmap [vim-lsp]t <cmd>call VSCodeNotify('editor.action.goToTypeDefinition')<CR>
+    nmap [vim-lsp]e <cmd>call VSCodeNotify('references-view.findReferences')<CR>
+    nmap [vim-lsp]a <cmd>call VSCodeNotify('editor.action.sourceAction')<CR>
+  else
+    setlocal omnifunc=v:lua.vim.lsp.omnifunc
+    nnoremap <buffer><silent><c-]>      <cmd>lua vim.lsp.buf.definition()<CR>
+    nnoremap <buffer><silent><c-k>      <cmd>lua vim.lsp.buf.signature_help()<CR>
+    nnoremap <buffer><silent>[e         <cmd>lua vim.diagnostic.goto_prev()<CR>
+    nnoremap <buffer><silent>]e         <cmd>lua vim.diagnostic.goto_next()<CR>
+
+    nmap [vim-lsp]h <cmd>lua vim.lsp.buf.hover()<CR>
+    nmap [vim-lsp]r <cmd>lua vim.lsp.buf.rename()<CR>
+    nmap [vim-lsp]f <cmd>lua vim.lsp.buf.formatting()<CR>
+    nmap [vim-lsp]e <cmd>lua vim.lsp.buf.references({ includeDeclaration = true })<CR>
+    nmap [vim-lsp]t <cmd>lua vim.lsp.buf.type_definition()<CR>
+    nmap [vim-lsp]a <cmd>lua vim.lsp.buf.code_action()<CR>
+    nmap [vim-lsp]i <cmd>lua vim.lsp.buf.implementation()<CR>
+    nmap [vim-lsp]q :<C-u>LspReset<CR>
+    nmap [vim-lsp]s :<C-u>LspInfo<CR>
+  endif
 
   sign define LspDiagnosticsErrorSign text=E> texthl=Error linehl= numhl=
   sign define LspDiagnosticsWarningSign text=W> texthl=WarningMsg linehl= numhl=
@@ -559,16 +575,19 @@ augroup END
 lua require("kitagry.telescope")
 nnoremap [telescope] <Nop>
 nmap <Leader>f [telescope]
-nmap <silent> [telescope]r <cmd>lua require('telescope.builtin').resume(require('telescope.themes').get_ivy())<CR>
-nmap <silent> [telescope]f <cmd>lua require('telescope.builtin').find_files(require('telescope.themes').get_ivy())<CR>
-nmap <silent> [telescope]g <cmd>lua require('telescope.builtin').live_grep(require('telescope.themes').get_ivy())<CR>
-nmap <silent> [telescope]] <cmd>lua require('telescope.builtin').grep_string(require('telescope.themes').get_ivy())<CR>
-nmap <silent> [telescope]d <cmd>lua require('telescope.builtin').lsp_document_symbols(require('telescope.themes').get_ivy())<CR>
-nmap <silent> [telescope]b <cmd>lua require('telescope.builtin').buffers(require('telescope.themes').get_ivy())<CR>
-nmap <silent> [telescope]t <cmd>lua require('telescope.builtin').filetypes(require('telescope.themes').get_ivy())<CR>
-nmap <silent> [telescope]h <cmd>lua require('telescope.builtin').help_tags(require('telescope.themes').get_ivy())<CR>
-nmap <silent> [telescope]a <cmd>lua require('telescope.builtin').git_branches(require('telescope.themes').get_ivy())<CR>
-nmap <silent> [telescope]c <cmd>lua require('telescope.builtin').command_history(require('telescope.themes').get_ivy())<CR>
+if exists('g:vscode')
+else
+  nmap <silent> [telescope]r <cmd>lua require('telescope.builtin').resume(require('telescope.themes').get_ivy())<CR>
+  nmap <silent> [telescope]f <cmd>lua require('telescope.builtin').find_files(require('telescope.themes').get_ivy())<CR>
+  nmap <silent> [telescope]g <cmd>lua require('telescope.builtin').live_grep(require('telescope.themes').get_ivy())<CR>
+  nmap <silent> [telescope]] <cmd>lua require('telescope.builtin').grep_string(require('telescope.themes').get_ivy())<CR>
+  nmap <silent> [telescope]d <cmd>lua require('telescope.builtin').lsp_document_symbols(require('telescope.themes').get_ivy())<CR>
+  nmap <silent> [telescope]b <cmd>lua require('telescope.builtin').buffers(require('telescope.themes').get_ivy())<CR>
+  nmap <silent> [telescope]t <cmd>lua require('telescope.builtin').filetypes(require('telescope.themes').get_ivy())<CR>
+  nmap <silent> [telescope]h <cmd>lua require('telescope.builtin').help_tags(require('telescope.themes').get_ivy())<CR>
+  nmap <silent> [telescope]a <cmd>lua require('telescope.builtin').git_branches(require('telescope.themes').get_ivy())<CR>
+  nmap <silent> [telescope]c <cmd>lua require('telescope.builtin').command_history(require('telescope.themes').get_ivy())<CR>
+endif
 " }}}
 
 " flasy.vim {{{
@@ -656,4 +675,8 @@ lua require('kitagry.rust')
 
 " {{{ fuzzy-motion
 nnoremap ss :FuzzyMotion<CR>
+" }}}
+
+" nvim-lightbulb {{{
+autocmd CursorMoved,CursorMovedI * lua require'nvim-lightbulb'.update_lightbulb()
 " }}}
