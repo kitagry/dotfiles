@@ -150,7 +150,7 @@ function M.setupLSP()
       opts.settings = {
         yaml = {
           schemas = {
-            ["https://raw.githubusercontent.com/instrumenta/kubernetes-json-schema/master/v1.18.0-standalone-strict/all.json"] = {"/k8s/**/*.yaml", "/*.k8s.yaml"},
+            ["kubernetes"] = {"/k8s/**/*.yml", "/k8s/**/*.yaml", "/*.k8s.yaml"},
             ["http://json.schemastore.org/kustomization"] = "kustomization.yaml",
           },
           format = {
@@ -179,6 +179,7 @@ function M.setupLSP()
   else
     nvim_lsp.denols.setup{
       capabilities = capabilities,
+      single_file_support = true,
     }
   end
 
@@ -226,6 +227,9 @@ function M.setupLSP()
     };
   }
   nvim_lsp.sqls.setup{
+    capabilities = capabilities,
+  }
+  nvim_lsp.solargraph.setup{
     capabilities = capabilities,
   }
 end

@@ -38,6 +38,10 @@ tools:
     format-command: 'poetry run yapf --quiet --style="{based_on_style: pep8, column_limit: 160}"'
     format-stdin: true
 
+  python-isort: &python-isort
+    format-command: 'poetry run isort --stdout'
+    format-stdin: true
+
   sh-shellcheck: &sh-shellcheck
     lint-command: 'shellcheck -f gcc -x'
     lint-source: 'shellcheck'
@@ -69,6 +73,7 @@ languages:
   python:
     - <<: *python-tox-flake8
     - <<: *python-yapf
+    - <<: *python-isort
 
   sh:
     - <<: *sh-shellcheck
