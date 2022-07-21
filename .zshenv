@@ -13,10 +13,8 @@ export PATH="/usr/local/opt/llvm/bin:$PATH"
 export QT_HOMEBREW=true
 export EDITOR=nvim
 
-if [ $commands[cargo] ]; then
-  export PATH="$HOME/.cargo/bin:$PATH"
-  source "$HOME/.cargo/env"
-fi
+export PATH="$HOME/.cargo/bin:$PATH"
+source "$HOME/.cargo/env"
 
 ###########################
 # unixコマンドのalias
