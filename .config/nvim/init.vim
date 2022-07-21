@@ -91,7 +91,6 @@ if dein#load_state(s:dein_dir)
   call dein#add('norcalli/nvim-colorizer.lua')
   call dein#add('lambdalisue/reword.vim')
   call dein#add('tokorom/vim-review')
-  call dein#add('kabouzeid/nvim-lspinstall')
   call dein#add('simrat39/rust-tools.nvim')
   call dein#add('thinca/vim-quickrun')
   call dein#add('oky-123/marksign.vim', {'merged': 0})
@@ -100,6 +99,8 @@ if dein#load_state(s:dein_dir)
 
   call dein#add('lambdalisue/gin.vim')
   call dein#add('kosayoda/nvim-lightbulb')
+  call dein#add('rcarriga/nvim-notify')
+  call dein#add('scalameta/nvim-metals')
 
   call dein#end()
   call dein#save_state()
@@ -324,6 +325,7 @@ lua <<EOF
         }
       },
       { name = 'nvim_lsp_signature_help' },
+      -- { name = 'copilot' },
       { name = 'rg' },
     },
 
@@ -344,10 +346,7 @@ lua <<EOF
   }
 
   cmp.setup.cmdline(':', {
-    mapping = {
-      ['<C-p>'] = cmp.mapping.select_prev_item(),
-      ['<C-n>'] = cmp.mapping.select_next_item(),
-    },
+    mapping = cmp.mapping.preset.cmdline(),
     sources = {
       { name = 'cmdline' },
       { name = 'path' },
@@ -355,10 +354,7 @@ lua <<EOF
   })
 
   cmp.setup.cmdline('/', {
-    mapping = {
-      ['<C-p>'] = cmp.mapping.select_prev_item(),
-      ['<C-n>'] = cmp.mapping.select_next_item(),
-    },
+    mapping = cmp.mapping.preset.cmdline(),
     sources = {
       { name = 'buffer' }
     }
@@ -414,7 +410,8 @@ command! LspReset call s:reset_lsp()
 
 function! s:lsp_format()
   lua require"kitagry.lsp".code_action_sync("source.organizeImports")
-  lua vim.lsp.buf.formatting_sync()
+  sleep 100ms
+  lua vim.lsp.buf.format({async=false})
 endfunction
 
 function! s:set_lsp_buffer_enabled() abort
@@ -440,7 +437,7 @@ function! s:set_lsp_buffer_enabled() abort
 
     nmap [vim-lsp]h <cmd>lua vim.lsp.buf.hover()<CR>
     nmap [vim-lsp]r <cmd>lua vim.lsp.buf.rename()<CR>
-    nmap [vim-lsp]f <cmd>lua vim.lsp.buf.formatting()<CR>
+    nmap [vim-lsp]f <cmd>lua vim.lsp.buf.format({timeout_ms=5000})<CR>
     nmap [vim-lsp]e <cmd>lua vim.lsp.buf.references({ includeDeclaration = true })<CR>
     nmap [vim-lsp]t <cmd>lua vim.lsp.buf.type_definition()<CR>
     nmap [vim-lsp]a <cmd>lua vim.lsp.buf.code_action()<CR>
@@ -459,8 +456,8 @@ function! s:set_lsp_buffer_enabled() abort
     autocmd BufWritePre *.go call s:lsp_format()
     autocmd BufWritePre *.rs call s:lsp_format()
     autocmd BufWritePre *.tsx,*ts,*.jsx,*js lua vim.lsp.buf.formatting_sync()
-    autocmd BufWritePre *.py lua vim.lsp.buf.formatting_sync({}, 300)
-    autocmd BufWritePre *.rego lua vim.lsp.buf.formatting_sync()
+    autocmd BufWritePre *.py lua vim.lsp.buf.format({async=false, timeout_ms=4000})
+    autocmd BufWritePre *.rego lua vim.lsp.buf.format({async=false})
   augroup END
 endfunction
 
@@ -679,4 +676,17 @@ nnoremap ss :FuzzyMotion<CR>
 
 " nvim-lightbulb {{{
 autocmd CursorMoved,CursorMovedI * lua require'nvim-lightbulb'.update_lightbulb()
+" }}}
+
+" nvim-notify {{{
+lua <<EOF
+  vim.notify = require('notify')
+EOF
+" }}}
+
+" {{{metals
+augroup NvimMetals
+  autocmd!
+  autocmd BufNewFile,BufRead *.scala lua require('metals').initialize_or_attach({})
+augroup END
 " }}}
