@@ -438,10 +438,10 @@ function! s:set_lsp_buffer_enabled() abort
     nmap [vim-lsp]h <cmd>lua vim.lsp.buf.hover()<CR>
     nmap [vim-lsp]r <cmd>lua vim.lsp.buf.rename()<CR>
     nmap [vim-lsp]f <cmd>lua vim.lsp.buf.format({timeout_ms=5000})<CR>
-    nmap [vim-lsp]e <cmd>lua vim.lsp.buf.references({ includeDeclaration = true })<CR>
+    nmap [vim-lsp]e <cmd>lua require('telescope.builtin').lsp_references({ include_declaration = true })<CR>
     nmap [vim-lsp]t <cmd>lua vim.lsp.buf.type_definition()<CR>
     nmap [vim-lsp]a <cmd>lua vim.lsp.buf.code_action()<CR>
-    nmap [vim-lsp]i <cmd>lua vim.lsp.buf.implementation()<CR>
+    nmap [vim-lsp]i <cmd>lua require('telescope.builtin').lsp_implementations()<CR>
     nmap [vim-lsp]q :<C-u>LspReset<CR>
     nmap [vim-lsp]s :<C-u>LspInfo<CR>
   endif
@@ -574,16 +574,17 @@ nnoremap [telescope] <Nop>
 nmap <Leader>f [telescope]
 if exists('g:vscode')
 else
-  nmap <silent> [telescope]r <cmd>lua require('telescope.builtin').resume(require('telescope.themes').get_ivy())<CR>
-  nmap <silent> [telescope]f <cmd>lua require('telescope.builtin').find_files(require('telescope.themes').get_ivy())<CR>
-  nmap <silent> [telescope]g <cmd>lua require('telescope.builtin').live_grep(require('telescope.themes').get_ivy())<CR>
-  nmap <silent> [telescope]] <cmd>lua require('telescope.builtin').grep_string(require('telescope.themes').get_ivy())<CR>
-  nmap <silent> [telescope]d <cmd>lua require('telescope.builtin').lsp_document_symbols(require('telescope.themes').get_ivy())<CR>
-  nmap <silent> [telescope]b <cmd>lua require('telescope.builtin').buffers(require('telescope.themes').get_ivy())<CR>
-  nmap <silent> [telescope]t <cmd>lua require('telescope.builtin').filetypes(require('telescope.themes').get_ivy())<CR>
-  nmap <silent> [telescope]h <cmd>lua require('telescope.builtin').help_tags(require('telescope.themes').get_ivy())<CR>
-  nmap <silent> [telescope]a <cmd>lua require('telescope.builtin').git_branches(require('telescope.themes').get_ivy())<CR>
-  nmap <silent> [telescope]c <cmd>lua require('telescope.builtin').command_history(require('telescope.themes').get_ivy())<CR>
+  lua require('telescope').setup{defaults=require('telescope.themes').get_ivy({})}
+  nmap <silent> [telescope]r <cmd>lua require('telescope.builtin').resume()<CR>
+  nmap <silent> [telescope]f <cmd>lua require('telescope.builtin').find_files()<CR>
+  nmap <silent> [telescope]g <cmd>lua require('telescope.builtin').live_grep()<CR>
+  nmap <silent> [telescope]] <cmd>lua require('telescope.builtin').grep_string()<CR>
+  nmap <silent> [telescope]d <cmd>lua require('telescope.builtin').lsp_document_symbols()<CR>
+  nmap <silent> [telescope]b <cmd>lua require('telescope.builtin').buffers()<CR>
+  nmap <silent> [telescope]t <cmd>lua require('telescope.builtin').filetypes()<CR>
+  nmap <silent> [telescope]h <cmd>lua require('telescope.builtin').help_tags()<CR>
+  nmap <silent> [telescope]a <cmd>lua require('telescope.builtin').git_branches()<CR>
+  nmap <silent> [telescope]c <cmd>lua require('telescope.builtin').command_history()<CR>
 endif
 " }}}
 
