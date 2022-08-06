@@ -6,11 +6,6 @@ local lsp_installer = require("nvim-lsp-installer")
 
 local M = {}
 
-function file_exists(name)
-   local f=io.open(name,"r")
-   if f~=nil then io.close(f) return true else return false end
-end
-
 local is_windows = vim.loop.os_uname().version:match("Windows")
 local path_sep = is_windows and "\\" or "/"
 
@@ -239,14 +234,6 @@ local function code_action_sync_handler(actions)
     return
   end
 
-  if #actions ~= 1 then
-    return
-  end
-
-  if actions[1].result == nil or #actions[1].result ~= 1 then
-    return
-  end
-
   ---@private
   local function apply_action(action, client)
     if action.edit then
@@ -265,22 +252,28 @@ local function code_action_sync_handler(actions)
     end
   end
 
-  local client = vim.lsp.get_client_by_id(1)
-  local action_chosen = actions[1].result[1]
-  if not action_chosen.edit
-      and client
-      and type(client.resolved_capabilities.code_action) == 'table'
-      and client.resolved_capabilities.code_action.resolveProvider then
+  for _, action in pairs(actions) do
+    if action.result == nil or #action.result ~= 1 then
+      return
+    end
 
-    client.request('codeAction/resolve', action_chosen, function(err, resolved_action)
-      if err then
-        vim.notify(err.code .. ': ' .. err.message, vim.log.levels.ERROR)
-        return
-      end
-      apply_action(resolved_action, client)
-    end)
-  else
-    apply_action(action_chosen, client)
+    local client = vim.lsp.get_client_by_id(1)
+    local action_chosen = action.result[1]
+    if not action_chosen.edit
+        and client
+        and type(client.resolved_capabilities.code_action) == 'table'
+        and client.resolved_capabilities.code_action.resolveProvider then
+
+      client.request('codeAction/resolve', action_chosen, function(err, resolved_action)
+        if err then
+          vim.notify(err.code .. ': ' .. err.message, vim.log.levels.ERROR)
+          return
+        end
+        apply_action(resolved_action, client)
+      end)
+    else
+      apply_action(action_chosen, client)
+    end
   end
 end
 
