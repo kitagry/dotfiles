@@ -139,5 +139,33 @@
       "\tt.Errorf(\"$1 result diff (-expect, +got)\\n%s\", diff)",
       "}$0"
     ]
+  },
+  "cache": {
+    "prefix": ["cache", "inmemory"],
+    "body": [
+      "type $1Cacher struct {",
+      "\tmu sync.RWMutex",
+      "\tdata map[${2:string}]${3:string}",
+      "}\n",
+      "func New$1Cacher() *$1Cacher {",
+      "\treturn &$1Cacher{mu: sync.RWMutex{}, data: make(map[$2]$3)}",
+      "}\n",
+      "func (s *$1Cacher) Get(key $2) ($3, bool) {",
+      "\ts.mu.RLock()",
+      "\tdefer s.mu.RUnlock()",
+      "\tres, ok := s.data[key]",
+      "\treturn res, ok",
+      "}\n",
+      "func (s *$1Cacher) Put(key $2, value $3) {",
+      "\ts.mu.Lock()",
+      "\tdefer s.mu.Unlock()",
+      "\ts.data[key] = value",
+      "}\n",
+      "func (s *$1Cacher) Reset() {",
+      "\ts.mu.Lock()",
+      "\tdefer s.mu.Unlock()",
+      "\ts.data = make(map[$2]$3)",
+      "}"
+    ]
   }
 }
