@@ -64,7 +64,7 @@ function M.search_files(...)
   local function matcher(path)
     for _, pattern in ipairs(patterns) do
       for _, p in ipairs(vim.fn.glob(path_join(path, pattern), true, true)) do
-        f = io.open(p, "r")
+        local f = io.open(p, "r")
         if f ~= nil then
           f.close()
           return path
