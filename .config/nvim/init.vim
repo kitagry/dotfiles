@@ -56,7 +56,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('romainl/Apprentice')
 
   call dein#add('machakann/vim-sandwich')
-  call dein#add('tyru/caw.vim')
+  call dein#add('numToStr/Comment.nvim')
   call dein#add('tyru/open-browser.vim')
   call dein#add('kana/vim-repeat')
   call dein#add('kana/vim-textobj-user')
@@ -455,8 +455,8 @@ function! s:set_lsp_buffer_enabled() abort
     au!
     autocmd BufWritePre *.go call s:lsp_format()
     autocmd BufWritePre *.rs call s:lsp_format()
-    autocmd BufWritePre *.tsx,*ts,*.jsx,*js lua vim.lsp.buf.formatting_sync()
-    autocmd BufWritePre *.py lua vim.lsp.buf.format({async=false, timeout_ms=4000})
+    autocmd BufWritePre *.tsx,*ts,*.jsx,*js lua vim.lsp.buf.format({async=false})
+    autocmd BufWritePre *.py lua vim.lsp.buf.format({async=false})
     autocmd BufWritePre *.rego lua vim.lsp.buf.format({async=false})
   augroup END
 endfunction
@@ -690,4 +690,8 @@ augroup NvimMetals
   autocmd!
   autocmd BufNewFile,BufRead *.scala lua require('metals').initialize_or_attach({})
 augroup END
+" }}}
+
+" {{{Comment
+lua require('Comment').setup()
 " }}}
