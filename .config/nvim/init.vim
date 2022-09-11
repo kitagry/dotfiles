@@ -101,6 +101,7 @@ if dein#load_state(s:dein_dir)
   call dein#add('kosayoda/nvim-lightbulb')
   call dein#add('rcarriga/nvim-notify')
   call dein#add('scalameta/nvim-metals')
+  call dein#add('monkoose/matchparen.nvim')
 
   call dein#end()
   call dein#save_state()
@@ -694,4 +695,8 @@ augroup END
 
 " {{{Comment
 lua require('Comment').setup()
+" }}}
+
+" {{{matchparen
+lua require('matchparen').setup()
 " }}}
