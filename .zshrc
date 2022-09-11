@@ -11,6 +11,7 @@ if [ ! $commands[sheldon] ]; then
     | bash -s -- --repo rossmacarthur/sheldon --to ~/.local/bin
   export PATH="~/.local/bin:$PATH"
 fi
+export XDG_CONFIG_HOME="$HOME/.config"
 eval "$(sheldon source)"
 
 [ -f "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"

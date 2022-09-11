@@ -509,7 +509,7 @@ let g:lightline = {
       \ 'active': {
       \   'left': [
       \     [ 'mode', 'paste' ],
-      \     [ 'current_branch' ],
+      \     [ 'filename' ],
       \   ],
       \   'right': [
       \     [ 'lsp_errors', 'lsp_warnings', 'lsp_ok' ],
