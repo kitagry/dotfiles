@@ -147,6 +147,7 @@ function M.setupLSP()
           schemas = {
             ["kubernetes"] = {"/k8s/**/*.yml", "/k8s/**/*.yaml", "/*.k8s.yaml"},
             ["http://json.schemastore.org/kustomization"] = "kustomization.yaml",
+            ["https://raw.githubusercontent.com/argoproj/argo-workflows/master/api/jsonschema/schema.json"] = {"/k8s/**/*.yml", "/k8s/**/*.yaml", "/*.k8s.yaml"},
           },
           format = {
             enable = true,
