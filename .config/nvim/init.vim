@@ -249,11 +249,11 @@ nnoremap gk k
 set helplang=ja,en
 
 if has('win32') && executable('pwsh.exe')
-    nnoremap <Leader>t :<C-u>:vsp term://pwsh.exe<CR>
-    nnoremap <Leader>T :<C-u>:sp term://pwsh.exe<CR>
+    nnoremap <Leader>t :<C-u>vsp term://pwsh.exe<CR>
+    nnoremap <Leader>T :<C-u>sp term://pwsh.exe<CR>
 else
-    nnoremap <Leader>t :<C-u>:vsp term://zsh<CR>
-    nnoremap <Leader>T :<C-u>:sp term://zsh<CR>
+    nnoremap <Leader>t :<C-u>vsp term://zsh<CR>
+    nnoremap <Leader>T :<C-u>sp term://zsh<CR>
 endif
 
 " '%%'でアクティブなバッファのディレクトリを開いてくれる
