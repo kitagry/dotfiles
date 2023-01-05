@@ -152,6 +152,8 @@ set expandtab
 set tabstop=2
 " 行頭でのTab文字の表示幅
 set shiftwidth=2
+" マウス無効化
+set mouse=
 
 set ignorecase
 set inccommand=split
