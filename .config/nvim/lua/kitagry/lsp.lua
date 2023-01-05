@@ -2,7 +2,8 @@ local vim = vim
 local nvim_lsp = require'lspconfig'
 local configs = require'lspconfig.configs'
 local util = require 'lspconfig.util'
-local lsp_installer = require("nvim-lsp-installer")
+local mason = require 'mason'
+local mason_configs = require 'mason-lspconfig'
 
 local M = {}
 
@@ -129,7 +130,11 @@ function M.setupLSP()
   }
   M.capabilities = capabilities
 
-  lsp_installer.on_server_ready(function(server)
+  mason.setup()
+  mason_configs.setup({
+    ensure_installed = { "rust_analyzer", "gopls", "pyright" }
+  })
+  mason_configs.setup_handlers {function(server)
     local opts = {}
 
     opts.capabilities = capabilities
@@ -156,9 +161,8 @@ function M.setupLSP()
         }
       }
     end
-
-    server:setup(opts)
-  end)
+    nvim_lsp[server].setup(opts)
+  end}
 
   vim.cmd([[
     augroup SetupPythonLSP
