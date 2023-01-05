@@ -7,6 +7,129 @@ local mason_configs = require 'mason-lspconfig'
 
 local M = {}
 
+function M.setupLSP()
+  local capabilities = vim.lsp.protocol.make_client_capabilities()
+  capabilities.textDocument.completion.completionItem.snippetSupport = true
+  capabilities.textDocument.completion.completionItem.preselectSupport = true
+  capabilities.textDocument.completion.completionItem.insertReplaceSupport = true
+  capabilities.textDocument.completion.completionItem.labelDetailsSupport = true
+  capabilities.textDocument.completion.completionItem.deprecatedSupport = true
+  capabilities.textDocument.completion.completionItem.commitCharactersSupport = true
+  capabilities.textDocument.completion.completionItem.tagSupport = { valueSet = { 1 } }
+  capabilities.textDocument.completion.completionItem.resolveSupport = {
+    properties = {
+      'documentation',
+      'detail',
+      'additionalTextEdits',
+    }
+  }
+  M.capabilities = capabilities
+
+  mason.setup()
+  mason_configs.setup({
+    ensure_installed = { "rust_analyzer", "gopls", "pyright" }
+  })
+  mason_configs.setup_handlers {
+    function(server)
+      nvim_lsp[server].setup({
+        capabilities = capabilities,
+      })
+    end,
+    ["gopls"] = function ()
+      nvim_lsp.gopls.setup({
+        capabilities = capabilities,
+        init_options = {
+          usePlaceholders=true;
+          gofumpt=true;
+        },
+      })
+    end,
+    ["yamlls"] = function ()
+      nvim_lsp.yamlls.setup({
+        capabilities = capabilities,
+        settings = {
+          yaml = {
+            schemas = {
+              ["kubernetes"] = {"/k8s/**/*.yml", "/k8s/**/*.yaml", "/*.k8s.yaml"},
+              ["http://json.schemastore.org/kustomization"] = "kustomization.yaml",
+              ["https://raw.githubusercontent.com/argoproj/argo-workflows/master/api/jsonschema/schema.json"] = {"/k8s/**/*.yml", "/k8s/**/*.yaml", "/*.k8s.yaml"},
+            },
+            format = {
+              enable = true,
+            },
+            validate = true,
+          }
+        },
+      })
+    end,
+    ["pyright"] = function ()
+      M.setupPythonLSP()
+    end
+  }
+
+  local package_json = M.search_files({'package.json'})
+  if package_json then
+    nvim_lsp.tsserver.setup{
+      capabilities = capabilities,
+    }
+  else
+    nvim_lsp.denols.setup{
+      capabilities = capabilities,
+      single_file_support = true,
+    }
+  end
+
+  local efm_config
+  local efm_logfile
+  if vim.fn.has('win32') == 1 then
+    efm_config = 'C:\\Users\\kitad\\AppData\\Roaming\\efm-langserver\\config.yaml'
+    efm_logfile = 'C:\\Users\\kitad\\AppData\\Local\\Temp\\nvim\\efm.log'
+  else
+    efm_config = '~/.config/efm-langserver/config.yaml'
+    efm_logfile = '~/.cache/nvim/efm.log'
+  end
+  nvim_lsp.efm.setup{
+    capabilities = capabilities,
+    filetypes = { 'vim', 'plaintex', 'tex', 'markdown', 'python', 'sh' },
+    root_dir = util.root_pattern(".git", "tox.ini", "pyproject.toml");
+    default_config = {
+      cmd = { 'efm-langserver', '-c', efm_config, '-logfile', efm_logfile };
+    }
+  }
+
+  if not configs.regols then
+    configs.regols = {
+      default_config = {
+        cmd = { 'regols' };
+        filetypes = { 'rego' };
+        root_dir = util.root_pattern(".git");
+        init_options = {
+          command = { 'regols' };
+        };
+      };
+    }
+  end
+  nvim_lsp.regols.setup{
+    capabilities = capabilities,
+  }
+  configs.sqls = {
+    default_config = {
+      cmd = { 'sqls' };
+      filetypes = { 'sql' };
+      root_dir = util.root_pattern(".git");
+      init_options = {
+        command = { 'sqls' };
+      };
+    };
+  }
+  nvim_lsp.sqls.setup{
+    capabilities = capabilities,
+  }
+  nvim_lsp.solargraph.setup{
+    capabilities = capabilities,
+  }
+end
+
 local is_windows = vim.loop.os_uname().version:match("Windows")
 local path_sep = is_windows and "\\" or "/"
 
@@ -77,10 +200,6 @@ function M.search_files(...)
 end
 
 function M.setupPythonLSP()
-  if M.pyright_setup_done then
-    return
-  end
-
   local python_path = 'python3'
 
   local poetry_lock = M.search_files({'poetry.lock'})
@@ -106,131 +225,6 @@ function M.setupPythonLSP()
         pythonPath = python_path;
       }
     }
-  }
-
-  vim.cmd('LspStart pyright')
-  M.pyright_setup_done = true
-end
-
-function M.setupLSP()
-  local capabilities = vim.lsp.protocol.make_client_capabilities()
-  capabilities.textDocument.completion.completionItem.snippetSupport = true
-  capabilities.textDocument.completion.completionItem.preselectSupport = true
-  capabilities.textDocument.completion.completionItem.insertReplaceSupport = true
-  capabilities.textDocument.completion.completionItem.labelDetailsSupport = true
-  capabilities.textDocument.completion.completionItem.deprecatedSupport = true
-  capabilities.textDocument.completion.completionItem.commitCharactersSupport = true
-  capabilities.textDocument.completion.completionItem.tagSupport = { valueSet = { 1 } }
-  capabilities.textDocument.completion.completionItem.resolveSupport = {
-    properties = {
-      'documentation',
-      'detail',
-      'additionalTextEdits',
-    }
-  }
-  M.capabilities = capabilities
-
-  mason.setup()
-  mason_configs.setup({
-    ensure_installed = { "rust_analyzer", "gopls", "pyright" }
-  })
-  mason_configs.setup_handlers {function(server)
-    local opts = {}
-
-    opts.capabilities = capabilities
-
-    if server.name == "gopls" then
-      opts.init_options = {
-        usePlaceholders=true;
-        gofumpt=true;
-      }
-    end
-
-    if server.name == "yamlls" then
-      opts.settings = {
-        yaml = {
-          schemas = {
-            ["kubernetes"] = {"/k8s/**/*.yml", "/k8s/**/*.yaml", "/*.k8s.yaml"},
-            ["http://json.schemastore.org/kustomization"] = "kustomization.yaml",
-            ["https://raw.githubusercontent.com/argoproj/argo-workflows/master/api/jsonschema/schema.json"] = {"/k8s/**/*.yml", "/k8s/**/*.yaml", "/*.k8s.yaml"},
-          },
-          format = {
-            enable = true,
-          },
-          validate = true,
-        }
-      }
-    end
-    nvim_lsp[server].setup(opts)
-  end}
-
-  vim.cmd([[
-    augroup SetupPythonLSP
-      autocmd!
-      autocmd FileType python lua require"kitagry.lsp".setupPythonLSP()
-    augroup END
-  ]])
-
-  local package_json = M.search_files({'package.json'})
-  if package_json then
-    nvim_lsp.tsserver.setup{
-      capabilities = capabilities,
-    }
-  else
-    nvim_lsp.denols.setup{
-      capabilities = capabilities,
-      single_file_support = true,
-    }
-  end
-
-  local efm_config
-  local efm_logfile
-  if vim.fn.has('win32') == 1 then
-    efm_config = 'C:\\Users\\kitad\\AppData\\Roaming\\efm-langserver\\config.yaml'
-    efm_logfile = 'C:\\Users\\kitad\\AppData\\Local\\Temp\\nvim\\efm.log'
-  else
-    efm_config = '~/.config/efm-langserver/config.yaml'
-    efm_logfile = '~/.cache/nvim/efm.log'
-  end
-  nvim_lsp.efm.setup{
-    capabilities = capabilities,
-    filetypes = { 'vim', 'plaintex', 'tex', 'markdown', 'python', 'sh' },
-    root_dir = util.root_pattern(".git", "tox.ini", "pyproject.toml");
-    default_config = {
-      cmd = { 'efm-langserver', '-c', efm_config, '-logfile', efm_logfile };
-    }
-  }
-
-  if not configs.regols then
-    configs.regols = {
-      default_config = {
-        cmd = { 'regols' };
-        filetypes = { 'rego' };
-        root_dir = util.root_pattern(".git");
-        init_options = {
-          command = { 'regols' };
-        };
-      };
-    }
-  end
-  nvim_lsp.regols.setup{
-    capabilities = capabilities,
-  }
-  configs.sqls = {
-    default_config = {
-      cmd = { 'sqls' };
-      filetypes = { 'sql' };
-      root_dir = util.root_pattern(".git");
-      init_options = {
-        command = { 'sqls' };
-      };
-    };
-  }
-  nvim_lsp.sqls.setup{
-    capabilities = capabilities,
-  }
-  nvim_lsp.solargraph.setup{
-    capabilities = capabilities,
   }
 end
 
