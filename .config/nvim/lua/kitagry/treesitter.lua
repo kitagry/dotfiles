@@ -19,6 +19,7 @@ function M.setupTreesitter()
     ignore_install = { "haskell" },
     highlight = {
       enable = true,
+      additional_vim_regex_highlighting = {'org'},
     },
     playground = {
       enable = true,

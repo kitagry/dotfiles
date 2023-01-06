@@ -503,6 +503,7 @@ require("lazy").setup({
       vim.keymap.set('n', '[fern]f', ':<C-u>Fern %:h -opener=edit<CR>', {remap=true, silent=true})
       vim.keymap.set('n', '[fern]v', ':<C-u>Fern . -opener=vsplit<CR>', {remap=true, silent=true})
       vim.keymap.set('n', '[fern]h', ':<C-u>Fern %:h -opener=vsplit<CR>', {remap=true, silent=true})
+      vim.keymap.set('n', '[fern]m', ':<C-u>Fern ~/drive -drawer -toggle -reveal=%<CR>', {remap=true, silent=true})
 
       vim.g['fern#renderer'] = 'nerdfont'
 
@@ -565,4 +566,34 @@ require("lazy").setup({
       })
     end
   },
+  {"stevearc/overseer.nvim",
+    config = function()
+      require("overseer").setup({
+        templates = { "builtin", "go" },
+        component_aliases = {
+          default = {
+            { "on_output_quickfix", open_on_match = true },
+            "on_output_summarize",
+            "on_exit_set_status",
+            "on_complete_notify",
+            "on_complete_dispose",
+          }
+        },
+      })
+      vim.api.nvim_create_user_command("OverseerRestartLast", function()
+        local overseer = require("overseer")
+        local tasks = overseer.list_tasks({ recent_first = true })
+        if vim.tbl_isempty(tasks) then
+          vim.notify("No tasks found", vim.log.levels.WARN)
+        else
+          overseer.run_action(tasks[1], "restart")
+        end
+      end, {})
+
+      vim.keymap.set('n', '[overseer]', '<Nop>', {noremap = true})
+      vim.keymap.set('n', '<leader>q', '[overseer]', {silent = true, remap=true})
+      vim.keymap.set('n', '[overseer]q', ':<C-u>OverseerRun<CR>', {remap=true, silent=true})
+      vim.keymap.set('n', '[overseer]r', ':<C-u>OverseerRestartLast<CR>', {remap=true, silent=true})
+    end
+  }
 })
