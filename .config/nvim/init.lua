@@ -37,6 +37,12 @@ vim.o.helplang = 'ja,en'
 vim.o.background = 'dark'
 vim.o.termguicolors = true
 
+if vim.fn.has('mac') then
+  vim.opt.clipboard = 'unnamed'
+else
+  vim.o.clipboard = vim.o.clipboard .. 'unnamedplus'
+end
+
 local remove_unnecessary_space = function()
   -- delete last spaces
   cmd([[%s/\s\+$//ge]])
@@ -300,7 +306,7 @@ require("lazy").setup({
     },
     config = function()
       setup_cmp()
-      vim.keymap.set('i', '<C-x><C-o>', require('cmp').complete(), {remap = false, expr=true})
+      vim.keymap.set('i', '<C-x><C-o>', require('cmp').complete, {remap = false, expr=true})
     end,
   },
   {
