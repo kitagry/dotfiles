@@ -42,7 +42,7 @@ rgvim() {
 alias zshrc="$EDITOR ~/.zshrc"
 alias zshenv="$EDITOR ~/.zshenv"
 alias vimrc="$EDITOR ~/.vimrc"
-alias nvimrc="$EDITOR ~/.config/nvim/init.vim"
+alias nvimrc="$EDITOR ~/.config/nvim/init.lua"
 alias ls="exa"
 ###########################
 
