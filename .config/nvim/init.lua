@@ -41,6 +41,13 @@ local function general_setting()
 
   vim.o.foldmethod = 'expr'
   vim.o.foldexpr = 'nvim_treesitter#foldexpr()'
+  vim.o.foldenable = false
+  vim.api.nvim_create_autocmd({'FileType'}, {
+    pattern = {'lua'},
+    callback = function ()
+      vim.o.foldenable = true
+    end
+  })
 
   if vim.fn.has('mac') then
     vim.opt.clipboard = 'unnamed'
