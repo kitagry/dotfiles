@@ -146,6 +146,138 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+local function setup_cmp ()
+  vim.o.completeopt = 'menuone,noinsert,noselect'
+  local cmp = require('cmp')
+  local get_bufnrs = function()
+    local bufs = {}
+    for _, win in ipairs(vim.api.nvim_list_wins()) do
+      bufs[vim.api.nvim_win_get_buf(win)] = true
+    end
+    return vim.tbl_keys(bufs)
+  end
+  cmp.setup {
+    snippet = {
+      expand = function(args)
+        vim.fn['vsnip#anonymous'](args.body)
+      end
+    },
+
+    mapping = {
+      ['<C-p>'] = cmp.mapping.select_prev_item(),
+      ['<C-n>'] = cmp.mapping.select_next_item(),
+      ['<C-d>'] = cmp.mapping.scroll_docs(-4),
+      ['<C-f>'] = cmp.mapping.scroll_docs(4),
+      ['<C-Space>'] = cmp.mapping.complete(),
+      ['<C-e>'] = cmp.mapping.close(),
+      ['<CR>'] = cmp.mapping.confirm({
+        select = false,
+      })
+    },
+
+    sources = {
+      { name = 'nvim_lsp' },
+      { name = 'nvim_lua' },
+      { name = 'vsnip' },
+      {
+        name = 'buffer',
+        option = {
+          get_bufnrs = get_bufnrs
+        }
+      },
+      { name = 'nvim_lsp_signature_help' },
+      { name = 'rg' },
+    },
+
+    formatting = {
+      format = function(entry, vim_item)
+        vim_item.menu = ({
+          nvim_lsp = '[LSP]',
+          nvim_lua = '[Lua]',
+          vsnip = '[vsnip]',
+          cmdline = '[cmdline]',
+          path = '[path]',
+          buffer = '[Buffer]',
+          rg = '[rg]'
+        })[entry.source.name]
+        return vim_item
+      end
+    },
+    preselect = cmp.PreselectMode.None,
+  }
+
+  cmp.setup.cmdline(':', {
+    mapping = cmp.mapping.preset.cmdline(),
+    sources = {
+      { name = 'cmdline' },
+      { name = 'path' },
+    }
+  })
+
+  cmp.setup.cmdline('/', {
+    mapping = cmp.mapping.preset.cmdline(),
+    sources = {
+      { name = 'buffer' }
+    }
+  })
+
+  _G.vimrc = _G.vimrc or {}
+  _G.vimrc.cmp = _G.vimrc.cmp or {}
+  _G.vimrc.cmp.lsp = function()
+    cmp.complete({
+      config = {
+        sources = {
+          { name = 'nvim_lsp' }
+        }
+      }
+    })
+  end
+end
+
+local function setup_lsp()
+  require("kitagry.lsp").setupLSP()
+
+  vim.api.nvim_create_autocmd("LspAttach", {
+    callback = function(args)
+      local bufnr = args.buf
+      local client = vim.lsp.get_client_by_id(args.data.client_id)
+      if client.server_capabilities.completionProvider then
+        vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
+      end
+      if client.server_capabilities.definitionProvider then
+        vim.bo[bufnr].tagfunc = "v:lua.vim.lsp.tagfunc"
+      end
+    end,
+  })
+
+  vim.fn.sign_define("LspDiagnosticsErrorSign", { text = 'E>', texthl = 'Error' })
+  vim.fn.sign_define("LspDiagnosticsWarningSign", { text = 'W>', texthl = 'WarningMsg' })
+  vim.fn.sign_define("LspDiagnosticsInformationSign", { text = 'I>', texthl = 'LspDiagnosticsInformation' })
+  vim.fn.sign_define("LspDiagnosticsHintSign", { text = 'H>', texthl = 'LspDiagnosticsHint' })
+
+  local lsp_format = function()
+    require("kitagry.lsp").code_action_sync("source.organizeImports")
+    local timer = vim.loop.new_timer()
+    timer:start(100, 0, vim.schedule_wrap(function()
+      vim.lsp.buf.format({async=false})
+    end))
+  end
+
+  vim.api.nvim_create_augroup('lsp_formatting', {})
+  vim.api.nvim_create_autocmd({'BufWritePre'}, {
+    group = 'lsp_formatting',
+    pattern = {'*.go', '*.rs'},
+    callback = lsp_format
+  })
+  vim.api.nvim_create_autocmd({'BufWritePre'}, {
+    group = 'lsp_formatting',
+    pattern = {'*.tsx', '*.ts', '*.jsx', '*.js', '*.py', '*.rego'},
+    callback = function()
+      vim.lsp.buf.format({async=false})
+    end
+  })
+end
+
 require("lazy").setup({
   {
     "sainnhe/sonokai",
@@ -167,93 +299,8 @@ require("lazy").setup({
       "lukas-reineke/cmp-rg",
     },
     config = function()
-      vim.o.completeopt = 'menuone,noinsert,noselect'
-      local cmp = require('cmp')
-      local get_bufnrs = function()
-        local bufs = {}
-        for _, win in ipairs(vim.api.nvim_list_wins()) do
-          bufs[vim.api.nvim_win_get_buf(win)] = true
-        end
-        return vim.tbl_keys(bufs)
-      end
-      cmp.setup {
-        snippet = {
-          expand = function(args)
-            vim.fn['vsnip#anonymous'](args.body)
-          end
-        },
-
-        mapping = {
-          ['<C-p>'] = cmp.mapping.select_prev_item(),
-          ['<C-n>'] = cmp.mapping.select_next_item(),
-          ['<C-d>'] = cmp.mapping.scroll_docs(-4),
-          ['<C-f>'] = cmp.mapping.scroll_docs(4),
-          ['<C-Space>'] = cmp.mapping.complete(),
-          ['<C-e>'] = cmp.mapping.close(),
-          ['<CR>'] = cmp.mapping.confirm({
-            select = false,
-          })
-        },
-
-        sources = {
-          { name = 'nvim_lsp' },
-          { name = 'nvim_lua' },
-          { name = 'vsnip' },
-          {
-            name = 'buffer',
-            option = {
-              get_bufnrs = get_bufnrs
-            }
-          },
-          { name = 'nvim_lsp_signature_help' },
-          { name = 'rg' },
-        },
-
-        formatting = {
-          format = function(entry, vim_item)
-            vim_item.menu = ({
-              nvim_lsp = '[LSP]',
-              nvim_lua = '[Lua]',
-              vsnip = '[vsnip]',
-              cmdline = '[cmdline]',
-              path = '[path]',
-              buffer = '[Buffer]',
-              rg = '[rg]'
-            })[entry.source.name]
-            return vim_item
-          end
-        },
-        preselect = cmp.PreselectMode.None,
-      }
-
-      cmp.setup.cmdline(':', {
-        mapping = cmp.mapping.preset.cmdline(),
-        sources = {
-          { name = 'cmdline' },
-          { name = 'path' },
-        }
-      })
-
-      cmp.setup.cmdline('/', {
-        mapping = cmp.mapping.preset.cmdline(),
-        sources = {
-          { name = 'buffer' }
-        }
-      })
-
-      _G.vimrc = _G.vimrc or {}
-      _G.vimrc.cmp = _G.vimrc.cmp or {}
-      _G.vimrc.cmp.lsp = function()
-        cmp.complete({
-          config = {
-            sources = {
-              { name = 'nvim_lsp' }
-            }
-          }
-        })
-      end
-
-      vim.keymap.set('i', '<C-x><C-o>', "<cmd>lua require('cmp').complete()<CR>", {remap = false})
+      setup_cmp()
+      vim.keymap.set('i', '<C-x><C-o>', require('cmp').complete(), {remap = false, expr=true})
     end,
   },
   {
@@ -278,38 +325,20 @@ require("lazy").setup({
       "neovim/nvim-lspconfig",
     },
     config = function()
-      require("kitagry.lsp").setupLSP()
-      lsp_format = function()
-        require("kitagry.lsp").code_action_sync("source.organizeImports")
-        local timer = vim.loop.new_timer()
-        timer:start(100, 0, vim.schedule_wrap(function()
-          vim.lsp.buf.format({async=false})
-        end))
-      end
-
-      vim.api.nvim_create_autocmd("LspAttach", {
-        callback = function(args)
-          local bufnr = args.buf
-          local client = vim.lsp.get_client_by_id(args.data.client_id)
-          if client.server_capabilities.completionProvider then
-            vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
-          end
-          if client.server_capabilities.definitionProvider then
-            vim.bo[bufnr].tagfunc = "v:lua.vim.lsp.tagfunc"
-          end
-        end,
-      })
+      setup_lsp()
 
       vim.keymap.set('n', '[vim-lsp]', '<Nop>', {noremap = true})
       vim.keymap.set('n', '<leader>l', '[vim-lsp]', {silent = true, remap=true})
-      vim.keymap.set('n', '<c-]>', vim.lsp.buf.definition, {silent = true, buffer = true})
-      vim.keymap.set('n', '<c-k>', vim.lsp.buf.signature_help, {silent = true, buffer = true})
-      vim.keymap.set('n', '[e', vim.diagnostic.goto_prev, {silent = true, buffer = true})
-      vim.keymap.set('n', ']e', vim.diagnostic.goto_next, {silent = true, buffer = true})
+      vim.keymap.set('n', '<c-]>', vim.lsp.buf.definition, {silent = true})
+      vim.keymap.set('n', '<c-k>', vim.lsp.buf.signature_help, {silent = true})
+      vim.keymap.set('n', '[e', vim.diagnostic.goto_prev, {silent = true,})
+      vim.keymap.set('n', ']e', vim.diagnostic.goto_next, {silent = true})
 
       vim.keymap.set('n', '[vim-lsp]h', vim.lsp.buf.hover, {remap = true})
       vim.keymap.set('n', '[vim-lsp]r', vim.lsp.buf.rename, {remap = true})
-      vim.keymap.set('n', '[vim-lsp]f', function() vim.lsp.buf.format({timeout_ms=5000}) end, {remap = true, expr = true})
+      vim.keymap.set('n', '[vim-lsp]f', function()
+        vim.lsp.buf.format({timeout_ms=5000})
+      end, {remap = true, expr = true})
       vim.keymap.set('n', '[vim-lsp]e', function()
         require('telescope.builtin').lsp_references({ include_declaration = true })
       end, {remap = true, expr = true})
@@ -321,31 +350,20 @@ require("lazy").setup({
       vim.keymap.set('n', '[vim-lsp]q', function()
         print("restarting lsp...")
         vim.lsp.stop_client(vim.lsp.get_active_clients())
+        local timer = vim.loop.new_timer()
         timer:start(100, 0, vim.schedule_wrap(function()
           vim.cmd('edit')
         end))
       end, {remap = true, expr = true})
       vim.keymap.set('n', '[vim-lsp]s', ':<C-u>LspInfo<CR>', {remap = true})
-
-      vim.fn.sign_define("LspDiagnosticsErrorSign", { text = 'E>', texthl = 'Error' })
-      vim.fn.sign_define("LspDiagnosticsWarningSign", { text = 'W>', texthl = 'WarningMsg' })
-      vim.fn.sign_define("LspDiagnosticsInformationSign", { text = 'I>', texthl = 'LspDiagnosticsInformation' })
-      vim.fn.sign_define("LspDiagnosticsHintSign", { text = 'H>', texthl = 'LspDiagnosticsHint' })
-
-      vim.api.nvim_create_augroup('lsp_formatting', {})
-      vim.api.nvim_create_autocmd({'BufWritePre'}, {
-        group = 'lsp_formatting',
-        pattern = {'*.go', '*.rs'},
-        callback = lsp_format
-      })
-      vim.api.nvim_create_autocmd({'BufWritePre'}, {
-        group = 'lsp_formatting',
-        pattern = {'*.tsx', '*.ts', '*.jsx', '*.js', '*.py', '*.rego'},
-        callback = function()
-          vim.lsp.buf.format({async=false})
-        end
-      })
     end,
+  },
+  {
+    "jose-elias-alvarez/null-ls.nvim",
+    config = function ()
+      local null_ls = require("null-ls")
+      null_ls.setup({})
+    end
   },
   {
     "nvim-telescope/telescope.nvim",
@@ -423,10 +441,10 @@ require("lazy").setup({
       vim.o.diffopt = 'vertical'
       vim.g["gina#command#blame#formatter#format"] = "%su%=by %au %ma%in"
 
-      git_push = function()
+      local git_push = function()
         local current_branch = vim.fn["gina#component#repo#branch"]()
         if current_branch == 'master' or current_branch == 'main' then
-          prompt = string.format('this wille push to %s? [y/N]', current_branch)
+          local prompt = string.format('this wille push to %s? [y/N]', current_branch)
           vim.ui.input({ prompt = prompt, default = 'n' }, function (input)
             if string.lower(input) == 'y' then
               vim.cmd(string.format('Gina! push -u origin %s', current_branch))
@@ -437,9 +455,9 @@ require("lazy").setup({
         end
       end
 
-      create_pr = function()
+      local create_pr = function()
         local remote_url = vim.fn.system([[!git remote get-url origin]])
-        ind = string.find(remote_url, 'github.com')
+        local ind = string.find(remote_url, 'github.com')
         if ind ~= nil then
           vim.fn.system([[gh pr create --web]])
         else
@@ -478,7 +496,7 @@ require("lazy").setup({
 
       vim.g['fern#renderer'] = 'nerdfont'
 
-      init_fern = function()
+      local init_fern = function()
         vim.keymap.set('n', 'R', '<Plug>(fern-action-remove)', {remap=true, buffer=true})
         vim.keymap.set('n', 'r', '<Plug>(fern-action-rename)', {remap=true, buffer=true})
       end
