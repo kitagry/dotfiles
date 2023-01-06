@@ -1,3 +1,4 @@
+local vim = vim
 local M = {}
 
 function M.toggle_test_file()
