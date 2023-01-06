@@ -1,143 +1,152 @@
 local vim = vim
 local cmd = vim.cmd
 
-cmd([[filetype plugin indent on]])
+-- general_setting
+local function general_setting()
+  cmd([[filetype plugin indent on]])
 
--- バックアップファイルを作らない
-vim.o.backup = false
--- スワップファイルを作らない
-vim.o.swapfile = false
--- undoファイルを作らない
-vim.o.undofile = false
--- 編集中のファイルが変更されたら自動で読み直す
-vim.o.autoread = true
--- バッファが編集中でもその他のファイルを開けるようにする
-vim.o.hidden = true
--- 入力中のコマンドをステータスに表示する
-vim.o.showcmd = true
+  -- バックアップファイルを作らない
+  vim.o.backup = false
+  -- スワップファイルを作らない
+  vim.o.swapfile = false
+  -- undoファイルを作らない
+  vim.o.undofile = false
+  -- 編集中のファイルが変更されたら自動で読み直す
+  vim.o.autoread = true
+  -- バッファが編集中でもその他のファイルを開けるようにする
+  vim.o.hidden = true
+  -- 入力中のコマンドをステータスに表示する
+  vim.o.showcmd = true
 
--- 不可視文字を可視化
-vim.o.list = true
-vim.opt.listchars = { tab = "▸ ", trail = "·" }
--- Tab文字を半角スペースにする
-vim.o.expandtab = true
--- 行頭以外のTab文字の表示幅（スペースいくつ分）
-vim.o.tabstop = 2
--- 行頭でのTab文字の表示幅
-vim.o.shiftwidth = 2
--- マウス無効化
-vim.o.mouse = ''
--- 検索時の大文字小文字を気にしない
-vim.o.ignorecase = true
--- カーソルがある行をハイライト
-vim.o.cursorline = true
--- ヘルプ用の言語
-vim.o.helplang = 'ja,en'
--- ターミナルの色
-vim.o.background = 'dark'
-vim.o.termguicolors = true
+  -- 不可視文字を可視化
+  vim.o.list = true
+  vim.opt.listchars = { tab = "▸ ", trail = "·" }
+  -- Tab文字を半角スペースにする
+  vim.o.expandtab = true
+  -- 行頭以外のTab文字の表示幅（スペースいくつ分）
+  vim.o.tabstop = 2
+  -- 行頭でのTab文字の表示幅
+  vim.o.shiftwidth = 2
+  -- マウス無効化
+  vim.o.mouse = ''
+  -- 検索時の大文字小文字を気にしない
+  vim.o.ignorecase = true
+  -- カーソルがある行をハイライト
+  vim.o.cursorline = true
+  -- ヘルプ用の言語
+  vim.o.helplang = 'ja,en'
+  -- ターミナルの色
+  vim.o.background = 'dark'
+  vim.o.termguicolors = true
 
-if vim.fn.has('mac') then
-  vim.opt.clipboard = 'unnamed'
-else
-  vim.o.clipboard = vim.o.clipboard .. 'unnamedplus'
+  vim.o.foldmethod = 'expr'
+  vim.o.foldexpr = 'nvim_treesitter#foldexpr()'
+
+  if vim.fn.has('mac') then
+    vim.opt.clipboard = 'unnamed'
+  else
+    vim.o.clipboard = vim.o.clipboard .. 'unnamedplus'
+  end
+
+  local remove_unnecessary_space = function()
+    -- delete last spaces
+    cmd([[%s/\s\+$//ge]])
+
+    -- delete last blank lines
+    while vim.fn.getline('$') == '' and #vim.fn.getline(0, '$') ~= 0 do
+      cmd('$delete _')
+    end
+  end
+  vim.api.nvim_create_autocmd({"BufWritePre"}, {
+    callback = remove_unnecessary_space,
+  })
+
+  vim.api.nvim_create_augroup('filetype_indent', {})
+  vim.api.nvim_create_autocmd({'BufNewFile', 'BufRead'}, {
+    group = 'filetype_indent',
+    pattern = {'*.py', '*.jl', '*.php', '*.java'},
+    callback = function()
+      vim.bo.tabstop = 4
+      vim.bo.softtabstop = 4
+      vim.bo.shiftwidth = 4
+    end
+  })
+  vim.api.nvim_create_autocmd({'BufNewFile', 'BufRead'}, {
+    group = 'filetype_indent',
+    pattern = {'*.go', '*.rego'},
+    callback = function()
+      vim.bo.expandtab = false
+    end
+  })
+
+  vim.api.nvim_create_augroup('cursor_column', {})
+  vim.api.nvim_create_autocmd({'BufNewFile', 'BufRead'}, {
+    group = 'cursor_column',
+    pattern = {'*.yaml'},
+    callback = function()
+      vim.bo.cursorcolumn = true
+    end
+  })
 end
-
-local remove_unnecessary_space = function()
-  -- delete last spaces
-  cmd([[%s/\s\+$//ge]])
-
-  -- delete last blank lines
-  while vim.fn.getline('$') == '' and #vim.fn.getline(0, '$') ~= 0 do
-    cmd('$delete _')
-  end
-end
-vim.api.nvim_create_autocmd({"BufWritePre"}, {
-  callback = remove_unnecessary_space,
-})
-
-vim.api.nvim_create_augroup('filetype_indent', {})
-vim.api.nvim_create_autocmd({'BufNewFile', 'BufRead'}, {
-  group = 'filetype_indent',
-  pattern = {'*.py', '*.jl', '*.php', '*.java'},
-  callback = function()
-    vim.bo.tabstop = 4
-    vim.bo.softtabstop = 4
-    vim.bo.shiftwidth = 4
-  end
-})
-vim.api.nvim_create_autocmd({'BufNewFile', 'BufRead'}, {
-  group = 'filetype_indent',
-  pattern = {'*.go', '*.rego'},
-  callback = function()
-    vim.bo.expandtab = false
-  end
-})
-
-vim.api.nvim_create_augroup('cursor_column', {})
-vim.api.nvim_create_autocmd({'BufNewFile', 'BufRead'}, {
-  group = 'cursor_column',
-  pattern = {'*.yaml'},
-  callback = function()
-    vim.bo.cursorcolumn = true
-  end
-})
-
+general_setting()
 
 -- key mapping
-vim.g.mapleader = ' '
--- ヤンクの設定
-vim.keymap.set('n', 'Y', 'y$', {noremap = true})
--- バッファ移動設定
-vim.keymap.set('n', ']b', ':bnext<CR>', {noremap = true})
-vim.keymap.set('n', ']B', ':blast<CR>', {noremap = true})
-vim.keymap.set('n', '[b', ':bprevious<CR>', {noremap = true})
-vim.keymap.set('n', '[B', ':bfirst<CR>', {noremap = true})
--- quickfix
-vim.keymap.set('n', ']q', ':cnext<CR>', {noremap = true})
-vim.keymap.set('n', ']Q', ':clast<CR>', {noremap = true})
-vim.keymap.set('n', '[q', ':cprevious<CR>', {noremap = true})
-vim.keymap.set('n', '[Q', ':cfirst<CR>', {noremap = true})
--- 折返し時に表示業単位で移動する
-vim.keymap.set('', 'j', 'gj', {noremap = true})
-vim.keymap.set('', 'k', 'gk', {noremap = true})
-vim.keymap.set('', 'gj', 'j', {noremap = true})
-vim.keymap.set('', 'gk', 'k', {noremap = true})
+local function keymap_setting()
+  vim.g.mapleader = ' '
+  -- ヤンクの設定
+  vim.keymap.set('n', 'Y', 'y$', {noremap = true})
+  -- バッファ移動設定
+  vim.keymap.set('n', ']b', ':bnext<CR>', {noremap = true})
+  vim.keymap.set('n', ']B', ':blast<CR>', {noremap = true})
+  vim.keymap.set('n', '[b', ':bprevious<CR>', {noremap = true})
+  vim.keymap.set('n', '[B', ':bfirst<CR>', {noremap = true})
+  -- quickfix
+  vim.keymap.set('n', ']q', ':cnext<CR>', {noremap = true})
+  vim.keymap.set('n', ']Q', ':clast<CR>', {noremap = true})
+  vim.keymap.set('n', '[q', ':cprevious<CR>', {noremap = true})
+  vim.keymap.set('n', '[Q', ':cfirst<CR>', {noremap = true})
+  -- 折返し時に表示業単位で移動する
+  vim.keymap.set('', 'j', 'gj', {noremap = true})
+  vim.keymap.set('', 'k', 'gk', {noremap = true})
+  vim.keymap.set('', 'gj', 'j', {noremap = true})
+  vim.keymap.set('', 'gk', 'k', {noremap = true})
 
-vim.keymap.set('n', '<leader>t', ':<C-u>vsp term://zsh<CR>', {noremap = true})
-vim.keymap.set('n', '<leader>T', ':<C-u>sp term://zsh<CR>', {noremap = true})
+  vim.keymap.set('n', '<leader>t', ':<C-u>vsp term://zsh<CR>', {noremap = true})
+  vim.keymap.set('n', '<leader>T', ':<C-u>sp term://zsh<CR>', {noremap = true})
 
--- '%%'でアクティブなバッファのディレクトリを開いてくれる
-vim.keymap.set('c', '%%', "getcmdtype() == ':' ? expand('%:h').'/' : '%%'", {expr = true, noremap = true})
+  -- '%%'でアクティブなバッファのディレクトリを開いてくれる
+  vim.keymap.set('c', '%%', "getcmdtype() == ':' ? expand('%:h').'/' : '%%'", {expr = true, noremap = true})
 
-vim.keymap.set('i', '<C-l>', '<C-G>U<Right>', {silent = true, noremap = true})
-vim.keymap.set('i', '<Left>', '<C-G>U<Left>', {silent = true, noremap = true})
-vim.keymap.set('i', '<Right>', '<C-G>U<Right>', {silent = true, noremap = true})
+  vim.keymap.set('i', '<C-l>', '<C-G>U<Right>', {silent = true, noremap = true})
+  vim.keymap.set('i', '<Left>', '<C-G>U<Left>', {silent = true, noremap = true})
+  vim.keymap.set('i', '<Right>', '<C-G>U<Right>', {silent = true, noremap = true})
 
-vim.keymap.set('n', '<Esc><Esc>', ':nohlsearch<CR><Esc>', {noremap = true})
+  vim.keymap.set('n', '<Esc><Esc>', ':nohlsearch<CR><Esc>', {noremap = true})
 
-vim.api.nvim_create_autocmd({'FileType'}, {
-  pattern = 'help',
-  callback = function()
-    vim.keymap.set('n', 'q', '<C-w>c', {noremap = true, buffer = true})
-  end
-})
-vim.api.nvim_create_autocmd({'FileType'}, {
-  pattern = 'qf',
-  callback = function()
-    vim.keymap.set('n', 'q', ':<C-u>cclose<CR>', {noremap = true, buffer = true})
-  end
-})
+  vim.api.nvim_create_autocmd({'FileType'}, {
+    pattern = 'help',
+    callback = function()
+      vim.keymap.set('n', 'q', '<C-w>c', {noremap = true, buffer = true})
+    end
+  })
+  vim.api.nvim_create_autocmd({'FileType'}, {
+    pattern = 'qf',
+    callback = function()
+      vim.keymap.set('n', 'q', ':<C-u>cclose<CR>', {noremap = true, buffer = true})
+    end
+  })
 
-vim.keymap.set('n', '[special_lang]', '<Nop>', {noremap = true})
-vim.keymap.set('n', '<leader>h', '[special_lang]', {silent = true, remap=true})
+  vim.keymap.set('n', '[special_lang]', '<Nop>', {noremap = true})
+  vim.keymap.set('n', '<leader>h', '[special_lang]', {silent = true, remap=true})
 
-vim.api.nvim_create_autocmd({'FileType'}, {
-  pattern = 'go',
-  callback = function()
-    vim.keymap.set('n', '[special_lang]t', require("kitagry.go").toggle_test_file, {buffer = true, remap=true})
-  end
-})
+  vim.api.nvim_create_autocmd({'FileType'}, {
+    pattern = 'go',
+    callback = function()
+      vim.keymap.set('n', '[special_lang]t', require("kitagry.go").toggle_test_file, {buffer = true, remap=true})
+    end
+  })
+end
+keymap_setting()
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
@@ -285,15 +294,13 @@ local function setup_lsp()
 end
 
 require("lazy").setup({
-  {
-    "sainnhe/sonokai",
+  {"sainnhe/sonokai",
     config = function()
       vim.g.sonokai_style = 'shusia'
       cmd.colorscheme('sonokai')
     end,
   },
-  {
-    "hrsh7th/nvim-cmp",
+  {"hrsh7th/nvim-cmp",
     dependencies = {
       "hrsh7th/cmp-buffer",
       "hrsh7th/cmp-vsnip",
@@ -309,8 +316,7 @@ require("lazy").setup({
       vim.keymap.set('i', '<C-x><C-o>', require('cmp').complete, {remap = false, expr=true})
     end,
   },
-  {
-    "hrsh7th/vim-vsnip",
+  {"hrsh7th/vim-vsnip",
     dependencies = {
       "hrsh7th/vim-vsnip-integ",
       "kitagry/vs-snippets",
@@ -324,8 +330,7 @@ require("lazy").setup({
       end, { expr = true })
     end,
   },
-  {
-    "williamboman/mason.nvim",
+  {"williamboman/mason.nvim",
     dependencies = {
       "williamboman/mason-lspconfig.nvim",
       "neovim/nvim-lspconfig",
@@ -364,15 +369,13 @@ require("lazy").setup({
       vim.keymap.set('n', '[vim-lsp]s', ':<C-u>LspInfo<CR>', {remap = true})
     end,
   },
-  {
-    "jose-elias-alvarez/null-ls.nvim",
+  {"jose-elias-alvarez/null-ls.nvim",
     config = function ()
       local null_ls = require("null-ls")
       null_ls.setup({})
     end
   },
-  {
-    "nvim-telescope/telescope.nvim",
+  {"nvim-telescope/telescope.nvim",
     dependencies = {
       "nvim-telescope/telescope-github.nvim",
       "nvim-telescope/telescope-ghq.nvim",
@@ -411,35 +414,30 @@ require("lazy").setup({
       vim.keymap.set('n', '[telescope]c', builtin.command_history, {remap = true})
     end
   },
-  {
-    "nvim-treesitter/nvim-treesitter",
+  {"nvim-treesitter/nvim-treesitter",
     config = function()
       require("kitagry.treesitter").setupTreesitter()
     end
   },
   {"machakann/vim-sandwich"},
-  {
-    "numToStr/Comment.nvim",
+  {"numToStr/Comment.nvim",
     config = function()
       require('Comment').setup()
     end
   },
-  {
-    "tyru/open-browser.vim",
+  {"tyru/open-browser.vim",
     config = function()
       vim.keymap.set({'n', 'v'}, 'gx', '<Plug>(openbrowser-open)', {})
     end
   },
   {"kana/vim-repeat"},
-  {
-    "kana/vim-textobj-user",
+  {"kana/vim-textobj-user",
     dependencies = {
       "sgur/vim-textobj-parameter",
       "Julian/vim-textobj-variable-segment",
     },
   },
-  {
-    "lambdalisue/gina.vim",
+  {"lambdalisue/gina.vim",
     dependencies = {
       "kitagry/gina-openpr.vim",
     },
@@ -485,8 +483,7 @@ require("lazy").setup({
       vim.keymap.set('v', '[gina]y', ':<C-u>Gina blame --exact --yank :<CR>', {remap=true})
     end
   },
-  {
-    "lambdalisue/fern.vim",
+  {"lambdalisue/fern.vim",
     dependencies = {
       "lambdalisue/nerdfont.vim",
       "lambdalisue/fern-hijack.vim",
@@ -518,16 +515,9 @@ require("lazy").setup({
     end
   },
   {"lambdalisue/reword.vim"},
-  {
-    "mattn/vim-goaddtags",
-    cmd = "GoAddTags",
-  },
-  {
-    "mattn/vim-goimpl",
-    cmd = "GoImpl",
-  },
-  {
-    "haya14busa/vim-operator-flashy",
+  {"mattn/vim-goaddtags", cmd = "GoAddTags"},
+  {"mattn/vim-goimpl", cmd = "GoImpl" },
+  {"haya14busa/vim-operator-flashy",
     dependencies = {
       "kana/vim-operator-user",
     },
@@ -538,29 +528,25 @@ require("lazy").setup({
       vim.g["operator#flashy#flash_time"] = 200
     end
   },
-  {
-    "windwp/nvim-autopairs",
+  {"windwp/nvim-autopairs",
     config = function()
       require('nvim-autopairs').setup({
         ignored_next_char = "[%w]"
       })
     end
   },
-  {
-    "monkoose/matchparen.nvim",
+  {"monkoose/matchparen.nvim",
     config = function()
       require("matchparen").setup()
     end
   },
   {"lambdalisue/pastefix.vim"},
-  {
-    "norcalli/nvim-colorizer.lua",
+  {"norcalli/nvim-colorizer.lua",
     config = function()
       require("colorizer").setup()
     end
   },
-  {
-    "scalameta/nvim-metals",
+  {"scalameta/nvim-metals",
     config = function()
       vim.api.nvim_create_augroup('NvimMetals', {})
       vim.api.nvim_create_autocmd({"FileType"}, {
