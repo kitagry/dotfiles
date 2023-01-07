@@ -385,30 +385,17 @@ require("lazy").setup({
           return builtin
         end
 
-        if type(builtin._opts.args) == 'table' then
-          local args = vim.list_extend({'run', builtin._opts.command}, builtin._opts.args)
-          return builtin.with({
-            command = 'poetry',
-            args = args,
-          })
-        end
-
-        local function with_poetry_factory(command, args)
-          vim.validate({
-            command = { command, 'string' },
-            args = { args, 'function' },
-          })
-
-          return function(params)
-            local result = args(params)
-            return vim.list_extend({'run', builtin._opts.command}, result)
-          end
-        end
-
         return builtin.with({
-          command = 'poetry',
-          args = with_poetry_factory(builtin._opts.command, builtin._opts.args),
+          command = { 'poetry', 'run', builtin._opts.command },
         })
+      end
+
+      local function textlint_path()
+        local path = util.search_files({'./node_modules/textlint/bin/textlint.js'})
+        if path then
+          return './node_modules/textlint/bin/textlint.js'
+        end
+        return 'textlint'
       end
 
       null_ls.setup({
@@ -419,6 +406,13 @@ require("lazy").setup({
           with_poetry(null_ls.builtins.formatting.isort),
           null_ls.builtins.diagnostics.shellcheck,
           null_ls.builtins.code_actions.shellcheck,
+          null_ls.builtins.diagnostics.textlint.with({
+            cwd = function (params)
+              return params.root:match('.textlintrc')
+            end,
+            filetypes = { 'markdown' },
+            command = textlint_path(),
+          })
         },
       })
     end

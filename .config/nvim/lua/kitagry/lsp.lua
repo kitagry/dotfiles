@@ -80,24 +80,6 @@ function M.setupLSP()
     }
   end
 
-  local efm_config
-  local efm_logfile
-  if vim.fn.has('win32') == 1 then
-    efm_config = 'C:\\Users\\kitad\\AppData\\Roaming\\efm-langserver\\config.yaml'
-    efm_logfile = 'C:\\Users\\kitad\\AppData\\Local\\Temp\\nvim\\efm.log'
-  else
-    efm_config = '~/.config/efm-langserver/config.yaml'
-    efm_logfile = '~/.cache/nvim/efm.log'
-  end
-  nvim_lsp.efm.setup{
-    capabilities = capabilities,
-    filetypes = { 'vim', 'plaintex', 'tex', 'markdown', 'python', 'sh' },
-    root_dir = util.root_pattern(".git", "tox.ini", "pyproject.toml");
-    default_config = {
-      cmd = { 'efm-langserver', '-c', efm_config, '-logfile', efm_logfile };
-    }
-  }
-
   if not configs.regols then
     configs.regols = {
       default_config = {
