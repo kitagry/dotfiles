@@ -44,10 +44,17 @@ local function general_setting()
   vim.o.foldenable = false
   vim.api.nvim_create_autocmd({'BufNewFile', 'BufRead'}, {
     callback = function ()
+      if vim.fn.expand('%:t') == 'init.lua' then
+        vim.o.foldlevel = 1
+        vim.o.foldnestmax = 2
+        vim.o.foldenable = true
+      else
+        vim.o.foldenable = false
+      end
     end
   })
 
-  if vim.fn.has('mac') then
+  if vim.fn.has('mac') == 1 then
     vim.opt.clipboard = 'unnamed'
   else
     vim.o.clipboard = vim.o.clipboard .. 'unnamedplus'
