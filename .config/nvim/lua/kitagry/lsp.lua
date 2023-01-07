@@ -2,6 +2,7 @@ local vim = vim
 local nvim_lsp = require'lspconfig'
 local configs = require'lspconfig.configs'
 local util = require 'lspconfig.util'
+local kitautil = require('kitagry.util')
 local mason = require 'mason'
 local mason_configs = require 'mason-lspconfig'
 
@@ -67,7 +68,7 @@ function M.setupLSP()
     end
   }
 
-  local package_json = M.search_files({'package.json'})
+  local package_json = kitautil.search_files({'package.json'})
   if package_json then
     nvim_lsp.tsserver.setup{
       capabilities = capabilities,
@@ -130,79 +131,10 @@ function M.setupLSP()
   }
 end
 
-local is_windows = vim.loop.os_uname().version:match("Windows")
-local path_sep = is_windows and "\\" or "/"
-
-local is_fs_root
-if is_windows then
-  is_fs_root = function(path)
-    return path:match("^%a:$")
-  end
-else
-  is_fs_root = function(path)
-    return path == "/"
-  end
-end
-
-local dirname
-do
-  local strip_dir_pat = path_sep.."([^"..path_sep.."]+)$"
-  local strip_sep_pat = path_sep.."$"
-  dirname = function(path)
-    if not path then return end
-    local result = path:gsub(strip_sep_pat, ""):gsub(strip_dir_pat, "")
-    if #result == 0 then
-      return "/"
-    end
-    return result
-  end
-end
-
-local function iterate_parents(path)
-  path = vim.loop.fs_realpath(path)
-  local function it(s, v)
-    if not v then return end
-    if is_fs_root(v) then return end
-    return dirname(v), path
-  end
-  return it, path, path
-end
-
-local function path_join(...)
-  local result =
-    table.concat(
-      vim.tbl_flatten {...}, path_sep):gsub(path_sep.."+", path_sep)
-  return result
-end
-
-function M.search_ancestors(startpath, func)
-  vim.validate { func = {func, 'f'} }
-  if func(startpath) then return startpath end
-  for path in iterate_parents(startpath) do
-    if func(path) then return path end
-  end
-end
-
-function M.search_files(...)
-  local patterns = vim.tbl_flatten {...}
-  local function matcher(path)
-    for _, pattern in ipairs(patterns) do
-      for _, p in ipairs(vim.fn.glob(path_join(path, pattern), true, true)) do
-        local f = io.open(p, "r")
-        if f ~= nil then
-          f.close()
-          return path
-        end
-      end
-    end
-  end
-  return M.search_ancestors(vim.fn.expand("%:p:h"), matcher)
-end
-
 function M.setupPythonLSP()
   local python_path = 'python3'
 
-  local poetry_lock = M.search_files({'poetry.lock'})
+  local poetry_lock = kitautil.search_files({'poetry.lock'})
   if poetry_lock then
     local virtual_env_path = vim.trim(vim.fn.system('poetry env info -p'))
     if #vim.split(virtual_env_path, '\n') == 1 then
@@ -210,7 +142,7 @@ function M.setupPythonLSP()
     end
   end
 
-  local pipfile_lock = M.search_files({'Pipfile.lock'})
+  local pipfile_lock = kitautil.search_files({'Pipfile.lock'})
   if pipfile_lock then
     local virtual_env_path = vim.trim(vim.fn.system('pipenv --venv'))
     if #vim.split(virtual_env_path, '\n') == 1 then
