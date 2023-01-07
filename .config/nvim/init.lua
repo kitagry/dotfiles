@@ -42,10 +42,8 @@ local function general_setting()
   vim.o.foldmethod = 'expr'
   vim.o.foldexpr = 'nvim_treesitter#foldexpr()'
   vim.o.foldenable = false
-  vim.api.nvim_create_autocmd({'FileType'}, {
-    pattern = {'lua'},
+  vim.api.nvim_create_autocmd({'BufNewFile', 'BufRead'}, {
     callback = function ()
-      vim.o.foldenable = true
     end
   })
 
@@ -379,7 +377,50 @@ require("lazy").setup({
   {"jose-elias-alvarez/null-ls.nvim",
     config = function ()
       local null_ls = require("null-ls")
-      null_ls.setup({})
+      local util = require("kitagry.util")
+      local has_poetry = util.search_files({'poetry.lock'})
+
+      local function with_poetry (builtin)
+        if has_poetry == nil then
+          return builtin
+        end
+
+        if type(builtin._opts.args) == 'table' then
+          local args = vim.list_extend({'run', builtin._opts.command}, builtin._opts.args)
+          return builtin.with({
+            command = 'poetry',
+            args = args,
+          })
+        end
+
+        local function with_poetry_factory(command, args)
+          vim.validate({
+            command = { command, 'string' },
+            args = { args, 'function' },
+          })
+
+          return function(params)
+            local result = args(params)
+            return vim.list_extend({'run', builtin._opts.command}, result)
+          end
+        end
+
+        return builtin.with({
+          command = 'poetry',
+          args = with_poetry_factory(builtin._opts.command, builtin._opts.args),
+        })
+      end
+
+      null_ls.setup({
+        sources = {
+          null_ls.builtins.code_actions.gomodifytags,
+          with_poetry(null_ls.builtins.diagnostics.flake8),
+          with_poetry(null_ls.builtins.formatting.yapf),
+          with_poetry(null_ls.builtins.formatting.isort),
+          null_ls.builtins.diagnostics.shellcheck,
+          null_ls.builtins.code_actions.shellcheck,
+        },
+      })
     end
   },
   {"nvim-telescope/telescope.nvim",
@@ -523,8 +564,8 @@ require("lazy").setup({
     end
   },
   {"lambdalisue/reword.vim"},
-  {"mattn/vim-goaddtags", cmd = "GoAddTags"},
-  {"mattn/vim-goimpl", cmd = "GoImpl" },
+  {"mattn/vim-goaddtags"},
+  {"mattn/vim-goimpl"},
   {"haya14busa/vim-operator-flashy",
     dependencies = {
       "kana/vim-operator-user",
