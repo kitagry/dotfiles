@@ -167,7 +167,7 @@ local function code_action_sync_handler(actions)
 
   for _, action in pairs(actions) do
     if action.result == nil or #action.result ~= 1 then
-      return
+      goto continue
     end
 
     local client = vim.lsp.get_client_by_id(1)
@@ -187,6 +187,7 @@ local function code_action_sync_handler(actions)
     else
       apply_action(action_chosen, client)
     end
+    ::continue::
   end
 end
 

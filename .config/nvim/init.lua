@@ -282,7 +282,7 @@ local function setup_lsp()
   vim.fn.sign_define("LspDiagnosticsInformationSign", { text = 'I>', texthl = 'LspDiagnosticsInformation' })
   vim.fn.sign_define("LspDiagnosticsHintSign", { text = 'H>', texthl = 'LspDiagnosticsHint' })
 
-  local lsp_format = function()
+  local function lsp_format ()
     require("kitagry.lsp").code_action_sync("source.organizeImports")
     local timer = vim.loop.new_timer()
     timer:start(100, 0, vim.schedule_wrap(function()
