@@ -611,7 +611,7 @@ require("lazy").setup({
   {"stevearc/overseer.nvim",
     config = function()
       require("overseer").setup({
-        templates = { "builtin", "go" },
+        templates = { "go", "python" },
         component_aliases = {
           default = {
             { "on_output_quickfix", open_on_match = true },
@@ -641,6 +641,11 @@ require("lazy").setup({
   {"nvim-lualine/lualine.nvim",
     config=function ()
       require("lualine").setup()
+    end
+  },
+  {"rcarriga/nvim-notify",
+    config=function ()
+      vim.notify = require("notify")
     end
   },
 })
