@@ -325,7 +325,7 @@ require("lazy").setup({
     },
     config = function()
       setup_cmp()
-      vim.keymap.set('i', '<C-x><C-o>', require('cmp').complete, {remap = false, expr=true})
+      vim.keymap.set('i', '<C-x><C-o>', require('cmp').complete, {remap = false})
     end,
   },
   {"hrsh7th/vim-vsnip",
@@ -361,15 +361,15 @@ require("lazy").setup({
       vim.keymap.set('n', '[vim-lsp]r', vim.lsp.buf.rename, {remap = true})
       vim.keymap.set('n', '[vim-lsp]f', function()
         vim.lsp.buf.format({timeout_ms=5000})
-      end, {remap = true, expr = true})
+      end, {remap = true, silent = true})
       vim.keymap.set('n', '[vim-lsp]e', function()
         require('telescope.builtin').lsp_references({ include_declaration = true })
-      end, {remap = true, expr = true})
+      end, {remap = true})
       vim.keymap.set('n', '[vim-lsp]t', vim.lsp.buf.type_definition, {remap = true})
       vim.keymap.set('n', '[vim-lsp]a', vim.lsp.buf.code_action, {remap = true})
       vim.keymap.set('n', '[vim-lsp]i', function()
         require('telescope.builtin').lsp_implementations()
-      end, {remap = true, expr = true})
+      end, {remap = true})
       vim.keymap.set('n', '[vim-lsp]q', function()
         print("restarting lsp...")
         vim.lsp.stop_client(vim.lsp.get_active_clients())
@@ -377,7 +377,7 @@ require("lazy").setup({
         timer:start(100, 0, vim.schedule_wrap(function()
           vim.cmd('edit')
         end))
-      end, {remap = true, expr = true})
+      end, {remap = true})
       vim.keymap.set('n', '[vim-lsp]s', ':<C-u>LspInfo<CR>', {remap = true})
     end,
   },
@@ -387,15 +387,46 @@ require("lazy").setup({
       local util = require("kitagry.util")
       local has_poetry = util.search_files({'poetry.lock'})
 
-      local function with_poetry (builtin)
+      local function with_poetry (builtin, command)
         if has_poetry == nil then
           return builtin
         end
 
         return builtin.with({
-          command = { 'poetry', 'run', builtin._opts.command },
+          command = { 'poetry', 'run', command },
         })
       end
+
+      local function with_pflake8 (builtin)
+        local command = 'flake8'
+        local path = util.search_files({'pyproject.toml'})
+        if path == nil then
+          return with_poetry(builtin, command)
+        end
+
+        local content = util.read_file(path..'/pyproject.toml')
+        if content == nil then
+          return with_poetry(builtin, command)
+        end
+
+        for line in vim.gsplit(content, "\n") do
+          local pflake8 = vim.startswith(line, 'pyproject-flake8')
+          if pflake8 then
+            command = 'pflake8'
+          end
+        end
+
+        return with_poetry(builtin, command)
+      end
+
+      local sources = {
+        null_ls.builtins.code_actions.gomodifytags,
+        with_pflake8(null_ls.builtins.diagnostics.flake8),
+        with_poetry(null_ls.builtins.formatting.yapf, 'yapf'),
+        with_poetry(null_ls.builtins.formatting.isort, 'isort'),
+        null_ls.builtins.diagnostics.shellcheck,
+        null_ls.builtins.code_actions.shellcheck,
+      }
 
       local function textlint_path()
         local path = util.search_files({'./node_modules/textlint/bin/textlint.js'})
@@ -405,14 +436,9 @@ require("lazy").setup({
         return 'textlint'
       end
 
-      null_ls.setup({
-        sources = {
-          null_ls.builtins.code_actions.gomodifytags,
-          with_poetry(null_ls.builtins.diagnostics.flake8),
-          with_poetry(null_ls.builtins.formatting.yapf),
-          with_poetry(null_ls.builtins.formatting.isort),
-          null_ls.builtins.diagnostics.shellcheck,
-          null_ls.builtins.code_actions.shellcheck,
+      local has_textlint = util.search_files({'package.json'})
+      if has_textlint ~= nil then
+        sources = vim.list_extend(sources, {
           null_ls.builtins.diagnostics.textlint.with({
             cwd = function (params)
               return params.root:match('.textlintrc')
@@ -420,7 +446,11 @@ require("lazy").setup({
             filetypes = { 'markdown' },
             command = textlint_path(),
           })
-        },
+        })
+      end
+
+      null_ls.setup({
+        sources = sources,
       })
     end
   },
@@ -525,7 +555,7 @@ require("lazy").setup({
       vim.keymap.set('n', '[gina]s', ':<C-u>Gina status --group=gina<CR>', {remap=true})
       vim.keymap.set('n', '[gina]c', ':<C-u>Gina commit<CR>', {remap=true})
       vim.keymap.set('n', '[gina]d', ':<C-u>Gina diff --group=gina<CR>', {remap=true})
-      vim.keymap.set('n', '[gina]p', git_push, {remap=true, expr=true})
+      vim.keymap.set('n', '[gina]p', git_push, {remap=true})
       vim.keymap.set('n', '[gina]x', ':<C-u>Gina browse :<CR>', {remap=true})
       vim.keymap.set('n', '[gina]y', ':<C-u>Gina browse --yank :<CR>', {remap=true})
       vim.keymap.set('v', '[gina]x', ':<C-u>Gina blame --exact :<CR>', {remap=true})

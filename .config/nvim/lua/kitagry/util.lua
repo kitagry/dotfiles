@@ -72,4 +72,24 @@ function M.search_files(...)
   return search_ancestors(vim.fn.expand("%:p:h"), matcher)
 end
 
+---@param filepath string
+---@return boolean
+function M.exists(filepath)
+  local stat = vim.loop.fs_stat(filepath)
+  return stat ~= nil and stat.type ~= nil
+end
+
+---@param filepath string
+---@return string?
+function M.read_file(filepath)
+  if not M.exists(filepath) then
+    return nil
+  end
+  local fd = vim.loop.fs_open(filepath, "r", 420) -- 0644
+  local stat = vim.loop.fs_fstat(fd)
+  local content = vim.loop.fs_read(fd, stat.size)
+  vim.loop.fs_close(fd)
+  return content
+end
+
 return M
