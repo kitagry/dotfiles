@@ -637,5 +637,10 @@ require("lazy").setup({
       vim.keymap.set('n', '[overseer]q', ':<C-u>OverseerRun<CR>', {remap=true, silent=true})
       vim.keymap.set('n', '[overseer]r', ':<C-u>OverseerRestartLast<CR>', {remap=true, silent=true})
     end
-  }
+  },
+  {"nvim-lualine/lualine.nvim",
+    config=function ()
+      require("lualine").setup()
+    end
+  },
 })
