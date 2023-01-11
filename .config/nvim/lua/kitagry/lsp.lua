@@ -26,7 +26,12 @@ function M.setupLSP()
   }
   M.capabilities = capabilities
 
-  mason.setup()
+  mason.setup({
+    providers = {
+      "mason.providers.client",
+      "mason.providers.registry-api",
+    },
+  })
   mason_configs.setup({
     ensure_installed = { "rust_analyzer", "gopls", "pyright" }
   })
