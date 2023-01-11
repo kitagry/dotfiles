@@ -123,9 +123,6 @@ local function keymap_setting()
   vim.keymap.set('', 'gj', 'j', {noremap = true})
   vim.keymap.set('', 'gk', 'k', {noremap = true})
 
-  vim.keymap.set('n', '<leader>t', ':<C-u>vsp term://zsh<CR>', {noremap = true})
-  vim.keymap.set('n', '<leader>T', ':<C-u>sp term://zsh<CR>', {noremap = true})
-
   -- '%%'でアクティブなバッファのディレクトリを開いてくれる
   vim.keymap.set('c', '%%', "getcmdtype() == ':' ? expand('%:h').'/' : '%%'", {expr = true, noremap = true})
 
@@ -701,6 +698,31 @@ require("lazy").setup({
       vim.notify = require("notify")
     end
   },
+  {"akinsho/toggleterm.nvim",
+    config=function ()
+      require("toggleterm").setup()
+      vim.keymap.set('n', '<leader>t', '<cmd>exe v:count1 . "ToggleTerm"<CR>', {})
+
+      local function set_terminal_keymaps()
+        local opts = {buffer = 0}
+        vim.keymap.set('t', '<C-h>', [[<Cmd>wincmd h<CR>]], opts)
+        vim.keymap.set('t', '<C-j>', [[<Cmd>wincmd j<CR>]], opts)
+        vim.keymap.set('t', '<C-k>', [[<Cmd>wincmd k<CR>]], opts)
+        vim.keymap.set('t', '<C-l>', [[<Cmd>wincmd l<CR>]], opts)
+      end
+      vim.api.nvim_create_augroup('toggleterm', {})
+      vim.api.nvim_create_autocmd({'TermEnter'}, {
+        pattern = {'term://*toggleterm#*'},
+        callback = function ()
+          vim.keymap.set('t', '<leader>t', '<cmd>exe v:count1 . "ToggleTerm"<CR>', {})
+        end
+      })
+      vim.api.nvim_create_autocmd({'TermOpen'}, {
+        pattern = {'term://*'},
+        callback = set_terminal_keymaps,
+      })
+    end
+  }
 })
 
 local local_path = vim.env.HOME .. '/.config/nvim/init.local.vim'
