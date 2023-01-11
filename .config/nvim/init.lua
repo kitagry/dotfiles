@@ -638,6 +638,11 @@ require("lazy").setup({
       })
     end
   },
+  {"stevearc/dressing.nvim",
+    config = function ()
+      require("dressing").setup()
+    end
+  },
   {"stevearc/overseer.nvim",
     config = function()
       require("overseer").setup({
