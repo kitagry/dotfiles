@@ -697,3 +697,8 @@ require("lazy").setup({
     end
   },
 })
+
+local local_path = vim.env.HOME .. '/.config/nvim/init.local.vim'
+if require("kitagry.util").exists(local_path) then
+  vim.cmd('source '..local_path)
+end
