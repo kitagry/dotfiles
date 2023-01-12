@@ -38,6 +38,7 @@ github = "superbrothers/zsh-kubectl-prompt"
 
 [plugins.dotfiles-defers]
 local = "~/.zsh/defer"
+apply = ['defer']
 
 [plugins.dotfiles-sync]
 local = "~/.zsh/sync"

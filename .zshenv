@@ -1,10 +1,5 @@
-autoload -Uz compinit
-if [[ -n ${ZDOTDIR:-$HOME}/.zcompdump(#qN.mh+24) ]]; then
-  compinit;
-else
-  compinit -C;
-fi;
-
+# # uncommennt the following code in order to measure time.
+# zmodload zsh/zprof && zprof
 export LANG=ja_JP.UTF-8
 export LC_TYPE=ja_JP.UTF-8
 export PATH="/usr/local/bin:/usr/local/sbin:/sbin/:$PATH"
