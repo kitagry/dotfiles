@@ -94,9 +94,26 @@ local function general_setting()
   vim.api.nvim_create_augroup('cursor_column', {})
   vim.api.nvim_create_autocmd({'BufNewFile', 'BufRead'}, {
     group = 'cursor_column',
-    pattern = {'*.yaml'},
+    pattern = {'*'},
     callback = function()
-      vim.bo.cursorcolumn = true
+      local ft = vim.filetype.match({ buf = 0 })
+      if ft == nil then
+        vim.wo.cursorcolumn = false
+        return
+      end
+
+      if vim.startswith(ft, 'yaml') then
+        vim.wo.cursorcolumn = true
+      else
+        vim.wo.cursorcolumn = false
+      end
+    end
+  })
+
+  vim.api.nvim_create_autocmd({'BufNewFile', 'BufRead'}, {
+    pattern = {'*.tf'},
+    callback = function ()
+      vim.bo.filetype = 'terraform'
     end
   })
 end
@@ -320,6 +337,7 @@ require("lazy").setup({
       "hrsh7th/cmp-nvim-lsp-signature-help",
       "lukas-reineke/cmp-rg",
     },
+    event = {'InsertEnter'},
     config = function()
       setup_cmp()
       vim.keymap.set('i', '<C-x><C-o>', require('cmp').complete, {remap = false})
@@ -330,6 +348,7 @@ require("lazy").setup({
       "hrsh7th/vim-vsnip-integ",
       "kitagry/vs-snippets",
     },
+    event = {'InsertEnter'},
     config = function()
       vim.keymap.set({'i', 's'}, '<C-j>', function()
         return vim.fn['vsnip#jumpable'](1) and '<Plug>(vsnip-jump-next)' or '<C-j>'
@@ -458,6 +477,7 @@ require("lazy").setup({
       "nvim-lua/popup.nvim",
       "nvim-lua/plenary.nvim",
     },
+    event = { "BufNewFile", "BufRead" },
     config = function()
       local telescope = require('telescope')
       local builtin = require('telescope.builtin')
@@ -497,6 +517,7 @@ require("lazy").setup({
   },
   {"machakann/vim-sandwich"},
   {"numToStr/Comment.nvim",
+    event = { "InsertEnter" },
     config = function()
       require('Comment').setup()
     end
@@ -517,10 +538,7 @@ require("lazy").setup({
     dependencies = {
       "kitagry/gina-openpr.vim",
     },
-    config = function()
-      vim.o.diffopt = 'vertical'
-      vim.g["gina#command#blame#formatter#format"] = "%su%=by %au %ma%in"
-
+    init = function ()
       local git_push = function()
         local current_branch = vim.fn["gina#component#repo#branch"]()
         if current_branch == 'master' or current_branch == 'main' then
@@ -535,17 +553,6 @@ require("lazy").setup({
         end
       end
 
-      local create_pr = function()
-        local remote_url = vim.fn.system([[!git remote get-url origin]])
-        local ind = string.find(remote_url, 'github.com')
-        if ind ~= nil then
-          vim.fn.system([[gh pr create --web]])
-        else
-          print(string.format('not support for %s', remote_url))
-        end
-      end
-      vim.api.nvim_create_user_command('GitCreatePR', create_pr, {})
-
       vim.keymap.set({'n', 'v'}, '[gina]', '<Nop>', {noremap = true})
       vim.keymap.set({'n', 'v'}, '<leader>g', '[gina]', {silent = true, remap=true})
       vim.keymap.set('n', '[gina]b', ':<C-u>Gina blame<CR>', {remap=true})
@@ -557,6 +564,21 @@ require("lazy").setup({
       vim.keymap.set('n', '[gina]y', ':<C-u>Gina browse --yank :<CR>', {remap=true})
       vim.keymap.set('v', '[gina]x', ':<C-u>Gina blame --exact :<CR>', {remap=true})
       vim.keymap.set('v', '[gina]y', ':<C-u>Gina blame --exact --yank :<CR>', {remap=true})
+    end,
+    config = function()
+      vim.o.diffopt = 'vertical'
+      vim.g["gina#command#blame#formatter#format"] = "%su%=by %au %ma%in"
+
+      local create_pr = function()
+        local remote_url = vim.fn.system([[!git remote get-url origin]])
+        local ind = string.find(remote_url, 'github.com')
+        if ind ~= nil then
+          vim.fn.system([[gh pr create --web]])
+        else
+          print(string.format('not support for %s', remote_url))
+        end
+      end
+      vim.api.nvim_create_user_command('GitCreatePR', create_pr, {})
     end
   },
   {"lambdalisue/fern.vim",
@@ -565,7 +587,8 @@ require("lazy").setup({
       "lambdalisue/fern-hijack.vim",
       "lambdalisue/fern-renderer-nerdfont.vim",
     },
-    config = function()
+    -- cmd = {'Fern'}, for fern-hijack
+    init = function ()
       vim.keymap.set('n', '[fern]', '<Nop>', {noremap = true})
       vim.keymap.set('n', '<leader>d', '[fern]', {silent = true, remap=true})
       vim.keymap.set('n', '[fern]a', ':<C-u>Fern . -drawer -toggle -reveal=%<CR>', {remap=true, silent=true})
@@ -573,7 +596,8 @@ require("lazy").setup({
       vim.keymap.set('n', '[fern]v', ':<C-u>Fern . -opener=vsplit<CR>', {remap=true, silent=true})
       vim.keymap.set('n', '[fern]h', ':<C-u>Fern %:h -opener=vsplit<CR>', {remap=true, silent=true})
       vim.keymap.set('n', '[fern]m', ':<C-u>Fern ~/drive -drawer -toggle -reveal=%<CR>', {remap=true, silent=true})
-
+    end,
+    config = function()
       vim.g['fern#renderer'] = 'nerdfont'
 
       local init_fern = function()
@@ -592,8 +616,8 @@ require("lazy").setup({
     end
   },
   {"lambdalisue/reword.vim"},
-  {"mattn/vim-goaddtags"},
-  {"mattn/vim-goimpl"},
+  {"mattn/vim-goaddtags", ft = "go"},
+  {"mattn/vim-goimpl", ft = "go"},
   {"haya14busa/vim-operator-flashy",
     dependencies = {
       "kana/vim-operator-user",
@@ -606,6 +630,7 @@ require("lazy").setup({
     end
   },
   {"windwp/nvim-autopairs",
+    event = { "InsertEnter" },
     config = function()
       require('nvim-autopairs').setup({
         ignored_next_char = "[%w]"
@@ -619,6 +644,7 @@ require("lazy").setup({
   },
   {"lambdalisue/pastefix.vim"},
   {"norcalli/nvim-colorizer.lua",
+    event = { "BufNewFile", "BufRead" },
     config = function()
       require("colorizer").setup()
     end
@@ -699,9 +725,13 @@ require("lazy").setup({
     end
   },
   {"akinsho/toggleterm.nvim",
+    cmd = {'ToggleTerm'},
+    init=function ()
+      vim.keymap.set('n', '<leader>t', '<cmd>exe v:count1 . "ToggleTerm direction=horizontal"<CR>', {})
+      vim.keymap.set('n', '<leader>T', '<cmd>exe v:count1 . "ToggleTerm direction=float"<CR>', {})
+    end,
     config=function ()
       require("toggleterm").setup()
-      vim.keymap.set('n', '<leader>t', '<cmd>exe v:count1 . "ToggleTerm"<CR>', {})
 
       vim.api.nvim_create_augroup('toggleterm', {})
       vim.api.nvim_create_autocmd({'TermEnter'}, {
