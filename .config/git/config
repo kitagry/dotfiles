@@ -1,6 +1,6 @@
 [ghq]
-	root = /home/kitagry/.config/dein/repos
-	root = /home/kitagry/go/src
+	root = ~/.local/share/nvim/lazy
+	root = ~/go/src
 [user]
 	email = kitadrum50@gmail.com
 	name = Ryo Kitagawa
