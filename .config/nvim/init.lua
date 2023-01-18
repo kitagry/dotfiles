@@ -41,6 +41,9 @@ require("kitagry.lazy").setup({
       vim.o.background = 'dark'
       vim.o.termguicolors = true
 
+      vim.o.encoding = 'utf-8'
+      vim.o.fileencodings = 'utf-8,iso-2022-jp,euc-jp,sjis'
+
       if vim.fn.has('mac') == 1 then
         vim.opt.clipboard = 'unnamed'
       else
@@ -196,6 +199,7 @@ require("kitagry.lazy").setup({
     end,
   },
   {"sainnhe/sonokai",
+    cond = vim.fn.exists('g:vscode') == 0,
     config = function()
       vim.g.sonokai_style = 'shusia'
       cmd.colorscheme('sonokai')
@@ -212,7 +216,7 @@ require("kitagry.lazy").setup({
       "hrsh7th/cmp-nvim-lsp-signature-help",
       "lukas-reineke/cmp-rg",
     },
-    event = {'InsertEnter'},
+    cond = vim.fn.exists('g:vscode') == 0,
     config = function()
       vim.o.completeopt = 'menuone,noinsert,noselect'
       local cmp = require('cmp')
@@ -307,8 +311,8 @@ require("kitagry.lazy").setup({
       "hrsh7th/vim-vsnip-integ",
       "kitagry/vs-snippets",
     },
-    event = {'InsertEnter'},
-    config = function()
+    cond = vim.fn.exists('g:vscode') == 0,
+    init = function ()
       vim.keymap.set({'i', 's'}, '<C-j>', function()
         return vim.fn['vsnip#jumpable'](1) and '<Plug>(vsnip-jump-next)' or '<C-j>'
       end, { expr = true })
@@ -322,78 +326,95 @@ require("kitagry.lazy").setup({
       "williamboman/mason-lspconfig.nvim",
       "neovim/nvim-lspconfig",
     },
-    config = function()
-      require("kitagry.lsp").setupLSP()
-
-      vim.api.nvim_create_autocmd("LspAttach", {
-        callback = function(args)
-          local bufnr = args.buf
-          local client = vim.lsp.get_client_by_id(args.data.client_id)
-          if client.server_capabilities.completionProvider then
-            vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
-          end
-          if client.server_capabilities.definitionProvider then
-            vim.bo[bufnr].tagfunc = "v:lua.vim.lsp.tagfunc"
-          end
-        end,
-      })
-
-      vim.fn.sign_define("LspDiagnosticsErrorSign", { text = 'E>', texthl = 'Error' })
-      vim.fn.sign_define("LspDiagnosticsWarningSign", { text = 'W>', texthl = 'WarningMsg' })
-      vim.fn.sign_define("LspDiagnosticsInformationSign", { text = 'I>', texthl = 'LspDiagnosticsInformation' })
-      vim.fn.sign_define("LspDiagnosticsHintSign", { text = 'H>', texthl = 'LspDiagnosticsHint' })
-
-      local function lsp_format ()
-        require("kitagry.lsp").code_action_sync("source.organizeImports")
-        local timer = vim.loop.new_timer()
-        timer:start(100, 0, vim.schedule_wrap(function()
-          vim.lsp.buf.format({async=false})
-        end))
-      end
-
-      vim.api.nvim_create_augroup('lsp_formatting', {})
-      vim.api.nvim_create_autocmd({'BufWritePre'}, {
-        group = 'lsp_formatting',
-        pattern = {'*.go', '*.rs'},
-        callback = lsp_format
-      })
-      vim.api.nvim_create_autocmd({'BufWritePre'}, {
-        group = 'lsp_formatting',
-        pattern = {'*.tsx', '*.ts', '*.jsx', '*.js', '*.py', '*.rego'},
-        callback = function()
-          vim.lsp.buf.format({async=false})
-        end
-      })
-
+    init = function ()
       vim.keymap.set('n', '[vim-lsp]', '<Nop>', {noremap = true})
       vim.keymap.set('n', '<leader>l', '[vim-lsp]', {silent = true, remap=true})
-      vim.keymap.set('n', '<c-]>', vim.lsp.buf.definition, {silent = true})
-      vim.keymap.set('n', '<c-k>', vim.lsp.buf.signature_help, {silent = true})
-      vim.keymap.set('n', '[e', vim.diagnostic.goto_prev, {silent = true,})
-      vim.keymap.set('n', ']e', vim.diagnostic.goto_next, {silent = true})
+      if vim.fn.exists('g:vscode') == 1 then
+        vim.keymap.set('n', 'c-]', "<cmd>call VSCodeNotify('editor.action.revealDefinition')<CR>", {silent = true, expr = true})
+        vim.keymap.set('n', '[e', "<cmd>call VSCodeNotify('editor.action.marker.prev')<CR>", {silent = true, expr = true})
+        vim.keymap.set('n', ']e', "<cmd>call VSCodeNotify('editor.action.marker.next')<CR>", {silent = true, expr = true})
 
-      vim.keymap.set('n', '[vim-lsp]h', vim.lsp.buf.hover, {remap = true})
-      vim.keymap.set('n', '[vim-lsp]r', vim.lsp.buf.rename, {remap = true})
-      vim.keymap.set('n', '[vim-lsp]f', function()
-        vim.lsp.buf.format({timeout_ms=5000})
-      end, {remap = true, silent = true})
-      vim.keymap.set('n', '[vim-lsp]e', function()
-        require('telescope.builtin').lsp_references({ include_declaration = true })
-      end, {remap = true})
-      vim.keymap.set('n', '[vim-lsp]t', vim.lsp.buf.type_definition, {remap = true})
-      vim.keymap.set('n', '[vim-lsp]a', vim.lsp.buf.code_action, {remap = true})
-      vim.keymap.set('n', '[vim-lsp]i', function()
-        require('telescope.builtin').lsp_implementations()
-      end, {remap = true})
-      vim.keymap.set('n', '[vim-lsp]q', function()
-        print("restarting lsp...")
-        vim.lsp.stop_client(vim.lsp.get_active_clients())
-        local timer = vim.loop.new_timer()
-        timer:start(100, 0, vim.schedule_wrap(function()
-          vim.cmd('edit')
-        end))
-      end, {remap = true})
-      vim.keymap.set('n', '[vim-lsp]s', ':<C-u>LspInfo<CR>', {remap = true})
+        vim.keymap.set('n', '[vim-lsp]h', "<cmd>call VSCodeNotify('editor.action.revealDefinition')<CR>", {silent = true, expr = true})
+        vim.keymap.set('n', '[vim-lsp]r', "<cmd>call VSCodeNotify('editor.action.rename')<CR>", {silent = true, expr = true})
+        vim.keymap.set('n', '[vim-lsp]f', "<cmd>call VSCodeNotify('editor.action.formatDocument')<CR>", {silent = true, expr = true})
+        vim.keymap.set('n', '[vim-lsp]t', "<cmd>call VSCodeNotify('editor.action.goToTypeDefinition')<CR>", {silent = true, expr = true})
+        vim.keymap.set('n', '[vim-lsp]e', "<cmd>call VSCodeNotify('references-view.findReferences')<CR>", {silent = true, expr = true})
+        vim.keymap.set('n', '[vim-lsp]a', "<cmd>call VSCodeNotify('editor.action.sourceAction')<CR>", {silent = true, expr = true})
+      else
+
+        vim.keymap.set('n', '<c-]>', vim.lsp.buf.definition, {silent = true})
+        vim.keymap.set('n', '<c-k>', vim.lsp.buf.signature_help, {silent = true})
+        vim.keymap.set('n', '[e', vim.diagnostic.goto_prev, {silent = true,})
+        vim.keymap.set('n', ']e', vim.diagnostic.goto_next, {silent = true})
+
+        vim.keymap.set('n', '[vim-lsp]h', vim.lsp.buf.hover, {remap = true})
+        vim.keymap.set('n', '[vim-lsp]r', vim.lsp.buf.rename, {remap = true})
+        vim.keymap.set('n', '[vim-lsp]f', function()
+          vim.lsp.buf.format({timeout_ms=5000})
+        end, {remap = true, silent = true})
+        vim.keymap.set('n', '[vim-lsp]e', function()
+          require('telescope.builtin').lsp_references({ include_declaration = true })
+        end, {remap = true})
+        vim.keymap.set('n', '[vim-lsp]t', vim.lsp.buf.type_definition, {remap = true})
+        vim.keymap.set('n', '[vim-lsp]a', vim.lsp.buf.code_action, {remap = true})
+        vim.keymap.set('n', '[vim-lsp]i', function()
+          require('telescope.builtin').lsp_implementations()
+        end, {remap = true})
+        vim.keymap.set('n', '[vim-lsp]q', function()
+          print("restarting lsp...")
+          vim.lsp.stop_client(vim.lsp.get_active_clients())
+          local timer = vim.loop.new_timer()
+          timer:start(100, 0, vim.schedule_wrap(function()
+            vim.cmd('edit')
+          end))
+        end, {remap = true})
+        vim.keymap.set('n', '[vim-lsp]s', ':<C-u>LspInfo<CR>', {remap = true})
+      end
+    end,
+    config = function()
+      if vim.fn.exists('g:vscode') == 0 then
+        require("kitagry.lsp").setupLSP()
+
+        vim.api.nvim_create_autocmd("LspAttach", {
+          callback = function(args)
+            local bufnr = args.buf
+            local client = vim.lsp.get_client_by_id(args.data.client_id)
+            if client.server_capabilities.completionProvider then
+              vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
+            end
+            if client.server_capabilities.definitionProvider then
+              vim.bo[bufnr].tagfunc = "v:lua.vim.lsp.tagfunc"
+            end
+          end,
+        })
+
+        vim.fn.sign_define("LspDiagnosticsErrorSign", { text = 'E>', texthl = 'Error' })
+        vim.fn.sign_define("LspDiagnosticsWarningSign", { text = 'W>', texthl = 'WarningMsg' })
+        vim.fn.sign_define("LspDiagnosticsInformationSign", { text = 'I>', texthl = 'LspDiagnosticsInformation' })
+        vim.fn.sign_define("LspDiagnosticsHintSign", { text = 'H>', texthl = 'LspDiagnosticsHint' })
+
+        local function lsp_format ()
+          require("kitagry.lsp").code_action_sync("source.organizeImports")
+          local timer = vim.loop.new_timer()
+          timer:start(100, 0, vim.schedule_wrap(function()
+            vim.lsp.buf.format({async=false})
+          end))
+        end
+
+        vim.api.nvim_create_augroup('lsp_formatting', {})
+        vim.api.nvim_create_autocmd({'BufWritePre'}, {
+          group = 'lsp_formatting',
+          pattern = {'*.go', '*.rs'},
+          callback = lsp_format
+        })
+        vim.api.nvim_create_autocmd({'BufWritePre'}, {
+          group = 'lsp_formatting',
+          pattern = {'*.tsx', '*.ts', '*.jsx', '*.js', '*.py', '*.rego'},
+          callback = function()
+            vim.lsp.buf.format({async=false, timeout_ms=3000})
+          end
+        })
+      end
     end,
   },
   {"jose-elias-alvarez/null-ls.nvim",
@@ -476,10 +497,26 @@ require("kitagry.lazy").setup({
       "nvim-lua/popup.nvim",
       "nvim-lua/plenary.nvim",
     },
+    init = function ()
+      local builtin = require('telescope.builtin')
+
+      vim.keymap.set('n', '[telescope]', '<Nop>', {noremap = true})
+      vim.keymap.set('n', '<leader>f', '[telescope]', {silent = true, remap=true})
+      vim.keymap.set('n', '[telescope]r', builtin.resume, {remap = true})
+      vim.keymap.set('n', '[telescope]f', builtin.find_files, {remap = true})
+      vim.keymap.set('n', '[telescope]g', builtin.live_grep, {remap = true})
+      vim.keymap.set('n', '[telescope]]', builtin.grep_string, {remap = true})
+      vim.keymap.set('n', '[telescope]d', builtin.lsp_document_symbols, {remap = true})
+      vim.keymap.set('n', '[telescope]b', builtin.buffers, {remap = true})
+      vim.keymap.set('n', '[telescope]t', builtin.filetypes, {remap = true})
+      vim.keymap.set('n', '[telescope]h', builtin.help_tags, {remap = true})
+      vim.keymap.set('n', '[telescope]a', builtin.git_branches, {remap = true})
+      vim.keymap.set('n', '[telescope]c', builtin.command_history, {remap = true})
+    end,
+    cond = vim.fn.exists('g:vscode') == 0,
     event = { "BufNewFile", "BufRead" },
     config = function()
       local telescope = require('telescope')
-      local builtin = require('telescope.builtin')
       local actions = require('telescope.actions')
 
       telescope.setup({defaults=require('telescope.themes').get_ivy({
@@ -495,18 +532,6 @@ require("kitagry.lazy").setup({
           num_pickers = -1,
         },
       })})
-      vim.keymap.set('n', '[telescope]', '<Nop>', {noremap = true})
-      vim.keymap.set('n', '<leader>f', '[telescope]', {silent = true, remap=true})
-      vim.keymap.set('n', '[telescope]r', builtin.resume, {remap = true})
-      vim.keymap.set('n', '[telescope]f', builtin.find_files, {remap = true})
-      vim.keymap.set('n', '[telescope]g', builtin.live_grep, {remap = true})
-      vim.keymap.set('n', '[telescope]]', builtin.grep_string, {remap = true})
-      vim.keymap.set('n', '[telescope]d', builtin.lsp_document_symbols, {remap = true})
-      vim.keymap.set('n', '[telescope]b', builtin.buffers, {remap = true})
-      vim.keymap.set('n', '[telescope]t', builtin.filetypes, {remap = true})
-      vim.keymap.set('n', '[telescope]h', builtin.help_tags, {remap = true})
-      vim.keymap.set('n', '[telescope]a', builtin.git_branches, {remap = true})
-      vim.keymap.set('n', '[telescope]c', builtin.command_history, {remap = true})
     end
   },
   {"nvim-treesitter/nvim-treesitter",

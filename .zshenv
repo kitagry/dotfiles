@@ -36,6 +36,12 @@ rgvim() {
     $EDITOR $file_name -c ":${line}"
   fi
 }
+fdvim() {
+  file=$(fd --color=never $@ | fzf)
+  if [ $file ]; then
+    $EDITOR $file
+  fi
+}
 ###########################
 
 ###########################
