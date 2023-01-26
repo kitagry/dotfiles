@@ -78,7 +78,7 @@ require("kitagry.lazy").setup({
         cmd([[%s/\s\+$//ge]])
 
         -- delete last blank lines
-        while vim.fn.getline('$') == '' and #vim.fn.getline(0, '$') ~= 0 do
+        while vim.fn.getline('$') == '' and #vim.fn.getline(0, '$') > 1 do
           cmd('$delete _')
         end
       end
@@ -154,6 +154,11 @@ require("kitagry.lazy").setup({
       vim.keymap.set('n', ']B', ':blast<CR>', {noremap = true})
       vim.keymap.set('n', '[b', ':bprevious<CR>', {noremap = true})
       vim.keymap.set('n', '[B', ':bfirst<CR>', {noremap = true})
+      -- tab
+      vim.keymap.set('n', ']t', ':tabnext<CR>')
+      vim.keymap.set('n', ']T', ':tablast<CR>')
+      vim.keymap.set('n', '[t', ':tabprevious<CR>')
+      vim.keymap.set('n', '[T', ':tabfirst<CR>')
       -- quickfix
       vim.keymap.set('n', ']q', ':cnext<CR>', {noremap = true})
       vim.keymap.set('n', ']Q', ':clast<CR>', {noremap = true})
@@ -585,8 +590,8 @@ require("kitagry.lazy").setup({
       vim.keymap.set('n', '[gina]p', git_push, {remap=true})
       vim.keymap.set('n', '[gina]x', ':<C-u>Gina browse :<CR>', {remap=true})
       vim.keymap.set('n', '[gina]y', ':<C-u>Gina browse --yank :<CR>', {remap=true})
-      vim.keymap.set('v', '[gina]x', ':<C-u>Gina blame --exact :<CR>', {remap=true})
-      vim.keymap.set('v', '[gina]y', ':<C-u>Gina blame --exact --yank :<CR>', {remap=true})
+      vim.keymap.set('v', '[gina]x', ':<C-u>Gina browse --exact :<CR>', {remap=true})
+      vim.keymap.set('v', '[gina]y', ':<C-u>Gina browse --exact --yank :<CR>', {remap=true})
     end,
     config = function()
       vim.o.diffopt = 'vertical'
