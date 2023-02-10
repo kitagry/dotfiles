@@ -2,9 +2,9 @@ local vim = vim
 local cmd = vim.cmd
 
 require("kitagry.lazy").setup({
-  {"general setting",
-    setting=true,
-    config=function ()
+  { "general setting",
+    setting = true,
+    config = function()
       cmd([[filetype plugin indent on]])
 
       -- バックアップファイルを作らない
@@ -51,14 +51,14 @@ require("kitagry.lazy").setup({
       end
     end,
   },
-  {"fold setting",
-    setting=true,
-    config=function ()
+  { "fold setting",
+    setting = true,
+    config = function()
       vim.o.foldmethod = 'expr'
       vim.o.foldexpr = 'nvim_treesitter#foldexpr()'
       vim.o.foldenable = false
-      vim.api.nvim_create_autocmd({'BufNewFile', 'BufRead'}, {
-        callback = function ()
+      vim.api.nvim_create_autocmd({ 'BufNewFile', 'BufRead' }, {
+        callback = function()
           if vim.fn.expand('%:t') == 'init.lua' then
             vim.o.foldlevel = 1
             vim.o.foldnestmax = 2
@@ -70,9 +70,9 @@ require("kitagry.lazy").setup({
       })
     end,
   },
-  {"remove unnecessary spaces",
-    setting=true,
-    config=function ()
+  { "remove unnecessary spaces",
+    setting = true,
+    config = function()
       local remove_unnecessary_space = function()
         -- delete last spaces
         cmd([[%s/\s\+$//ge]])
@@ -82,40 +82,40 @@ require("kitagry.lazy").setup({
           cmd('$delete _')
         end
       end
-      vim.api.nvim_create_autocmd({"BufWritePre"}, {
+      vim.api.nvim_create_autocmd({ "BufWritePre" }, {
         callback = remove_unnecessary_space,
       })
     end,
   },
-  {"indent setting",
-    setting=true,
-    config=function ()
+  { "indent setting",
+    setting = true,
+    config = function()
       vim.api.nvim_create_augroup('filetype_indent', {})
-      vim.api.nvim_create_autocmd({'BufNewFile', 'BufRead'}, {
+      vim.api.nvim_create_autocmd({ 'BufNewFile', 'BufRead' }, {
         group = 'filetype_indent',
-        pattern = {'*.py', '*.jl', '*.php', '*.java'},
+        pattern = { '*.py', '*.jl', '*.php', '*.java' },
         callback = function()
           vim.bo.tabstop = 4
           vim.bo.softtabstop = 4
           vim.bo.shiftwidth = 4
         end
       })
-      vim.api.nvim_create_autocmd({'BufNewFile', 'BufRead'}, {
+      vim.api.nvim_create_autocmd({ 'BufNewFile', 'BufRead' }, {
         group = 'filetype_indent',
-        pattern = {'*.go', '*.rego'},
+        pattern = { '*.go', '*.rego' },
         callback = function()
           vim.bo.expandtab = false
         end
       })
     end,
   },
-  {"cursor highlight setting",
-    setting=true,
-    config=function ()
+  { "cursor highlight setting",
+    setting = true,
+    config = function()
       vim.api.nvim_create_augroup('cursor_column', {})
-      vim.api.nvim_create_autocmd({'BufNewFile', 'BufRead'}, {
+      vim.api.nvim_create_autocmd({ 'BufNewFile', 'BufRead' }, {
         group = 'cursor_column',
-        pattern = {'*'},
+        pattern = { '*' },
         callback = function()
           local ft = vim.filetype.match({ buf = 0 })
           if ft == nil then
@@ -132,85 +132,85 @@ require("kitagry.lazy").setup({
       })
     end,
   },
-  {"filetype setting",
-    setting=true,
-    config=function ()
-      vim.api.nvim_create_autocmd({'BufNewFile', 'BufRead'}, {
-        pattern = {'*.tf'},
-        callback = function ()
+  { "filetype setting",
+    setting = true,
+    config = function()
+      vim.api.nvim_create_autocmd({ 'BufNewFile', 'BufRead' }, {
+        pattern = { '*.tf' },
+        callback = function()
           vim.bo.filetype = 'terraform'
         end
       })
     end,
   },
-  {"key mappings",
-    setting=true,
-    config=function ()
+  { "key mappings",
+    setting = true,
+    config = function()
       vim.g.mapleader = ' '
       -- ヤンクの設定
-      vim.keymap.set('n', 'Y', 'y$', {noremap = true})
+      vim.keymap.set('n', 'Y', 'y$', { noremap = true })
       -- バッファ移動設定
-      vim.keymap.set('n', ']b', ':bnext<CR>', {noremap = true})
-      vim.keymap.set('n', ']B', ':blast<CR>', {noremap = true})
-      vim.keymap.set('n', '[b', ':bprevious<CR>', {noremap = true})
-      vim.keymap.set('n', '[B', ':bfirst<CR>', {noremap = true})
+      vim.keymap.set('n', ']b', ':bnext<CR>', { noremap = true })
+      vim.keymap.set('n', ']B', ':blast<CR>', { noremap = true })
+      vim.keymap.set('n', '[b', ':bprevious<CR>', { noremap = true })
+      vim.keymap.set('n', '[B', ':bfirst<CR>', { noremap = true })
       -- tab
       vim.keymap.set('n', ']t', ':tabnext<CR>')
       vim.keymap.set('n', ']T', ':tablast<CR>')
       vim.keymap.set('n', '[t', ':tabprevious<CR>')
       vim.keymap.set('n', '[T', ':tabfirst<CR>')
       -- quickfix
-      vim.keymap.set('n', ']q', ':cnext<CR>', {noremap = true})
-      vim.keymap.set('n', ']Q', ':clast<CR>', {noremap = true})
-      vim.keymap.set('n', '[q', ':cprevious<CR>', {noremap = true})
-      vim.keymap.set('n', '[Q', ':cfirst<CR>', {noremap = true})
+      vim.keymap.set('n', ']q', ':cnext<CR>', { noremap = true })
+      vim.keymap.set('n', ']Q', ':clast<CR>', { noremap = true })
+      vim.keymap.set('n', '[q', ':cprevious<CR>', { noremap = true })
+      vim.keymap.set('n', '[Q', ':cfirst<CR>', { noremap = true })
       -- 折返し時に表示業単位で移動する
-      vim.keymap.set('', 'j', 'gj', {noremap = true})
-      vim.keymap.set('', 'k', 'gk', {noremap = true})
-      vim.keymap.set('', 'gj', 'j', {noremap = true})
-      vim.keymap.set('', 'gk', 'k', {noremap = true})
+      vim.keymap.set('', 'j', 'gj', { noremap = true })
+      vim.keymap.set('', 'k', 'gk', { noremap = true })
+      vim.keymap.set('', 'gj', 'j', { noremap = true })
+      vim.keymap.set('', 'gk', 'k', { noremap = true })
 
       -- '%%'でアクティブなバッファのディレクトリを開いてくれる
-      vim.keymap.set('c', '%%', "getcmdtype() == ':' ? expand('%:h').'/' : '%%'", {expr = true, noremap = true})
+      vim.keymap.set('c', '%%', "getcmdtype() == ':' ? expand('%:h').'/' : '%%'", { expr = true, noremap = true })
 
-      vim.keymap.set('i', '<C-l>', '<C-G>U<Right>', {silent = true, noremap = true})
-      vim.keymap.set('i', '<Left>', '<C-G>U<Left>', {silent = true, noremap = true})
-      vim.keymap.set('i', '<Right>', '<C-G>U<Right>', {silent = true, noremap = true})
+      vim.keymap.set('i', '<C-l>', '<C-G>U<Right>', { silent = true, noremap = true })
+      vim.keymap.set('i', '<Left>', '<C-G>U<Left>', { silent = true, noremap = true })
+      vim.keymap.set('i', '<Right>', '<C-G>U<Right>', { silent = true, noremap = true })
 
-      vim.keymap.set('n', '<Esc><Esc>', ':nohlsearch<CR><Esc>', {noremap = true})
+      vim.keymap.set('n', '<Esc><Esc>', ':nohlsearch<CR><Esc>', { noremap = true })
 
-      vim.api.nvim_create_autocmd({'FileType'}, {
+      vim.api.nvim_create_autocmd({ 'FileType' }, {
         pattern = 'help',
         callback = function()
-          vim.keymap.set('n', 'q', '<C-w>c', {noremap = true, buffer = true})
+          vim.keymap.set('n', 'q', '<C-w>c', { noremap = true, buffer = true })
         end
       })
-      vim.api.nvim_create_autocmd({'FileType'}, {
+      vim.api.nvim_create_autocmd({ 'FileType' }, {
         pattern = 'qf',
         callback = function()
-          vim.keymap.set('n', 'q', ':<C-u>cclose<CR>', {noremap = true, buffer = true})
+          vim.keymap.set('n', 'q', ':<C-u>cclose<CR>', { noremap = true, buffer = true })
         end
       })
 
-      vim.keymap.set('n', '[special_lang]', '<Nop>', {noremap = true})
-      vim.keymap.set('n', '<leader>h', '[special_lang]', {silent = true, remap=true})
+      vim.keymap.set('n', '[special_lang]', '<Nop>', { noremap = true })
+      vim.keymap.set('n', '<leader>h', '[special_lang]', { silent = true, remap = true })
 
-      vim.api.nvim_create_autocmd({'FileType'}, {
+      vim.api.nvim_create_autocmd({ 'FileType' }, {
         pattern = 'go',
         callback = function()
-          vim.keymap.set('n', '[special_lang]t', require("kitagry.go").toggle_test_file, {buffer = true, remap=true})
+          vim.keymap.set('n', '[special_lang]t', require("kitagry.go").toggle_test_file, { buffer = true, remap = true })
         end
       })
     end,
   },
-  {"sainnhe/sonokai",
+  { "sainnhe/sonokai",
     cond = vim.fn.exists('g:vscode') == 0,
     config = function()
       vim.g.sonokai_style = 'shusia'
       cmd.colorscheme('sonokai')
     end,
   },
-  {"hrsh7th/nvim-cmp",
+  { "hrsh7th/nvim-cmp",
     dependencies = {
       "hrsh7th/cmp-buffer",
       "hrsh7th/cmp-vsnip",
@@ -308,63 +308,70 @@ require("kitagry.lazy").setup({
           }
         })
       end
-      vim.keymap.set('i', '<C-x><C-o>', require('cmp').complete, {remap = false})
+      vim.keymap.set('i', '<C-x><C-o>', require('cmp').complete, { remap = false })
     end,
   },
-  {"hrsh7th/vim-vsnip",
+  { "hrsh7th/vim-vsnip",
     dependencies = {
       "hrsh7th/vim-vsnip-integ",
       "kitagry/vs-snippets",
     },
     cond = vim.fn.exists('g:vscode') == 0,
-    init = function ()
-      vim.keymap.set({'i', 's'}, '<C-j>', function()
-        return vim.fn['vsnip#jumpable'](1) and '<Plug>(vsnip-jump-next)' or '<C-j>'
+    init = function()
+      vim.keymap.set({ 'i', 's' }, '<Tab>', function()
+        return vim.fn['vsnip#jumpable'](1) == 1 and '<Plug>(vsnip-jump-next)' or '<Tab>'
       end, { expr = true })
-      vim.keymap.set({'i', 's'}, '<C-k>', function()
-        return vim.fn['vsnip#jumpable'](-1) and '<Plug>(vsnip-jump-prev)' or '<C-k>'
+      vim.keymap.set({ 'i', 's' }, '<S-Tab>', function()
+        return vim.fn['vsnip#jumpable'](-1) == 1 and '<Plug>(vsnip-jump-prev)' or '<S-Tab>'
       end, { expr = true })
     end,
   },
-  {"williamboman/mason.nvim",
+  { "williamboman/mason.nvim",
     dependencies = {
       "williamboman/mason-lspconfig.nvim",
       "neovim/nvim-lspconfig",
     },
-    init = function ()
-      vim.keymap.set('n', '[vim-lsp]', '<Nop>', {noremap = true})
-      vim.keymap.set('n', '<leader>l', '[vim-lsp]', {silent = true, remap=true})
+    init = function()
+      vim.keymap.set('n', '[vim-lsp]', '<Nop>', { noremap = true })
+      vim.keymap.set('n', '<leader>l', '[vim-lsp]', { silent = true, remap = true })
       if vim.fn.exists('g:vscode') == 1 then
-        vim.keymap.set('n', 'c-]', "<cmd>call VSCodeNotify('editor.action.revealDefinition')<CR>", {silent = true, expr = true})
-        vim.keymap.set('n', '[e', "<cmd>call VSCodeNotify('editor.action.marker.prev')<CR>", {silent = true, expr = true})
-        vim.keymap.set('n', ']e', "<cmd>call VSCodeNotify('editor.action.marker.next')<CR>", {silent = true, expr = true})
+        vim.keymap.set('n', 'c-]', "<cmd>call VSCodeNotify('editor.action.revealDefinition')<CR>",
+          { silent = true, expr = true })
+        vim.keymap.set('n', '[e', "<cmd>call VSCodeNotify('editor.action.marker.prev')<CR>", { silent = true, expr = true })
+        vim.keymap.set('n', ']e', "<cmd>call VSCodeNotify('editor.action.marker.next')<CR>", { silent = true, expr = true })
 
-        vim.keymap.set('n', '[vim-lsp]h', "<cmd>call VSCodeNotify('editor.action.revealDefinition')<CR>", {silent = true, expr = true})
-        vim.keymap.set('n', '[vim-lsp]r', "<cmd>call VSCodeNotify('editor.action.rename')<CR>", {silent = true, expr = true})
-        vim.keymap.set('n', '[vim-lsp]f', "<cmd>call VSCodeNotify('editor.action.formatDocument')<CR>", {silent = true, expr = true})
-        vim.keymap.set('n', '[vim-lsp]t', "<cmd>call VSCodeNotify('editor.action.goToTypeDefinition')<CR>", {silent = true, expr = true})
-        vim.keymap.set('n', '[vim-lsp]e', "<cmd>call VSCodeNotify('references-view.findReferences')<CR>", {silent = true, expr = true})
-        vim.keymap.set('n', '[vim-lsp]a', "<cmd>call VSCodeNotify('editor.action.sourceAction')<CR>", {silent = true, expr = true})
+        vim.keymap.set('n', '[vim-lsp]h', "<cmd>call VSCodeNotify('editor.action.revealDefinition')<CR>",
+          { silent = true, expr = true })
+        vim.keymap.set('n', '[vim-lsp]r', "<cmd>call VSCodeNotify('editor.action.rename')<CR>",
+          { silent = true, expr = true })
+        vim.keymap.set('n', '[vim-lsp]f', "<cmd>call VSCodeNotify('editor.action.formatDocument')<CR>",
+          { silent = true, expr = true })
+        vim.keymap.set('n', '[vim-lsp]t', "<cmd>call VSCodeNotify('editor.action.goToTypeDefinition')<CR>",
+          { silent = true, expr = true })
+        vim.keymap.set('n', '[vim-lsp]e', "<cmd>call VSCodeNotify('references-view.findReferences')<CR>",
+          { silent = true, expr = true })
+        vim.keymap.set('n', '[vim-lsp]a', "<cmd>call VSCodeNotify('editor.action.sourceAction')<CR>",
+          { silent = true, expr = true })
       else
 
-        vim.keymap.set('n', '<c-]>', vim.lsp.buf.definition, {silent = true})
-        vim.keymap.set('n', '<c-k>', vim.lsp.buf.signature_help, {silent = true})
-        vim.keymap.set('n', '[e', vim.diagnostic.goto_prev, {silent = true,})
-        vim.keymap.set('n', ']e', vim.diagnostic.goto_next, {silent = true})
+        vim.keymap.set('n', '<c-]>', vim.lsp.buf.definition, { silent = true })
+        vim.keymap.set('n', '<c-k>', vim.lsp.buf.signature_help, { silent = true })
+        vim.keymap.set('n', '[e', vim.diagnostic.goto_prev, { silent = true, })
+        vim.keymap.set('n', ']e', vim.diagnostic.goto_next, { silent = true })
 
-        vim.keymap.set('n', '[vim-lsp]h', vim.lsp.buf.hover, {remap = true})
-        vim.keymap.set('n', '[vim-lsp]r', vim.lsp.buf.rename, {remap = true})
+        vim.keymap.set('n', '[vim-lsp]h', vim.lsp.buf.hover, { remap = true })
+        vim.keymap.set('n', '[vim-lsp]r', vim.lsp.buf.rename, { remap = true })
         vim.keymap.set('n', '[vim-lsp]f', function()
-          vim.lsp.buf.format({timeout_ms=5000})
-        end, {remap = true, silent = true})
+          vim.lsp.buf.format({ timeout_ms = 5000 })
+        end, { remap = true, silent = true })
         vim.keymap.set('n', '[vim-lsp]e', function()
           require('telescope.builtin').lsp_references({ include_declaration = true })
-        end, {remap = true})
-        vim.keymap.set('n', '[vim-lsp]t', vim.lsp.buf.type_definition, {remap = true})
-        vim.keymap.set('n', '[vim-lsp]a', vim.lsp.buf.code_action, {remap = true})
+        end, { remap = true })
+        vim.keymap.set('n', '[vim-lsp]t', vim.lsp.buf.type_definition, { remap = true })
+        vim.keymap.set('n', '[vim-lsp]a', vim.lsp.buf.code_action, { remap = true })
         vim.keymap.set('n', '[vim-lsp]i', function()
           require('telescope.builtin').lsp_implementations()
-        end, {remap = true})
+        end, { remap = true })
         vim.keymap.set('n', '[vim-lsp]q', function()
           print("restarting lsp...")
           vim.lsp.stop_client(vim.lsp.get_active_clients())
@@ -372,8 +379,8 @@ require("kitagry.lazy").setup({
           timer:start(100, 0, vim.schedule_wrap(function()
             vim.cmd('edit')
           end))
-        end, {remap = true})
-        vim.keymap.set('n', '[vim-lsp]s', ':<C-u>LspInfo<CR>', {remap = true})
+        end, { remap = true })
+        vim.keymap.set('n', '[vim-lsp]s', ':<C-u>LspInfo<CR>', { remap = true })
       end
     end,
     config = function()
@@ -398,37 +405,37 @@ require("kitagry.lazy").setup({
         vim.fn.sign_define("LspDiagnosticsInformationSign", { text = 'I>', texthl = 'LspDiagnosticsInformation' })
         vim.fn.sign_define("LspDiagnosticsHintSign", { text = 'H>', texthl = 'LspDiagnosticsHint' })
 
-        local function lsp_format ()
+        local function lsp_format()
           require("kitagry.lsp").code_action_sync("source.organizeImports")
           local timer = vim.loop.new_timer()
           timer:start(100, 0, vim.schedule_wrap(function()
-            vim.lsp.buf.format({async=false})
+            vim.lsp.buf.format({ async = false })
           end))
         end
 
         vim.api.nvim_create_augroup('lsp_formatting', {})
-        vim.api.nvim_create_autocmd({'BufWritePre'}, {
+        vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
           group = 'lsp_formatting',
-          pattern = {'*.go', '*.rs'},
+          pattern = { '*.go', '*.rs' },
           callback = lsp_format
         })
-        vim.api.nvim_create_autocmd({'BufWritePre'}, {
+        vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
           group = 'lsp_formatting',
-          pattern = {'*.tsx', '*.ts', '*.jsx', '*.js', '*.py', '*.rego'},
+          pattern = { '*.tsx', '*.ts', '*.jsx', '*.js', '*.py', '*.rego' },
           callback = function()
-            vim.lsp.buf.format({async=false, timeout_ms=3000})
+            vim.lsp.buf.format({ async = false, timeout_ms = 3000 })
           end
         })
       end
     end,
   },
-  {"jose-elias-alvarez/null-ls.nvim",
-    config = function ()
+  { "jose-elias-alvarez/null-ls.nvim",
+    config = function()
       local null_ls = require("null-ls")
       local util = require("kitagry.util")
-      local has_poetry = util.search_files({'poetry.lock'})
+      local has_poetry = util.search_files({ 'poetry.lock' })
 
-      local function with_poetry (builtin, command)
+      local function with_poetry(builtin, command)
         if has_poetry == nil then
           return builtin
         end
@@ -438,14 +445,14 @@ require("kitagry.lazy").setup({
         })
       end
 
-      local function with_pflake8 (builtin)
+      local function with_pflake8(builtin)
         local command = 'flake8'
-        local path = util.search_files({'pyproject.toml'})
+        local path = util.search_files({ 'pyproject.toml' })
         if path == nil then
           return with_poetry(builtin, command)
         end
 
-        local content = util.read_file(path..'/pyproject.toml')
+        local content = util.read_file(path .. '/pyproject.toml')
         if content == nil then
           return with_poetry(builtin, command)
         end
@@ -470,18 +477,18 @@ require("kitagry.lazy").setup({
       }
 
       local function textlint_path()
-        local path = util.search_files({'./node_modules/textlint/bin/textlint.js'})
+        local path = util.search_files({ './node_modules/textlint/bin/textlint.js' })
         if path then
           return './node_modules/textlint/bin/textlint.js'
         end
         return 'textlint'
       end
 
-      local has_textlint = util.search_files({'package.json'})
+      local has_textlint = util.search_files({ 'package.json' })
       if has_textlint ~= nil then
         sources = vim.list_extend(sources, {
           null_ls.builtins.diagnostics.textlint.with({
-            cwd = function (params)
+            cwd = function(params)
               return params.root:match('.textlintrc')
             end,
             filetypes = { 'markdown' },
@@ -495,28 +502,28 @@ require("kitagry.lazy").setup({
       })
     end
   },
-  {"nvim-telescope/telescope.nvim",
+  { "nvim-telescope/telescope.nvim",
     dependencies = {
       "nvim-telescope/telescope-github.nvim",
       "nvim-telescope/telescope-ghq.nvim",
       "nvim-lua/popup.nvim",
       "nvim-lua/plenary.nvim",
     },
-    init = function ()
+    init = function()
       local builtin = require('telescope.builtin')
 
-      vim.keymap.set('n', '[telescope]', '<Nop>', {noremap = true})
-      vim.keymap.set('n', '<leader>f', '[telescope]', {silent = true, remap=true})
-      vim.keymap.set('n', '[telescope]r', builtin.resume, {remap = true})
-      vim.keymap.set('n', '[telescope]f', builtin.find_files, {remap = true})
-      vim.keymap.set('n', '[telescope]g', builtin.live_grep, {remap = true})
-      vim.keymap.set('n', '[telescope]]', builtin.grep_string, {remap = true})
-      vim.keymap.set('n', '[telescope]d', builtin.lsp_document_symbols, {remap = true})
-      vim.keymap.set('n', '[telescope]b', builtin.buffers, {remap = true})
-      vim.keymap.set('n', '[telescope]t', builtin.filetypes, {remap = true})
-      vim.keymap.set('n', '[telescope]h', builtin.help_tags, {remap = true})
-      vim.keymap.set('n', '[telescope]a', builtin.git_branches, {remap = true})
-      vim.keymap.set('n', '[telescope]c', builtin.command_history, {remap = true})
+      vim.keymap.set('n', '[telescope]', '<Nop>', { noremap = true })
+      vim.keymap.set('n', '<leader>f', '[telescope]', { silent = true, remap = true })
+      vim.keymap.set('n', '[telescope]r', builtin.resume, { remap = true })
+      vim.keymap.set('n', '[telescope]f', builtin.find_files, { remap = true })
+      vim.keymap.set('n', '[telescope]g', builtin.live_grep, { remap = true })
+      vim.keymap.set('n', '[telescope]]', builtin.grep_string, { remap = true })
+      vim.keymap.set('n', '[telescope]d', builtin.lsp_document_symbols, { remap = true })
+      vim.keymap.set('n', '[telescope]b', builtin.buffers, { remap = true })
+      vim.keymap.set('n', '[telescope]t', builtin.filetypes, { remap = true })
+      vim.keymap.set('n', '[telescope]h', builtin.help_tags, { remap = true })
+      vim.keymap.set('n', '[telescope]a', builtin.git_branches, { remap = true })
+      vim.keymap.set('n', '[telescope]c', builtin.command_history, { remap = true })
     end,
     cond = vim.fn.exists('g:vscode') == 0,
     event = { "BufNewFile", "BufRead" },
@@ -524,7 +531,7 @@ require("kitagry.lazy").setup({
       local telescope = require('telescope')
       local actions = require('telescope.actions')
 
-      telescope.setup({defaults=require('telescope.themes').get_ivy({
+      telescope.setup({ defaults = require('telescope.themes').get_ivy({
         i = {
           ["<C-w>"] = actions.send_selected_to_qflist,
           ["<C-q>"] = actions.send_to_qflist,
@@ -536,42 +543,42 @@ require("kitagry.lazy").setup({
         cache_picker = {
           num_pickers = -1,
         },
-      })})
+      }) })
     end
   },
-  {"nvim-treesitter/nvim-treesitter",
+  { "nvim-treesitter/nvim-treesitter",
     config = function()
       require("kitagry.treesitter").setupTreesitter()
     end
   },
-  {"machakann/vim-sandwich"},
-  {"numToStr/Comment.nvim",
+  { "machakann/vim-sandwich" },
+  { "numToStr/Comment.nvim",
     config = function()
       require('Comment').setup()
     end
   },
-  {"tyru/open-browser.vim",
+  { "tyru/open-browser.vim",
     config = function()
-      vim.keymap.set({'n', 'v'}, 'gx', '<Plug>(openbrowser-open)', {})
+      vim.keymap.set({ 'n', 'v' }, 'gx', '<Plug>(openbrowser-open)', {})
     end
   },
-  {"kana/vim-repeat"},
-  {"kana/vim-textobj-user",
+  { "kana/vim-repeat" },
+  { "kana/vim-textobj-user",
     dependencies = {
       "sgur/vim-textobj-parameter",
       "Julian/vim-textobj-variable-segment",
     },
   },
-  {"lambdalisue/gina.vim",
+  { "lambdalisue/gina.vim",
     dependencies = {
       "kitagry/gina-openpr.vim",
     },
-    init = function ()
+    init = function()
       local git_push = function()
         local current_branch = vim.fn["gina#component#repo#branch"]()
         if current_branch == 'master' or current_branch == 'main' then
           local prompt = string.format('this wille push to %s? [y/N]', current_branch)
-          vim.ui.input({ prompt = prompt }, function (input)
+          vim.ui.input({ prompt = prompt }, function(input)
             if string.lower(input) == 'y' then
               vim.cmd(string.format('Gina! push -u origin %s', current_branch))
             end
@@ -581,17 +588,17 @@ require("kitagry.lazy").setup({
         end
       end
 
-      vim.keymap.set({'n', 'v'}, '[gina]', '<Nop>', {noremap = true})
-      vim.keymap.set({'n', 'v'}, '<leader>g', '[gina]', {silent = true, remap=true})
-      vim.keymap.set('n', '[gina]b', ':<C-u>Gina blame<CR>', {remap=true})
-      vim.keymap.set('n', '[gina]s', ':<C-u>Gina status --group=gina<CR>', {remap=true})
-      vim.keymap.set('n', '[gina]c', ':<C-u>Gina commit<CR>', {remap=true})
-      vim.keymap.set('n', '[gina]d', ':<C-u>Gina diff --group=gina<CR>', {remap=true})
-      vim.keymap.set('n', '[gina]p', git_push, {remap=true})
-      vim.keymap.set('n', '[gina]x', ':<C-u>Gina browse :<CR>', {remap=true})
-      vim.keymap.set('n', '[gina]y', ':<C-u>Gina browse --yank :<CR>', {remap=true})
-      vim.keymap.set('v', '[gina]x', ':<C-u>Gina browse --exact :<CR>', {remap=true})
-      vim.keymap.set('v', '[gina]y', ':<C-u>Gina browse --exact --yank :<CR>', {remap=true})
+      vim.keymap.set({ 'n', 'v' }, '[gina]', '<Nop>', { noremap = true })
+      vim.keymap.set({ 'n', 'v' }, '<leader>g', '[gina]', { silent = true, remap = true })
+      vim.keymap.set('n', '[gina]b', ':Gina blame<CR>', { remap = true })
+      vim.keymap.set('n', '[gina]s', ':Gina status --group=gina<CR>', { remap = true })
+      vim.keymap.set('n', '[gina]c', ':Gina commit<CR>', { remap = true })
+      vim.keymap.set('n', '[gina]d', ':Gina diff --group=gina<CR>', { remap = true })
+      vim.keymap.set('n', '[gina]p', git_push, { remap = true })
+      vim.keymap.set('n', '[gina]x', ':Gina browse :<CR>', { remap = true })
+      vim.keymap.set('n', '[gina]y', ':Gina browse --yank :<CR>', { remap = true })
+      vim.keymap.set('v', '[gina]x', ':Gina browse --exact :<CR>', { remap = true })
+      vim.keymap.set('v', '[gina]y', ':Gina browse --exact --yank :<CR>', { remap = true })
     end,
     config = function()
       vim.o.diffopt = 'vertical'
@@ -609,55 +616,55 @@ require("kitagry.lazy").setup({
       vim.api.nvim_create_user_command('GitCreatePR', create_pr, {})
     end
   },
-  {"lambdalisue/fern.vim",
+  { "lambdalisue/fern.vim",
     dependencies = {
       "lambdalisue/nerdfont.vim",
       "lambdalisue/fern-hijack.vim",
       "lambdalisue/fern-renderer-nerdfont.vim",
     },
     -- cmd = {'Fern'}, for fern-hijack
-    init = function ()
-      vim.keymap.set('n', '[fern]', '<Nop>', {noremap = true})
-      vim.keymap.set('n', '<leader>d', '[fern]', {silent = true, remap=true})
-      vim.keymap.set('n', '[fern]a', ':<C-u>Fern . -drawer -toggle -reveal=%<CR>', {remap=true, silent=true})
-      vim.keymap.set('n', '[fern]f', ':<C-u>Fern %:h -opener=edit<CR>', {remap=true, silent=true})
-      vim.keymap.set('n', '[fern]v', ':<C-u>Fern . -opener=vsplit<CR>', {remap=true, silent=true})
-      vim.keymap.set('n', '[fern]h', ':<C-u>Fern %:h -opener=vsplit<CR>', {remap=true, silent=true})
-      vim.keymap.set('n', '[fern]m', ':<C-u>Fern ~/drive -drawer -toggle -reveal=%<CR>', {remap=true, silent=true})
+    init = function()
+      vim.keymap.set('n', '[fern]', '<Nop>', { noremap = true })
+      vim.keymap.set('n', '<leader>d', '[fern]', { silent = true, remap = true })
+      vim.keymap.set('n', '[fern]a', ':<C-u>Fern . -drawer -toggle -reveal=%<CR>', { remap = true, silent = true })
+      vim.keymap.set('n', '[fern]f', ':<C-u>Fern %:h -opener=edit<CR>', { remap = true, silent = true })
+      vim.keymap.set('n', '[fern]v', ':<C-u>Fern . -opener=vsplit<CR>', { remap = true, silent = true })
+      vim.keymap.set('n', '[fern]h', ':<C-u>Fern %:h -opener=vsplit<CR>', { remap = true, silent = true })
+      vim.keymap.set('n', '[fern]m', ':<C-u>Fern ~/drive -drawer -toggle -reveal=%<CR>', { remap = true, silent = true })
     end,
     config = function()
       vim.g['fern#renderer'] = 'nerdfont'
 
       local init_fern = function()
-        vim.keymap.set('n', 'R', '<Plug>(fern-action-remove)', {remap=true, buffer=true})
-        vim.keymap.set('n', 'r', '<Plug>(fern-action-rename)', {remap=true, buffer=true})
+        vim.keymap.set('n', 'R', '<Plug>(fern-action-remove)', { remap = true, buffer = true })
+        vim.keymap.set('n', 'r', '<Plug>(fern-action-rename)', { remap = true, buffer = true })
       end
 
       vim.api.nvim_create_augroup('my-fern', {})
-      vim.api.nvim_create_autocmd({'FileType'}, {
+      vim.api.nvim_create_autocmd({ 'FileType' }, {
         group = 'my-fern',
-        pattern = {'fern'},
+        pattern = { 'fern' },
         callback = function()
           init_fern()
         end
       })
     end
   },
-  {"lambdalisue/reword.vim"},
-  {"mattn/vim-goaddtags", ft = "go"},
-  {"mattn/vim-goimpl", ft = "go"},
-  {"haya14busa/vim-operator-flashy",
+  { "lambdalisue/reword.vim" },
+  { "mattn/vim-goaddtags", ft = "go" },
+  { "mattn/vim-goimpl", ft = "go" },
+  { "haya14busa/vim-operator-flashy",
     dependencies = {
       "kana/vim-operator-user",
     },
     config = function()
-      vim.keymap.set("", "y", "<Plug>(operator-flashy)", {remap=true})
-      vim.keymap.set("n", "Y", "<Plug>(operator-flashy)$", {remap=true})
+      vim.keymap.set("", "y", "<Plug>(operator-flashy)", { remap = true })
+      vim.keymap.set("n", "Y", "<Plug>(operator-flashy)$", { remap = true })
       vim.cmd([[hi Flashy term=bold ctermbg=0 guibg=#AA354A]])
       vim.g["operator#flashy#flash_time"] = 200
     end
   },
-  {"windwp/nvim-autopairs",
+  { "windwp/nvim-autopairs",
     event = { "InsertEnter" },
     config = function()
       require('nvim-autopairs').setup({
@@ -665,39 +672,39 @@ require("kitagry.lazy").setup({
       })
     end
   },
-  {"monkoose/matchparen.nvim",
+  { "monkoose/matchparen.nvim",
     config = function()
       require("matchparen").setup()
     end
   },
-  {"lambdalisue/pastefix.vim"},
-  {"norcalli/nvim-colorizer.lua",
+  { "lambdalisue/pastefix.vim" },
+  { "norcalli/nvim-colorizer.lua",
     event = { "BufNewFile", "BufRead" },
     config = function()
       require("colorizer").setup()
     end
   },
-  {"scalameta/nvim-metals",
+  { "scalameta/nvim-metals",
     config = function()
       vim.api.nvim_create_augroup('NvimMetals', {})
-      vim.api.nvim_create_autocmd({"FileType"}, {
+      vim.api.nvim_create_autocmd({ "FileType" }, {
         group = 'NvimMetals',
-        pattern = {'scala'},
+        pattern = { 'scala' },
         callback = function()
           require('metals').initialize_or_attach({})
         end
       })
     end
   },
-  {"stevearc/dressing.nvim",
-    config = function ()
+  { "stevearc/dressing.nvim",
+    config = function()
       require("dressing").setup()
     end
   },
-  {"stevearc/overseer.nvim",
+  { "stevearc/overseer.nvim",
     config = function()
       require("overseer").setup({
-        templates = { "go", "python" },
+        templates = { "go", "python", "make", "javascript" },
         component_aliases = {
           default = {
             { "on_output_quickfix", open_on_match = true },
@@ -718,61 +725,62 @@ require("kitagry.lazy").setup({
         end
       end, {})
 
-      vim.keymap.set('n', '[overseer]', '<Nop>', {noremap = true})
-      vim.keymap.set('n', '<leader>q', '[overseer]', {silent = true, remap=true})
-      vim.keymap.set('n', '[overseer]q', ':<C-u>OverseerRun<CR>', {remap=true, silent=true})
-      vim.keymap.set('n', '[overseer]r', ':<C-u>OverseerRestartLast<CR>', {remap=true, silent=true})
+      vim.keymap.set('n', '[overseer]', '<Nop>', { noremap = true })
+      vim.keymap.set('n', '<leader>q', '[overseer]', { silent = true, remap = true })
+      vim.keymap.set('n', '[overseer]q', ':<C-u>OverseerRun<CR>', { remap = true, silent = true })
+      vim.keymap.set('n', '[overseer]r', ':<C-u>OverseerRestartLast<CR>', { remap = true, silent = true })
     end
   },
-  {"nvim-lualine/lualine.nvim",
-    config=function ()
+  { "nvim-lualine/lualine.nvim",
+    config = function()
       require("lualine").setup({
         icons_enabled = false,
         sections = {
-          lualine_a = {'mode'},
-          lualine_b = {'branch', 'diff', {'diagnostics', symbols={error = 'E:', warn = 'W:', info = 'I:', hint = 'H:'}}},
-          lualine_c = {'filename'},
-          lualine_x = {'encoding', 'fileformat', 'filetype'},
-          lualine_y = {'progress'},
-          lualine_z = {'location'}
+          lualine_a = { 'mode' },
+          lualine_b = { 'branch', 'diff', { 'diagnostics', symbols = { error = 'E:', warn = 'W:', info = 'I:',
+            hint = 'H:' } } },
+          lualine_c = { 'filename' },
+          lualine_x = { 'encoding', 'fileformat', 'filetype' },
+          lualine_y = { 'progress' },
+          lualine_z = { 'location' }
         },
         tabline = {
-          lualine_a = {'buffers'},
+          lualine_a = { 'buffers' },
           lualine_b = {},
           lualine_c = {},
           lualine_x = {},
           lualine_y = {},
-          lualine_z = {'tabs'}
+          lualine_z = { 'tabs' }
         }
       })
     end
   },
-  {"rcarriga/nvim-notify",
-    config=function ()
+  { "rcarriga/nvim-notify",
+    config = function()
       vim.notify = require("notify")
     end
   },
-  {"akinsho/toggleterm.nvim",
-    cmd = {'ToggleTerm'},
-    init=function ()
+  { "akinsho/toggleterm.nvim",
+    cmd = { 'ToggleTerm' },
+    init = function()
       vim.keymap.set('n', '<C-j>', '<cmd>exe v:count1 . "ToggleTerm direction=horizontal"<CR>', {})
       vim.keymap.set('n', '<leader>t', '<cmd>exe v:count1 . "ToggleTerm direction=float"<CR>', {})
     end,
-    config=function ()
+    config = function()
       require("toggleterm").setup()
 
       vim.api.nvim_create_augroup('toggleterm', {})
-      vim.api.nvim_create_autocmd({'TermEnter'}, {
-        pattern = {'term://*toggleterm#*'},
-        callback = function ()
+      vim.api.nvim_create_autocmd({ 'TermEnter' }, {
+        pattern = { 'term://*toggleterm#*' },
+        callback = function()
           vim.keymap.set('t', '<C-j>', '<cmd>exe v:count1 . "ToggleTerm"<CR>', {})
         end
       })
     end
-  }
+  },
 })
 
-local local_path = vim.env.HOME .. '/.config/nvim/init.local.vim'
+local local_path = vim.env.HOME .. '/.config/nvim/init.local.lua'
 if require("kitagry.util").exists(local_path) then
-  vim.cmd('source '..local_path)
+  vim.cmd('source ' .. local_path)
 end
