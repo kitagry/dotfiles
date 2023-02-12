@@ -375,10 +375,8 @@ require("kitagry.lazy").setup({
         vim.keymap.set('n', '[vim-lsp]q', function()
           print("restarting lsp...")
           vim.lsp.stop_client(vim.lsp.get_active_clients())
-          local timer = vim.loop.new_timer()
-          timer:start(100, 0, vim.schedule_wrap(function()
-            vim.cmd('edit')
-          end))
+          vim.cmd("sleep 100ms")
+          vim.cmd('edit')
         end, { remap = true })
         vim.keymap.set('n', '[vim-lsp]s', ':<C-u>LspInfo<CR>', { remap = true })
       end
@@ -407,10 +405,8 @@ require("kitagry.lazy").setup({
 
         local function lsp_format()
           require("kitagry.lsp").code_action_sync("source.organizeImports")
-          local timer = vim.loop.new_timer()
-          timer:start(100, 0, vim.schedule_wrap(function()
-            vim.lsp.buf.format({ async = false })
-          end))
+          vim.cmd("sleep 100ms")
+          vim.lsp.buf.format({ async = false })
         end
 
         vim.api.nvim_create_augroup('lsp_formatting', {})
