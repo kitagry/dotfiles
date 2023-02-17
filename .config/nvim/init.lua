@@ -411,7 +411,6 @@ require("kitagry.lazy").setup({
 
       local function lsp_format()
         require("kitagry.lsp").code_action_sync("source.organizeImports")
-        vim.cmd("sleep 100ms")
         vim.lsp.buf.format({ async = false })
       end
 
