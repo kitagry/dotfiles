@@ -360,6 +360,9 @@ require("kitagry.lazy").setup({
         vim.keymap.set('n', '[e', vim.diagnostic.goto_prev, { silent = true, })
         vim.keymap.set('n', ']e', vim.diagnostic.goto_next, { silent = true })
 
+        vim.keymap.set('n', '[vim-lsp]v', function()
+          require("telescope.builtin").lsp_definitions({jump_type='vsplit'})
+        end)
         vim.keymap.set('n', '[vim-lsp]h', vim.lsp.buf.hover, { remap = true })
         vim.keymap.set('n', '[vim-lsp]r', vim.lsp.buf.rename, { remap = true })
         vim.keymap.set('n', '[vim-lsp]f', function()
@@ -546,7 +549,20 @@ require("kitagry.lazy").setup({
   },
   { "nvim-treesitter/nvim-treesitter",
     config = function()
-      require("kitagry.treesitter").setupTreesitter()
+      require('nvim-treesitter.configs').setup {
+        ensure_installed = 'all',
+        ignore_install = { 'haskell' },
+        highlight = {
+          enable = true,
+          additional_vim_regex_highlighting = { 'org' },
+        },
+        playground = {
+          enable = true,
+          disable = {},
+          updatetime = 25, -- Debounced time for highlighting nodes in the playground from source code
+          persist_queries = false -- Whether the query persists across vim sessions
+        },
+      }
     end
   },
   { "machakann/vim-sandwich" },
@@ -783,6 +799,7 @@ require("kitagry.lazy").setup({
       })
     end
   },
+  { "oky-123/marksign.vim" },
 })
 
 local local_path = vim.env.HOME .. '/.config/nvim/init.local.lua'
