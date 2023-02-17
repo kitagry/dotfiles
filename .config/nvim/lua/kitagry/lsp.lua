@@ -215,9 +215,8 @@ function M.code_action_sync(action)
   context['diagnostics'] = {}
   local params = vim.lsp.util.make_range_params()
   params.context = context
-  vim.lsp.buf_request_all(0, 'textDocument/codeAction', params, function(results)
-    code_action_sync_handler(results)
-  end)
+  local results = vim.lsp.buf_request_sync(0, 'textDocument/codeAction', params)
+  code_action_sync_handler(results)
 end
 
 return M
