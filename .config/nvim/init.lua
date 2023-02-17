@@ -737,7 +737,7 @@ require("kitagry.lazy").setup({
           lualine_a = { 'mode' },
           lualine_b = { 'branch', 'diff', { 'diagnostics', symbols = { error = 'E:', warn = 'W:', info = 'I:',
             hint = 'H:' } } },
-          lualine_c = { 'filename' },
+          lualine_c = { {'filename', path = 1} },
           lualine_x = { 'encoding', 'fileformat', 'filetype' },
           lualine_y = { 'progress' },
           lualine_z = { 'location' }
@@ -773,6 +773,13 @@ require("kitagry.lazy").setup({
         callback = function()
           vim.keymap.set('t', '<C-j>', '<cmd>exe v:count1 . "ToggleTerm"<CR>', {})
         end
+      })
+    end
+  },
+  { "lewis6991/gitsigns.nvim",
+    config = function ()
+      require('gitsigns').setup({
+        current_line_blame = true,
       })
     end
   },
