@@ -330,6 +330,7 @@ require("kitagry.lazy").setup({
     dependencies = {
       "williamboman/mason-lspconfig.nvim",
       "neovim/nvim-lspconfig",
+      "folke/neodev.nvim",
     },
     init = function()
       vim.keymap.set('n', '[vim-lsp]', '<Nop>', { noremap = true })
@@ -382,47 +383,48 @@ require("kitagry.lazy").setup({
       end
     end,
     config = function()
-      if vim.fn.exists('g:vscode') == 0 then
-        require("kitagry.lsp").setupLSP()
-
-        vim.api.nvim_create_autocmd("LspAttach", {
-          callback = function(args)
-            local bufnr = args.buf
-            local client = vim.lsp.get_client_by_id(args.data.client_id)
-            if client.server_capabilities.completionProvider then
-              vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
-            end
-            if client.server_capabilities.definitionProvider then
-              vim.bo[bufnr].tagfunc = "v:lua.vim.lsp.tagfunc"
-            end
-          end,
-        })
-
-        vim.fn.sign_define("LspDiagnosticsErrorSign", { text = 'E>', texthl = 'Error' })
-        vim.fn.sign_define("LspDiagnosticsWarningSign", { text = 'W>', texthl = 'WarningMsg' })
-        vim.fn.sign_define("LspDiagnosticsInformationSign", { text = 'I>', texthl = 'LspDiagnosticsInformation' })
-        vim.fn.sign_define("LspDiagnosticsHintSign", { text = 'H>', texthl = 'LspDiagnosticsHint' })
-
-        local function lsp_format()
-          require("kitagry.lsp").code_action_sync("source.organizeImports")
-          vim.cmd("sleep 100ms")
-          vim.lsp.buf.format({ async = false })
-        end
-
-        vim.api.nvim_create_augroup('lsp_formatting', {})
-        vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
-          group = 'lsp_formatting',
-          pattern = { '*.go', '*.rs' },
-          callback = lsp_format
-        })
-        vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
-          group = 'lsp_formatting',
-          pattern = { '*.tsx', '*.ts', '*.jsx', '*.js', '*.py', '*.rego' },
-          callback = function()
-            vim.lsp.buf.format({ async = false, timeout_ms = 3000 })
-          end
-        })
+      if vim.fn.exists('g:vscode') == 1 then
+        return
       end
+      require("kitagry.lsp").setupLSP()
+
+      vim.api.nvim_create_autocmd("LspAttach", {
+        callback = function(args)
+          local bufnr = args.buf
+          local client = vim.lsp.get_client_by_id(args.data.client_id)
+          if client.server_capabilities.completionProvider then
+            vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
+          end
+          if client.server_capabilities.definitionProvider then
+            vim.bo[bufnr].tagfunc = "v:lua.vim.lsp.tagfunc"
+          end
+        end,
+      })
+
+      vim.fn.sign_define("LspDiagnosticsErrorSign", { text = 'E>', texthl = 'Error' })
+      vim.fn.sign_define("LspDiagnosticsWarningSign", { text = 'W>', texthl = 'WarningMsg' })
+      vim.fn.sign_define("LspDiagnosticsInformationSign", { text = 'I>', texthl = 'LspDiagnosticsInformation' })
+      vim.fn.sign_define("LspDiagnosticsHintSign", { text = 'H>', texthl = 'LspDiagnosticsHint' })
+
+      local function lsp_format()
+        require("kitagry.lsp").code_action_sync("source.organizeImports")
+        vim.cmd("sleep 100ms")
+        vim.lsp.buf.format({ async = false })
+      end
+
+      vim.api.nvim_create_augroup('lsp_formatting', {})
+      vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
+        group = 'lsp_formatting',
+        pattern = { '*.go', '*.rs' },
+        callback = lsp_format
+      })
+      vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
+        group = 'lsp_formatting',
+        pattern = { '*.tsx', '*.ts', '*.jsx', '*.js', '*.py', '*.rego' },
+        callback = function()
+          vim.lsp.buf.format({ async = false, timeout_ms = 3000 })
+        end
+      })
     end,
   },
   { "jose-elias-alvarez/null-ls.nvim",
@@ -601,7 +603,7 @@ require("kitagry.lazy").setup({
       vim.g["gina#command#blame#formatter#format"] = "%su%=by %au %ma%in"
 
       local create_pr = function()
-        local remote_url = vim.fn.system([[!git remote get-url origin]])
+        local remote_url = vim.fn.system([[git remote get-url origin]])
         local ind = string.find(remote_url, 'github.com')
         if ind ~= nil then
           vim.fn.system([[gh pr create --web]])
