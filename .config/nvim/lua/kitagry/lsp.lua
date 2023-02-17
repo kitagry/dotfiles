@@ -3,8 +3,9 @@ local nvim_lsp = require'lspconfig'
 local configs = require'lspconfig.configs'
 local util = require 'lspconfig.util'
 local kitautil = require('kitagry.util')
-local mason = require 'mason'
-local mason_configs = require 'mason-lspconfig'
+local mason = require('mason')
+local mason_configs = require('mason-lspconfig')
+local neodev = require('neodev')
 
 local M = {}
 
@@ -35,6 +36,7 @@ function M.setupLSP()
   mason_configs.setup({
     ensure_installed = { "rust_analyzer", "gopls", "pyright" }
   })
+  neodev.setup({})
   mason_configs.setup_handlers {
     function(server)
       nvim_lsp[server].setup({
@@ -70,6 +72,17 @@ function M.setupLSP()
     end,
     ["pyright"] = function ()
       M.setupPythonLSP()
+    end,
+    ["lua_ls"] = function ()
+      nvim_lsp.lua_ls.setup({
+        settings = {
+          Lua = {
+            completion = {
+              callSnippet = "Replace"
+            }
+          }
+        }
+      })
     end
   }
 
