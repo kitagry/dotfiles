@@ -793,9 +793,12 @@ require("kitagry.lazy").setup({
   },
   { "lewis6991/gitsigns.nvim",
     config = function ()
-      require('gitsigns').setup({
+      local gitsigns = require('gitsigns')
+      gitsigns.setup({
         current_line_blame = true,
       })
+      vim.keymap.set('n', ']c', gitsigns.next_hunk)
+      vim.keymap.set('n', '[c', gitsigns.prev_hunk)
     end
   },
   { "oky-123/marksign.vim" },
