@@ -857,6 +857,9 @@ require("kitagry.lazy").setup({
        local x_max = 0
        local x_min = 100000
 
+       local x_magnification = 4
+       local y_magnification = 1
+
        for _, p in ipairs(points) do
          if p.y > y_max then
            y_max = p.y
@@ -876,13 +879,6 @@ require("kitagry.lazy").setup({
        local y_mid = (y_max + y_min) / 2
 
        for _, point in ipairs(points) do
-         if point.x <= 48 or point.x > 176 then
-           goto continue
-         end
-         if point.y > 31 then
-           goto continue
-         end
-
          if last_point == nil then
            last_point = point
            goto continue
@@ -895,8 +891,8 @@ require("kitagry.lazy").setup({
          end
 
          for _, p in ipairs(line) do
-           local y = math.floor(p.y - y_mid + 16) + 1
-           local x = math.floor((p.x - x_mid + 64) / 4) + 1
+           local y = math.floor(p.y - y_mid + 16 * y_magnification) + 1
+           local x = math.floor((p.x - x_mid + 16 * x_magnification) / x_magnification) + 1
            if x < 1 or x > 32 then
              goto conti
            end
