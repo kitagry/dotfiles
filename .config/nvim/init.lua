@@ -802,6 +802,137 @@ require("kitagry.lazy").setup({
     end
   },
   { "oky-123/marksign.vim" },
+  {"torch/distro",
+  config = function()
+    local torch = require('torch')
+    local nn = require('nn')
+    local filename = vim.fn.stdpath("data") .. "/kitagry/model.net"
+    local train_mnist = function()
+      local kitagrytorch = require("kitagry.torch")
+
+      local model = kitagrytorch.new()
+      local traindata, testdata = model.load()
+      for epoch = 1, 1 do
+        print('epoch ===> '..epoch)
+        model:train(traindata, 256)
+        model:test(testdata, 256)
+        torch.save(filename, model.model)
+      end
+    end
+    vim.api.nvim_create_user_command('TrainMnist', train_mnist, {})
+
+    local model = torch.load(filename)
+  end
+    },
+   {"kitagry/gesture.nvim",
+   branch='mnist',
+   config=function ()
+     vim.opt.mouse = 'a'
+
+     vim.keymap.set("n", "<LeftDrag>", [[<Cmd>lua require("gesture").draw()<CR>]], { silent = true })
+     vim.keymap.set("n", "<LeftRelease>", function()
+       local points = require("gesture").finish()
+       local torch = require('torch')
+       local filename = vim.fn.stdpath("data") .. "/kitagry/model.net"
+       local model = torch.load(filename)
+
+       local image = torch.FloatTensor(1, 1, 32, 32):zero()
+       local last_point = nil
+       if points == nil then
+         return
+       end
+
+       local function safety_neighborhood(x)
+         if x < 1 then
+           return 1
+         end
+         if x > 32 then
+           return 32
+         end
+         return x
+       end
+
+       local y_max = 0
+       local y_min = 100000
+       local x_max = 0
+       local x_min = 100000
+
+       local x_magnification = 4
+       local y_magnification = 1
+
+       for _, p in ipairs(points) do
+         if p.y > y_max then
+           y_max = p.y
+         end
+         if p.y < y_min then
+           y_min = p.y
+         end
+         if p.x > x_max then
+           x_max = p.x
+         end
+         if p.x < x_min then
+           x_min = p.x
+         end
+       end
+
+       local x_mid = (x_max + x_min) / 2
+       local y_mid = (y_max + y_min) / 2
+
+       for _, point in ipairs(points) do
+         if last_point == nil then
+           last_point = point
+           goto continue
+         end
+
+         local line = point:interpolate(last_point)
+         if line == nil then
+           last_point = point
+           goto continue
+         end
+
+         for _, p in ipairs(line) do
+           local y = math.floor(p.y - y_mid + 16 * y_magnification) + 1
+           local x = math.floor((p.x - x_mid + 16 * x_magnification) / x_magnification) + 1
+           if x < 1 or x > 32 then
+             goto conti
+           end
+           if y > 32 then
+             goto conti
+           end
+
+           image[{1, 1, y, x}] = math.min(254, image[{1, 1, y, x}] + 128)
+           for _, pp in ipairs({{y-1, x}, {y+1, x}, {y, x-1}, {y, x+1}}) do
+             local _y = safety_neighborhood(pp[1])
+             local _x = safety_neighborhood(pp[2])
+             image[{1, 1, _y, _x}] = math.min(254, image[{1, 1, _y, _x}] + 32)
+           end
+           ::conti::
+         end
+
+         last_point = point
+         ::continue::
+       end
+       print(image)
+       local output = model:forward(image)
+
+       local function argmax_1D(v)
+         local length = v:size(1)
+         assert(length > 0)
+
+         -- examine on average half the entries
+         local maxValue = torch.max(v)
+         for i = 1, v:size(1) do
+           if v[i] == maxValue then
+             return i
+           end
+         end
+       end
+
+       local current_line = vim.api.nvim_get_current_line()
+       vim.cmd("call setline('.', '" .. current_line .. tostring(argmax_1D(output)-1) .. "')")
+     end, { silent = true })
+   end
+   },
 })
 
 local local_path = vim.env.HOME .. '/.config/nvim/init.local.lua'
