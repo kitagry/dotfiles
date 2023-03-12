@@ -148,51 +148,51 @@ require("kitagry.lazy").setup({
     config = function()
       vim.g.mapleader = ' '
       -- ヤンクの設定
-      vim.keymap.set('n', 'Y', 'y$', { noremap = true })
+      vim.keymap.set('n', 'Y', 'y$')
       -- バッファ移動設定
-      vim.keymap.set('n', ']b', ':bnext<CR>', { noremap = true })
-      vim.keymap.set('n', ']B', ':blast<CR>', { noremap = true })
-      vim.keymap.set('n', '[b', ':bprevious<CR>', { noremap = true })
-      vim.keymap.set('n', '[B', ':bfirst<CR>', { noremap = true })
+      vim.keymap.set('n', ']b', ':bnext<CR>')
+      vim.keymap.set('n', ']B', ':blast<CR>')
+      vim.keymap.set('n', '[b', ':bprevious<CR>')
+      vim.keymap.set('n', '[B', ':bfirst<CR>')
       -- tab
       vim.keymap.set('n', ']t', ':tabnext<CR>')
       vim.keymap.set('n', ']T', ':tablast<CR>')
       vim.keymap.set('n', '[t', ':tabprevious<CR>')
       vim.keymap.set('n', '[T', ':tabfirst<CR>')
       -- quickfix
-      vim.keymap.set('n', ']q', ':cnext<CR>', { noremap = true })
-      vim.keymap.set('n', ']Q', ':clast<CR>', { noremap = true })
-      vim.keymap.set('n', '[q', ':cprevious<CR>', { noremap = true })
-      vim.keymap.set('n', '[Q', ':cfirst<CR>', { noremap = true })
+      vim.keymap.set('n', ']q', ':cnext<CR>')
+      vim.keymap.set('n', ']Q', ':clast<CR>')
+      vim.keymap.set('n', '[q', ':cprevious<CR>')
+      vim.keymap.set('n', '[Q', ':cfirst<CR>')
       -- 折返し時に表示業単位で移動する
-      vim.keymap.set('', 'j', 'gj', { noremap = true })
-      vim.keymap.set('', 'k', 'gk', { noremap = true })
-      vim.keymap.set('', 'gj', 'j', { noremap = true })
-      vim.keymap.set('', 'gk', 'k', { noremap = true })
+      vim.keymap.set('', 'j', 'gj')
+      vim.keymap.set('', 'k', 'gk')
+      vim.keymap.set('', 'gj', 'j')
+      vim.keymap.set('', 'gk', 'k')
 
       -- '%%'でアクティブなバッファのディレクトリを開いてくれる
-      vim.keymap.set('c', '%%', "getcmdtype() == ':' ? expand('%:h').'/' : '%%'", { expr = true, noremap = true })
+      vim.keymap.set('c', '%%', "getcmdtype() == ':' ? expand('%:h').'/' : '%%'", { expr = true })
 
-      vim.keymap.set('i', '<C-l>', '<C-G>U<Right>', { silent = true, noremap = true })
-      vim.keymap.set('i', '<Left>', '<C-G>U<Left>', { silent = true, noremap = true })
-      vim.keymap.set('i', '<Right>', '<C-G>U<Right>', { silent = true, noremap = true })
+      vim.keymap.set('i', '<C-l>', '<C-G>U<Right>', { silent = true })
+      vim.keymap.set('i', '<Left>', '<C-G>U<Left>', { silent = true })
+      vim.keymap.set('i', '<Right>', '<C-G>U<Right>', { silent = true })
 
-      vim.keymap.set('n', '<Esc><Esc>', ':nohlsearch<CR><Esc>', { noremap = true })
+      vim.keymap.set('n', '<Esc><Esc>', ':nohlsearch<CR><Esc>')
 
       vim.api.nvim_create_autocmd({ 'FileType' }, {
         pattern = 'help',
         callback = function()
-          vim.keymap.set('n', 'q', '<C-w>c', { noremap = true, buffer = true })
+          vim.keymap.set('n', 'q', '<C-w>c', { buffer = true })
         end
       })
       vim.api.nvim_create_autocmd({ 'FileType' }, {
         pattern = 'qf',
         callback = function()
-          vim.keymap.set('n', 'q', ':<C-u>cclose<CR>', { noremap = true, buffer = true })
+          vim.keymap.set('n', 'q', ':<C-u>cclose<CR>', { buffer = true })
         end
       })
 
-      vim.keymap.set('n', '[special_lang]', '<Nop>', { noremap = true })
+      vim.keymap.set('n', '[special_lang]', '<Nop>')
       vim.keymap.set('n', '<leader>h', '[special_lang]', { silent = true, remap = true })
 
       vim.api.nvim_create_autocmd({ 'FileType' }, {
@@ -213,13 +213,13 @@ require("kitagry.lazy").setup({
   { "hrsh7th/nvim-cmp",
     dependencies = {
       "hrsh7th/cmp-buffer",
-      "hrsh7th/cmp-vsnip",
       "hrsh7th/cmp-nvim-lua",
       "hrsh7th/cmp-nvim-lsp",
       "hrsh7th/cmp-cmdline",
       "hrsh7th/cmp-path",
       "hrsh7th/cmp-nvim-lsp-signature-help",
       "lukas-reineke/cmp-rg",
+      "saadparwaiz1/cmp_luasnip",
     },
     cond = vim.fn.exists('g:vscode') == 0,
     config = function()
@@ -235,7 +235,7 @@ require("kitagry.lazy").setup({
       cmp.setup {
         snippet = {
           expand = function(args)
-            vim.fn['vsnip#anonymous'](args.body)
+            require('luasnip').lsp_expand(args.body)
           end
         },
 
@@ -254,7 +254,7 @@ require("kitagry.lazy").setup({
         sources = {
           { name = 'nvim_lsp' },
           { name = 'nvim_lua' },
-          { name = 'vsnip' },
+          { name = 'luasnip' },
           {
             name = 'buffer',
             option = {
@@ -270,7 +270,7 @@ require("kitagry.lazy").setup({
             vim_item.menu = ({
               nvim_lsp = '[LSP]',
               nvim_lua = '[Lua]',
-              vsnip = '[vsnip]',
+              luasnip = '[luasnip]',
               cmdline = '[cmdline]',
               path = '[path]',
               buffer = '[Buffer]',
@@ -309,21 +309,6 @@ require("kitagry.lazy").setup({
         })
       end
       vim.keymap.set('i', '<C-x><C-o>', require('cmp').complete, { remap = false })
-    end,
-  },
-  { "hrsh7th/vim-vsnip",
-    dependencies = {
-      "hrsh7th/vim-vsnip-integ",
-      "kitagry/vs-snippets",
-    },
-    cond = vim.fn.exists('g:vscode') == 0,
-    init = function()
-      vim.keymap.set({ 'i', 's' }, '<Tab>', function()
-        return vim.fn['vsnip#jumpable'](1) == 1 and '<Plug>(vsnip-jump-next)' or '<Tab>'
-      end, { expr = true })
-      vim.keymap.set({ 'i', 's' }, '<S-Tab>', function()
-        return vim.fn['vsnip#jumpable'](-1) == 1 and '<Plug>(vsnip-jump-prev)' or '<S-Tab>'
-      end, { expr = true })
     end,
   },
   { "williamboman/mason.nvim",
@@ -802,6 +787,26 @@ require("kitagry.lazy").setup({
     end
   },
   { "oky-123/marksign.vim" },
+  { "L3MON4D3/LuaSnip",
+    dependencies = {
+      'rafamadriz/friendly-snippets',
+    },
+    version = "1.*",
+    build = "make install_jsregexp",
+    config = function ()
+      local luasnip = require('luasnip')
+      vim.keymap.set({'i'}, '<Tab>', function()
+        return vim.fn['luasnip#expand_or_jumpable']() and '<Plug>luasnip-expand-or-jump' or '<Tab>'
+      end, { expr = true, remap = true })
+      vim.keymap.set({'s'}, '<Tab>', function()
+        luasnip.jump(1)
+      end)
+      vim.keymap.set({'i', 's'}, '<S-Tab>', function()
+        luasnip.jump(-1)
+      end)
+      require("luasnip.loaders.from_vscode").lazy_load()
+    end
+  }
 })
 
 local local_path = vim.env.HOME .. '/.config/nvim/init.local.lua'
