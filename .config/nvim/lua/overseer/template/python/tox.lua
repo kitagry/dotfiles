@@ -24,13 +24,28 @@ local tmpl = {
   end,
 }
 
+local function get_tox_dir(opts)
+  local tox
+  if opts.filetype == "python" then
+    local parent = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":p:h")
+    tox = vim.fn.findfile("tox.ini", parent .. ";")
+  end
+  if not tox then
+    tox = vim.fn.findfile("tox.ini", opts.dir .. ";")
+  end
+  if tox == "" then
+    return nil
+  end
+  return vim.fn.fnamemodify(tox, ":p:h")
+end
+
 return {
   cache_key = function(opts)
-    return files.join(opts.dir, "tox.ini")
+    return get_tox_dir(opts)
   end,
   condition = {
     callback = function(opts)
-      if not files.exists(files.join(opts.dir, "tox.ini")) then
+      if not get_tox_dir(opts) then
         return false, "No tox.ini file found"
       end
       return true
