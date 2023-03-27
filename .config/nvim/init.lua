@@ -417,11 +417,12 @@ require("kitagry.lazy").setup({
   { "jose-elias-alvarez/null-ls.nvim",
     config = function()
       local null_ls = require("null-ls")
+      local parent = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":p:h")
+      local poetry_lock_path = vim.fn.findfile('poetry.lock', parent .. ';')
       local util = require("kitagry.util")
-      local has_poetry = util.search_files({ 'poetry.lock' })
 
       local function with_poetry(builtin, command)
-        if has_poetry == nil then
+        if not poetry_lock_path then
           return builtin
         end
 
