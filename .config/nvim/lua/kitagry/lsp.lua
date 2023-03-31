@@ -37,9 +37,29 @@ function M.setupLSP()
     ensure_installed = { "rust_analyzer", "gopls", "pyright" }
   })
   neodev.setup({})
+
+  local parent = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":p:h")
+  local package_json = vim.fn.findfile('package.json', parent .. ';')
+
   mason_configs.setup_handlers {
     function(server)
       nvim_lsp[server].setup({
+        capabilities = capabilities,
+      })
+    end,
+    ["tsserver"] = function ()
+      if package_json == "" then
+        return
+      end
+      nvim_lsp.tsserver.setup({
+        capabilities = capabilities,
+      })
+    end,
+    ["denols"] = function ()
+      if package_json ~= "" then
+        return
+      end
+      nvim_lsp.denols.setup({
         capabilities = capabilities,
       })
     end,
@@ -86,18 +106,6 @@ function M.setupLSP()
       })
     end
   }
-
-  local package_json = kitautil.search_files({'package.json'})
-  if package_json then
-    nvim_lsp.tsserver.setup{
-      capabilities = capabilities,
-    }
-  else
-    nvim_lsp.denols.setup{
-      capabilities = capabilities,
-      single_file_support = true,
-    }
-  end
 
   if not configs.regols then
     configs.regols = {
