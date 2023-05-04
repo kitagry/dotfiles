@@ -832,6 +832,7 @@ require("kitagry.lazy").setup({
         luasnip.jump(-1)
       end)
       require("luasnip.loaders.from_vscode").lazy_load()
+      require("luasnip.loaders.from_vscode").load({ paths = "~/.vim/vsnip" })
     end
   }
 })
