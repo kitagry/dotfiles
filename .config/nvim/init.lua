@@ -136,9 +136,15 @@ require("kitagry.lazy").setup({
     setting = true,
     config = function()
       vim.api.nvim_create_autocmd({ 'BufNewFile', 'BufRead' }, {
-        pattern = { '*.tf' },
+        pattern = { '*.tf', '*.tfvars' },
         callback = function()
           vim.bo.filetype = 'terraform'
+        end
+      })
+      vim.api.nvim_create_autocmd({ 'BufNewFile', 'BufRead' }, {
+        pattern = { '*.pyi' },
+        callback = function()
+          vim.bo.filetype = 'python'
         end
       })
     end,
@@ -262,7 +268,7 @@ require("kitagry.lazy").setup({
             }
           },
           { name = 'nvim_lsp_signature_help' },
-          { name = 'rg' },
+          { name = 'rg', option = { additional_arguments = '--max-depth 3 --hidden' } },
         },
 
         formatting = {
@@ -453,10 +459,34 @@ require("kitagry.lazy").setup({
         return with_poetry(builtin, command)
       end
 
+      local function formatter_for_python()
+        if not poetry_lock_path then
+          return null_ls.builtins.formatting.black
+        end
+
+        local path = util.search_files({ 'pyproject.toml' })
+        if path == nil then
+          return null_ls.builtins.formatting.black
+        end
+
+        local content = util.read_file(path .. '/pyproject.toml')
+        if content == nil then
+          return null_ls.builtins.formatting.black
+        end
+
+        for line in vim.gsplit(content, "\n") do
+          if vim.startswith(line, "black") then
+            return with_poetry(null_ls.builtins.formatting.black, 'black')
+          elseif vim.startswith(line, "yapf") then
+            return with_poetry(null_ls.builtins.formatting.yapf, 'yapf')
+          end
+        end
+      end
+
       local sources = {
         null_ls.builtins.code_actions.gomodifytags,
         with_pflake8(null_ls.builtins.diagnostics.flake8),
-        with_poetry(null_ls.builtins.formatting.yapf, 'yapf'),
+        formatter_for_python(),
         with_poetry(null_ls.builtins.formatting.isort, 'isort'),
         null_ls.builtins.diagnostics.shellcheck,
         null_ls.builtins.code_actions.shellcheck,
@@ -477,7 +507,7 @@ require("kitagry.lazy").setup({
             cwd = function(params)
               return params.root:match('.textlintrc')
             end,
-            filetypes = { 'markdown' },
+            filetypes = { 'markdown', 'review' },
             command = textlint_path(),
           })
         })
@@ -754,11 +784,6 @@ require("kitagry.lazy").setup({
       })
     end
   },
-  { "rcarriga/nvim-notify",
-    config = function()
-      vim.notify = require("notify")
-    end
-  },
   { "akinsho/toggleterm.nvim",
     cmd = { 'ToggleTerm' },
     init = function()
@@ -788,6 +813,7 @@ require("kitagry.lazy").setup({
     end
   },
   { "oky-123/marksign.vim" },
+  { "tokorom/vim-review" },
   { "L3MON4D3/LuaSnip",
     dependencies = {
       'rafamadriz/friendly-snippets',
