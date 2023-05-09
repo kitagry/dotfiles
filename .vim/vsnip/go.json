@@ -101,15 +101,6 @@
     ],
     "description": "Scan int"
   },
-  "iferr": {
-    "prefix": ["iferr"],
-    "body": [
-      "if err != nil {",
-      "\treturn ${1:fmt.Errorf(\"failed: %w\", err)}",
-      "}"
-    ],
-    "description": "if err != nil { }"
-  },
   "tysn": {
     "prefix": ["tysn"],
     "body": [

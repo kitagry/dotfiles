@@ -143,17 +143,20 @@ end
 function M.setupPythonLSP()
   local python_path = 'python3'
 
-  local poetry_lock = kitautil.search_files({'poetry.lock'})
+  local parent = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":p:h")
+  local poetry_lock = vim.fn.findfile('poetry.lock', parent .. ';')
   if poetry_lock then
-    local virtual_env_path = vim.trim(vim.fn.system('poetry env info -p'))
+    local poetry_dir = vim.fn.fnamemodify(poetry_lock, ":p:h")
+    local virtual_env_path = vim.trim(vim.fn.system('cd ' .. poetry_dir .. ' && poetry env info -p'))
     if #vim.split(virtual_env_path, '\n') == 1 then
       python_path = string.format("%s/bin/python", virtual_env_path)
     end
   end
 
-  local pipfile_lock = kitautil.search_files({'Pipfile.lock'})
+  local pipfile_lock = vim.fn.findfile('Pipfile.lock', parent .. ';')
   if pipfile_lock then
-    local virtual_env_path = vim.trim(vim.fn.system('pipenv --venv'))
+    local pipfile_dir = vim.fn.fnamemodify(pipfile_lock, ":p:h")
+    local virtual_env_path = vim.trim(vim.fn.system('cd ' .. pipfile_dir .. ' && pipenv --venv'))
     if #vim.split(virtual_env_path, '\n') == 1 then
       python_path = string.format("%s/bin/python", virtual_env_path)
     end

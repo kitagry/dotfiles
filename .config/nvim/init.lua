@@ -216,6 +216,14 @@ require("kitagry.lazy").setup({
       cmd.colorscheme('sonokai')
     end,
   },
+  { "zbirenbaum/copilot-cmp",
+    dependencies = { "zbirenbaum/copilot.lua" },
+    after = { "copilot.lua" },
+    config = function()
+      require("copilot").setup({})
+      require("copilot_cmp").setup()
+    end,
+  },
   { "hrsh7th/nvim-cmp",
     dependencies = {
       "hrsh7th/cmp-buffer",
@@ -253,11 +261,13 @@ require("kitagry.lazy").setup({
           ['<C-Space>'] = cmp.mapping.complete(),
           ['<C-e>'] = cmp.mapping.close(),
           ['<CR>'] = cmp.mapping.confirm({
+            behavior = cmp.ConfirmBehavior.Replace,
             select = false,
           })
         },
 
         sources = {
+          { name = 'copilot' },
           { name = 'nvim_lsp' },
           { name = 'nvim_lua' },
           { name = 'luasnip' },
@@ -274,6 +284,7 @@ require("kitagry.lazy").setup({
         formatting = {
           format = function(entry, vim_item)
             vim_item.menu = ({
+              copilot = '[copilot]',
               nvim_lsp = '[LSP]',
               nvim_lua = '[Lua]',
               luasnip = '[luasnip]',
@@ -833,8 +844,9 @@ require("kitagry.lazy").setup({
       end)
       require("luasnip.loaders.from_vscode").lazy_load()
       require("luasnip.loaders.from_vscode").load({ paths = "~/.vim/vsnip" })
+      require("kitagry.snippet")
     end
-  }
+  },
 })
 
 local local_path = vim.env.HOME .. '/.config/nvim/init.local.lua'
