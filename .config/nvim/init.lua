@@ -296,6 +296,41 @@ require("kitagry.lazy").setup({
             return vim_item
           end
         },
+
+        sorting = {
+          comparators = {
+            cmp.config.compare.offset,
+            cmp.config.compare.exact,
+            cmp.config.compare.score,
+            function (entry1, entry2)
+              local types = require('cmp.types')
+              local kind1 = entry1:get_kind()
+              kind1 = kind1 == types.lsp.CompletionItemKind.Text and 100 or kind1
+              kind1 = kind1 == types.lsp.CompletionItemKind.Field and 0 or kind1
+              local kind2 = entry2:get_kind()
+              kind2 = kind2 == types.lsp.CompletionItemKind.Text and 100 or kind2
+              kind2 = kind2 == types.lsp.CompletionItemKind.Field and 0 or kind2
+              if kind1 ~= kind2 then
+                if kind1 == types.lsp.CompletionItemKind.Snippet then
+                  return true
+                end
+                if kind2 == types.lsp.CompletionItemKind.Snippet then
+                  return false
+                end
+                local diff = kind1 - kind2
+                if diff < 0 then
+                  return true
+                elseif diff > 0 then
+                  return false
+                end
+              end
+            end,
+            cmp.config.compare.sort_text,
+            cmp.config.compare.length,
+            cmp.config.compare.order,
+          },
+        },
+
         preselect = cmp.PreselectMode.None,
       }
 
@@ -328,7 +363,8 @@ require("kitagry.lazy").setup({
       vim.keymap.set('i', '<C-x><C-o>', require('cmp').complete, { remap = false })
     end,
   },
-  { "williamboman/mason.nvim",
+  { -- Neovim LSP
+    "williamboman/mason.nvim",
     dependencies = {
       "williamboman/mason-lspconfig.nvim",
       "neovim/nvim-lspconfig",
@@ -772,20 +808,39 @@ require("kitagry.lazy").setup({
     end
   },
   { "nvim-lualine/lualine.nvim",
+    dependencies = {
+      "arkav/lualine-lsp-progress",
+    },
     config = function()
       require("lualine").setup({
         icons_enabled = false,
         sections = {
           lualine_a = { 'mode' },
-          lualine_b = { 'branch', 'diff', { 'diagnostics', symbols = { error = 'E:', warn = 'W:', info = 'I:',
-            hint = 'H:' } } },
-          lualine_c = { {'filename', path = 1} },
+          lualine_b = {
+            'branch',
+            'diff',
+            {
+              'diagnostics',
+              symbols = {
+                error = 'E:',
+                warn = 'W:',
+                info = 'I:',
+                hint = 'H:',
+              }
+            }
+          },
+          lualine_c = { {'filename', path = 1}, 'lsp_progress' },
           lualine_x = { 'encoding', 'fileformat', 'filetype' },
           lualine_y = { 'progress' },
           lualine_z = { 'location' }
         },
         tabline = {
-          lualine_a = { 'buffers' },
+          lualine_a = {
+            {
+              'buffers',
+              show_filename_only = false,
+            }
+          },
           lualine_b = {},
           lualine_c = {},
           lualine_x = {},
@@ -802,7 +857,11 @@ require("kitagry.lazy").setup({
       vim.keymap.set('n', '<leader>t', '<cmd>exe v:count1 . "ToggleTerm direction=float"<CR>', {})
     end,
     config = function()
-      require("toggleterm").setup()
+      require("toggleterm").setup({
+        start_in_insert = false,
+        autochdir = true,
+        auto_scroll = false
+      })
 
       vim.api.nvim_create_augroup('toggleterm', {})
       vim.api.nvim_create_autocmd({ 'TermEnter' }, {
@@ -845,6 +904,11 @@ require("kitagry.lazy").setup({
       require("luasnip.loaders.from_vscode").lazy_load()
       require("luasnip.loaders.from_vscode").load({ paths = "~/.vim/vsnip" })
       require("kitagry.snippet")
+    end
+  },
+  { "rcarriga/nvim-notify",
+    config = function()
+      vim.notify = require("notify")
     end
   },
 })

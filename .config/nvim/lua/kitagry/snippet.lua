@@ -20,7 +20,7 @@ local types = require("luasnip.util.types")
 local conds = require("luasnip.extras.conditions")
 local conds_expand = require("luasnip.extras.conditions.expand")
 
-ls.add_snippets("go", {
-  s("iferr", {
-  })
-})
+-- ls.add_snippets("go", {
+--   s("iferr", {
+--   })
+-- })

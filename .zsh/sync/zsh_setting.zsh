@@ -27,5 +27,5 @@ zstyle ':completion:*' list-colors 'di=34' 'ln=35' 'so=32' 'ex=31' 'bd=46;34' 'c
 # 不要なヒストリーは保存しないようにする
 zshaddhistory() {
     local line="${1%%$'\n'}"
-    [[ ! "$line" =~ "^(cd|la|ll|ls|rm|rmdir|less)($| )" ]]
+    [[ ! "$line" =~ "^(cd|la|ll|ls|rm|rmdir)($| )" ]]
 }

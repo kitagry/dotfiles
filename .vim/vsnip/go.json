@@ -18,6 +18,14 @@
     ],
     "description": "test function"
   },
+  "if err": {
+    "prefix": "iferr",
+    "body": [
+      "if err != nil {",
+      "\t$1",
+      "}$0"
+    ]
+  },
   "table test": {
     "prefix": "tabletest",
     "body": [
