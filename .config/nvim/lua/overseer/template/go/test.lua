@@ -9,10 +9,7 @@ local tmpl = {
     cwd = { optional = true },
   },
   builder = function(params)
-    local cmd = { "go", "test" }
-    if vim.fn.executable("go-tw") then
-      cmd = { "go-tw" }
-    end
+    local cmd = { "go", "test", "-fullpath" }
     local args = params.args and params.args or { "./..." }
 
     return {
@@ -71,6 +68,10 @@ return {
   generator = function(opts, cb)
     local gomod_dir = get_gomod_dir(opts)
     local ret = {}
+
+    if gomod_dir == nil then
+      return
+    end
 
     local source_path = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":p:h")
     local relative_source_path = source_path:gsub(gomod_dir, ".")
