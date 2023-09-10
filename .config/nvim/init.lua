@@ -232,6 +232,7 @@ require("kitagry.lazy").setup({
       "hrsh7th/cmp-cmdline",
       "hrsh7th/cmp-path",
       "hrsh7th/cmp-nvim-lsp-signature-help",
+      "hrsh7th/cmp-emoji",
       "lukas-reineke/cmp-rg",
       "saadparwaiz1/cmp_luasnip",
     },
@@ -279,6 +280,7 @@ require("kitagry.lazy").setup({
           },
           { name = 'nvim_lsp_signature_help' },
           { name = 'rg', option = { additional_arguments = '--max-depth 3 --hidden' } },
+          { name = 'emoji' },
         },
 
         formatting = {
@@ -291,7 +293,8 @@ require("kitagry.lazy").setup({
               cmdline = '[cmdline]',
               path = '[path]',
               buffer = '[Buffer]',
-              rg = '[rg]'
+              rg = '[rg]',
+              emoji = '[emoji]',
             })[entry.source.name]
             return vim_item
           end
