@@ -2,10 +2,10 @@ local vim = vim
 local nvim_lsp = require'lspconfig'
 local configs = require'lspconfig.configs'
 local util = require 'lspconfig.util'
-local kitautil = require('kitagry.util')
 local mason = require('mason')
 local mason_configs = require('mason-lspconfig')
 local neodev = require('neodev')
+local api = vim.api
 
 local M = {}
 
@@ -26,6 +26,27 @@ function M.setupLSP()
     }
   }
   M.capabilities = capabilities
+
+  vim.lsp.handlers['window/showMessage'] = function(_, result, ctx)
+    local client = vim.lsp.get_client_by_id(ctx.client_id)
+    local lvl = ({
+      'ERROR',
+      'WARN',
+      'INFO',
+      'DEBUG',
+    })[result.type]
+    vim.notify(result.message, lvl, {
+      title = 'LSP | ' .. client.name,
+      timeout = 10000,
+    })
+  end
+
+  vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(
+    vim.lsp.handlers.hover,
+    {
+      border = 'single',
+    }
+  )
 
   mason.setup({
     providers = {
@@ -143,22 +164,35 @@ end
 function M.setupPythonLSP()
   local python_path = 'python3'
 
-  local parent = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":p:h")
-  local poetry_lock = vim.fn.findfile('poetry.lock', parent .. ';')
-  if poetry_lock then
-    local poetry_dir = vim.fn.fnamemodify(poetry_lock, ":p:h")
+  local poetry_lock = vim.fs.find('poetry.lock', {
+    upward = true,
+    path = vim.fs.dirname(vim.api.nvim_buf_get_name(0)),
+  })
+  if #poetry_lock ~= 0 then
+    local poetry_dir = vim.fs.dirname(poetry_lock[1])
     local virtual_env_path = vim.trim(vim.fn.system('cd ' .. poetry_dir .. ' && poetry env info -p'))
-    if #vim.split(virtual_env_path, '\n') == 1 then
-      python_path = string.format("%s/bin/python", virtual_env_path)
+    local output = vim.split(virtual_env_path, '\n')
+    for _, line in ipairs(output) do
+      if vim.fn.isdirectory(line) == 1 then
+        python_path = string.format("%s/bin/python", line)
+        break
+      end
     end
   end
 
-  local pipfile_lock = vim.fn.findfile('Pipfile.lock', parent .. ';')
-  if pipfile_lock then
-    local pipfile_dir = vim.fn.fnamemodify(pipfile_lock, ":p:h")
+  local pipfile_lock = vim.fs.find('Pipfile.lock', {
+    upward = true,
+    path = vim.fs.dirname(vim.api.nvim_buf_get_name(0)),
+  })
+  if #pipfile_lock ~= 0 then
+    local pipfile_dir = vim.fs.dirname(pipfile_lock[1])
     local virtual_env_path = vim.trim(vim.fn.system('cd ' .. pipfile_dir .. ' && pipenv --venv'))
-    if #vim.split(virtual_env_path, '\n') == 1 then
-      python_path = string.format("%s/bin/python", virtual_env_path)
+    local output = vim.split(virtual_env_path, '\n')
+    for _, line in ipairs(output) do
+      if vim.fn.isdirectory(line) == 1 then
+        python_path = string.format("%s/bin/python", line)
+        break
+      end
     end
   end
 
