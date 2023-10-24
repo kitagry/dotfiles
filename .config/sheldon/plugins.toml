@@ -44,4 +44,4 @@ apply = ['defer']
 local = "~/.zsh/sync"
 
 [templates]
-defer = { value = 'zsh-defer source "{{ file }}"', each = true}
+defer = "{{ hooks | get: \"pre\" | nl }}{% for file in files %}zsh-defer source \"{{ file }}\"\n{% endfor %}{{ hooks | get: \"post\" | nl }}"
