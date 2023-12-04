@@ -613,6 +613,10 @@ require("kitagry.lazy").setup({
     end
   },
   { "nvim-treesitter/nvim-treesitter",
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter-textobjects",
+      "nvim-treesitter/playground"
+    },
     config = function()
       require('nvim-treesitter.configs').setup {
         ensure_installed = 'all',
@@ -627,13 +631,85 @@ require("kitagry.lazy").setup({
           updatetime = 25, -- Debounced time for highlighting nodes in the playground from source code
           persist_queries = false -- Whether the query persists across vim sessions
         },
+        textobjects = {
+          select = {
+            enable = true,
+            keymaps = {
+              ["if"] = "@function.inner",
+              ["af"] = "@function.outer",
+              ["ic"] = "@class.inner",
+              ["ac"] = "@class.outer",
+              ["i,"] = "@parameter.inner",
+              ["a,"] = "@parameter.outer",
+            },
+          },
+          swap = {
+            enable = true,
+            swap_next = {
+              ["<leader>sp"] = "@parameter.inner",
+              ["<leader>sf"] = "@function.outer",
+              ["<leader>sc"] = "@class.outer",
+            },
+            swap_previous = {
+              ["<leader>sP"] = "@function.outer",
+              ["<leader>sF"] = "@function.outer",
+              ["<leader>sC"] = "@class.outer",
+            },
+          },
+          move = {
+            enable = true,
+            set_jumps = true,
+            goto_next_start = {
+              ["]m"] = "@function.outer",
+              ["]]"] = "@class.outer",
+            },
+            goto_next_end = {
+              ["]M"] = "@function.outer",
+              ["]["] = "@class.outer",
+            },
+            goto_previous_start = {
+              ["[m"] = "@function.outer",
+              ["[["] = "@class.outer",
+            },
+            goto_previous_end = {
+              ["[M"] = "@function.outer",
+              ["[]"] = "@class.outer",
+            },
+          },
+          lsp_interop = {
+            enable = true,
+            border = "none",
+            floating_preview_opts = {},
+            peek_definition_code = {
+              ["<leader>lf"] = "@function.outer",
+              ["<leader>dF"] = "@class.outer",
+            },
+          },
+        },
       }
+    end
+  },
+  { "JoosepAlviste/nvim-ts-context-commentstring",
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter",
+    },
+    config = function()
+      require('ts_context_commentstring').setup({
+      })
     end
   },
   { "machakann/vim-sandwich" },
   { "numToStr/Comment.nvim",
+    dependencies = {
+      "JoosepAlviste/nvim-ts-context-commentstring",
+    },
     config = function()
-      require('Comment').setup()
+      require('ts_context_commentstring').setup({
+        enable_autocmd = false,
+      })
+      require('Comment').setup({
+        pre_hook = require('ts_context_commentstring.integrations.comment_nvim').create_pre_hook(),
+      })
     end
   },
   { "tyru/open-browser.vim",
@@ -644,7 +720,6 @@ require("kitagry.lazy").setup({
   { "kana/vim-repeat" },
   { "kana/vim-textobj-user",
     dependencies = {
-      "sgur/vim-textobj-parameter",
       "Julian/vim-textobj-variable-segment",
     },
   },
