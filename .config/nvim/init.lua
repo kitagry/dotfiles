@@ -216,14 +216,6 @@ require("kitagry.lazy").setup({
       cmd.colorscheme('sonokai')
     end,
   },
-  { "zbirenbaum/copilot-cmp",
-    dependencies = { "zbirenbaum/copilot.lua" },
-    after = { "copilot.lua" },
-    config = function()
-      require("copilot").setup({})
-      require("copilot_cmp").setup()
-    end,
-  },
   { "hrsh7th/nvim-cmp",
     dependencies = {
       "hrsh7th/cmp-buffer",
@@ -235,6 +227,8 @@ require("kitagry.lazy").setup({
       "hrsh7th/cmp-emoji",
       "lukas-reineke/cmp-rg",
       "saadparwaiz1/cmp_luasnip",
+      "hrsh7th/cmp-copilot",
+      "github/copilot.vim",
     },
     cond = vim.fn.exists('g:vscode') == 0,
     config = function()
