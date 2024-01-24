@@ -72,6 +72,9 @@ vi() {
 alias awk="gawk"
 alias tf="terraform"
 
+# see nvim startup probe
+export NVIM_STARTUPTIME_PATH="${XDG_STATE_HOME:-$HOME/.local/state}/nvim/startuptime.log"
+alias nvim="nvim --startuptime $NVIM_STARTUPTIME_PATH"
 
 # mkdir and cd
 mkcd() {
