@@ -15,12 +15,6 @@ if command -v lab 1>/dev/null 2>&1; then
   eval "$(lab completion zsh)"
 fi
 
-if command -v pyenv 1>/dev/null 2>&1; then
-  export PYENV_ROOT="$HOME/.pyenv"
-  export PATH="$PYENV_ROOT/shims:$PATH"
-  eval "$(pyenv init -)"
-fi
-
-if command -v rbenv 1>/dev/null 2>&1; then
-  eval "$(rbenv init -)"
+if command -v $HOME/.cargo/bin/mise 1>/dev/null 2>&1; then
+  eval "$($HOME/.cargo/bin/mise activate zsh)"
 fi
