@@ -464,7 +464,7 @@ require("kitagry.lazy").setup({
       })
     end,
   },
-  { "jose-elias-alvarez/null-ls.nvim",
+  { "nvimtools/none-ls.nvim",
     config = function()
       local null_ls = require("null-ls")
       local parent = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":p:h")
@@ -477,30 +477,53 @@ require("kitagry.lazy").setup({
         end
 
         return builtin.with({
-          command = { 'poetry', 'run', command },
+          command = { 'poetry', 'run', table.unpack(command) },
         })
       end
 
-      local function with_pflake8(builtin)
-        local command = 'flake8'
+      local function has_ruff()
+        if not poetry_lock_path then
+          return null_ls.builtins.formatting.black
+        end
+
         local path = util.search_files({ 'pyproject.toml' })
         if path == nil then
-          return with_poetry(builtin, command)
+          return null_ls.builtins.formatting.black
         end
 
         local content = util.read_file(path .. '/pyproject.toml')
         if content == nil then
-          return with_poetry(builtin, command)
+          return null_ls.builtins.formatting.black
+        end
+
+        for line in vim.gsplit(content, "\n") do
+          if vim.startswith(line, "ruff") then
+            return true
+          end
+        end
+        return false
+      end
+
+      local function with_pflake8(builtin)
+        local commands = {'flake8'}
+        local path = util.search_files({ 'pyproject.toml' })
+        if path == nil then
+          return with_poetry(builtin, commands)
+        end
+
+        local content = util.read_file(path .. '/pyproject.toml')
+        if content == nil then
+          return with_poetry(builtin, commands)
         end
 
         for line in vim.gsplit(content, "\n") do
           local pflake8 = vim.startswith(line, 'pyproject-flake8')
           if pflake8 then
-            command = 'pflake8'
+            commands = {'pflake8'}
           end
         end
 
-        return with_poetry(builtin, command)
+        return with_poetry(builtin, commands)
       end
 
       local function formatter_for_python()
@@ -520,21 +543,33 @@ require("kitagry.lazy").setup({
 
         for line in vim.gsplit(content, "\n") do
           if vim.startswith(line, "black") then
-            return with_poetry(null_ls.builtins.formatting.black, 'black')
+            return with_poetry(null_ls.builtins.formatting.black, {'black'})
           elseif vim.startswith(line, "yapf") then
-            return with_poetry(null_ls.builtins.formatting.yapf, 'yapf')
+            return with_poetry(null_ls.builtins.formatting.yapf, {'yapf'})
+          elseif vim.startswith(line, "ruff") then
+            return with_poetry(null_ls.builtins.formatting.ruff_format, {'ruff'})
           end
         end
       end
 
       local sources = {
         null_ls.builtins.code_actions.gomodifytags,
-        with_pflake8(null_ls.builtins.diagnostics.flake8),
-        formatter_for_python(),
-        with_poetry(null_ls.builtins.formatting.isort, 'isort'),
         null_ls.builtins.diagnostics.shellcheck,
         null_ls.builtins.code_actions.shellcheck,
       }
+
+      if has_ruff() then
+        sources = vim.list_extend(sources, {
+          with_poetry(null_ls.builtins.diagnostics.ruff, {'ruff'}),
+          with_poetry(null_ls.builtins.formatting.ruff_format, {'ruff'}),
+        })
+      else
+        sources = vim.list_extend(sources, {
+          with_pflake8(null_ls.builtins.diagnostics.flake8),
+          with_poetry(null_ls.builtins.formatting.isort, {'isort'}),
+          formatter_for_python(),
+        })
+      end
 
       local function textlint_path()
         local path = util.search_files({ './node_modules/textlint/bin/textlint.js' })
