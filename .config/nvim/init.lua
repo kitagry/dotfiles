@@ -887,7 +887,7 @@ require("kitagry.lazy").setup({
   { "stevearc/overseer.nvim",
     config = function()
       require("overseer").setup({
-        templates = { "go", "python", "make", "javascript" },
+        templates = { "rust", "go", "python", "make", "javascript" },
         component_aliases = {
           default = {
             { "on_output_quickfix", open_on_match = true },
