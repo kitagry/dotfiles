@@ -9,6 +9,30 @@ local api = vim.api
 
 local M = {}
 
+---@return boolean
+local function has_ruff()
+  local pyprojects = vim.fs.find('pyproject.toml', {
+    upward = true,
+    path = vim.fs.dirname(vim.api.nvim_buf_get_name(0)),
+  })
+
+  if #pyprojects == 0 then
+    return false
+  end
+
+  local content = require('kitagry.util').read_file(pyprojects[1])
+  if content == nil then
+    return false
+  end
+
+  for line in vim.gsplit(content, "\n") do
+    if vim.startswith(line, "ruff") then
+      return true
+    end
+  end
+  return false
+end
+
 function M.setupLSP()
   local capabilities = vim.lsp.protocol.make_client_capabilities()
   capabilities.textDocument.completion.completionItem.snippetSupport = true
@@ -125,7 +149,14 @@ function M.setupLSP()
           }
         }
       })
-    end
+    end,
+    ["ruff_lsp"] = function ()
+      if has_ruff() then
+        nvim_lsp.ruff_lsp.setup({
+          capabilities = capabilities,
+        })
+      end
+    end,
   }
 
   if not configs.regols then
