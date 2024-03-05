@@ -554,16 +554,9 @@ require("kitagry.lazy").setup({
 
       local sources = {
         null_ls.builtins.code_actions.gomodifytags,
-        null_ls.builtins.diagnostics.shellcheck,
-        null_ls.builtins.code_actions.shellcheck,
       }
 
-      if has_ruff() then
-        sources = vim.list_extend(sources, {
-          with_poetry(null_ls.builtins.diagnostics.ruff, {'ruff'}),
-          with_poetry(null_ls.builtins.formatting.ruff_format, {'ruff'}),
-        })
-      else
+      if not has_ruff() then
         sources = vim.list_extend(sources, {
           with_pflake8(null_ls.builtins.diagnostics.flake8),
           with_poetry(null_ls.builtins.formatting.isort, {'isort'}),
