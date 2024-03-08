@@ -13,7 +13,10 @@ export NVIM_LISTEN_ADDRESS="/tmp/nvimsocket"
 
 export PATH="/usr/local/opt/llvm/bin:$PATH"
 export QT_HOMEBREW=true
-export EDITOR=nvim
+
+export NVIM_PROFILE_PATH="$HOME/.local/state/nvim/nvim.profile"
+export EDITOR="nvim --startuptime $NVIM_PROFILE_PATH"
+alias nvim=$EDITOR
 
 export PATH="$HOME/.cargo/bin:$PATH"
 source "$HOME/.cargo/env"
@@ -51,7 +54,7 @@ alias zshrc="$EDITOR ~/.zshrc"
 alias zshenv="$EDITOR ~/.zshenv"
 alias vimrc="$EDITOR ~/.vimrc"
 alias nvimrc="$EDITOR ~/.config/nvim/init.lua"
-alias ls="exa"
+alias ls="eza"
 ###########################
 
 # viとvimを紐づける
