@@ -1,6 +1,9 @@
 local vim = vim
 local cmd = vim.cmd
 
+local local_path = vim.env.HOME .. '/.config/nvim/init.local.vim'
+vim.cmd('source ' .. local_path)
+
 require("kitagry.lazy").setup({
   { "general setting",
     setting = true,
@@ -471,13 +474,14 @@ require("kitagry.lazy").setup({
       local poetry_lock_path = vim.fn.findfile('poetry.lock', parent .. ';')
       local util = require("kitagry.util")
 
-      local function with_poetry(builtin, command)
+      ---@param commands string[]
+      local function with_poetry(builtin, commands)
         if not poetry_lock_path then
           return builtin
         end
 
         return builtin.with({
-          command = { 'poetry', 'run', table.unpack(command) },
+          command = vim.list_extend({'poetry', 'run'}, commands),
         })
       end
 
@@ -504,28 +508,6 @@ require("kitagry.lazy").setup({
         return false
       end
 
-      local function with_pflake8(builtin)
-        local commands = {'flake8'}
-        local path = util.search_files({ 'pyproject.toml' })
-        if path == nil then
-          return with_poetry(builtin, commands)
-        end
-
-        local content = util.read_file(path .. '/pyproject.toml')
-        if content == nil then
-          return with_poetry(builtin, commands)
-        end
-
-        for line in vim.gsplit(content, "\n") do
-          local pflake8 = vim.startswith(line, 'pyproject-flake8')
-          if pflake8 then
-            commands = {'pflake8'}
-          end
-        end
-
-        return with_poetry(builtin, commands)
-      end
-
       local function formatter_for_python()
         if not poetry_lock_path then
           return null_ls.builtins.formatting.black
@@ -546,8 +528,6 @@ require("kitagry.lazy").setup({
             return with_poetry(null_ls.builtins.formatting.black, {'black'})
           elseif vim.startswith(line, "yapf") then
             return with_poetry(null_ls.builtins.formatting.yapf, {'yapf'})
-          elseif vim.startswith(line, "ruff") then
-            return with_poetry(null_ls.builtins.formatting.ruff_format, {'ruff'})
           end
         end
       end
@@ -558,7 +538,6 @@ require("kitagry.lazy").setup({
 
       if not has_ruff() then
         sources = vim.list_extend(sources, {
-          with_pflake8(null_ls.builtins.diagnostics.flake8),
           with_poetry(null_ls.builtins.formatting.isort, {'isort'}),
           formatter_for_python(),
         })
@@ -637,7 +616,8 @@ require("kitagry.lazy").setup({
   { "nvim-treesitter/nvim-treesitter",
     dependencies = {
       "nvim-treesitter/nvim-treesitter-textobjects",
-      "nvim-treesitter/playground"
+      "nvim-treesitter/playground",
+      "andymass/vim-matchup"
     },
     config = function()
       require('nvim-treesitter.configs').setup {
@@ -646,6 +626,14 @@ require("kitagry.lazy").setup({
         highlight = {
           enable = true,
           additional_vim_regex_highlighting = { 'org' },
+          disable = function(lang, buf)
+              -- 100 KB 以上のファイルでは tree-sitter によるシンタックスハイライトを行わない
+              local max_filesize = 100 * 1024
+              local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
+              if ok and stats and stats.size > max_filesize then
+                  return true
+              end
+          end,
         },
         playground = {
           enable = true,
@@ -663,6 +651,8 @@ require("kitagry.lazy").setup({
               ["ac"] = "@class.outer",
               ["i,"] = "@parameter.inner",
               ["a,"] = "@parameter.outer",
+              ["il"] = "@loop.inner",
+              ["al"] = "@loop.outer",
             },
           },
           swap = {
@@ -702,10 +692,6 @@ require("kitagry.lazy").setup({
             enable = true,
             border = "none",
             floating_preview_opts = {},
-            peek_definition_code = {
-              ["<leader>lf"] = "@function.outer",
-              ["<leader>dF"] = "@class.outer",
-            },
           },
         },
       }
@@ -745,36 +731,53 @@ require("kitagry.lazy").setup({
       "Julian/vim-textobj-variable-segment",
     },
   },
+  { "nvim-neo-tree/neo-tree.nvim",
+    branch = "v3.x",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-tree/nvim-web-devicons",
+      "MunifTanjim/nui.nvim",
+      "s1n7ax/nvim-window-picker",
+      "kitagry/bqls.nvim",
+    },
+    init = function()
+      vim.keymap.set('n', '[neotree]', '<Nop>', { noremap = true })
+      vim.keymap.set('n', '<leader>d', '[neotree]', { silent = true, remap = true })
+      vim.keymap.set('n', '[neotree]a', ':<C-u>Neotree toggle reveal<CR>', { remap = true, silent = true })
+      vim.keymap.set('n', '[neotree]b', ':<C-u>Neotree toggle bqls<CR>', { remap = true, silent = true })
+    end,
+    config = function()
+      require("neo-tree").setup({
+        sources = {
+          "filesystem",
+          "buffers",
+          "git_status",
+          "bqls"
+        },
+        source_selector = {
+            winbar = true,
+            statusline = false
+        },
+        filesystem = {
+          bind_to_cwd = false,
+          window = {
+            mappings = {
+              -- disable fuzzy finder
+              ["/"] = "noop"
+            }
+          }
+        },
+      })
+    end
+  },
   { "lambdalisue/gina.vim",
     dependencies = {
       "kitagry/gina-openpr.vim",
     },
     init = function()
-      local git_push = function()
-        local current_branch = vim.fn["gina#component#repo#branch"]()
-        if current_branch == 'master' or current_branch == 'main' then
-          local prompt = string.format('this wille push to %s? [y/N]', current_branch)
-          vim.ui.input({ prompt = prompt }, function(input)
-            if string.lower(input) == 'y' then
-              vim.cmd(string.format('Gina! push -u origin %s', current_branch))
-            end
-          end)
-        else
-          vim.cmd(string.format('Gina! push -u origin %s', current_branch))
-        end
-      end
-
       vim.keymap.set({ 'n', 'v' }, '[gina]', '<Nop>', { noremap = true })
       vim.keymap.set({ 'n', 'v' }, '<leader>g', '[gina]', { silent = true, remap = true })
       vim.keymap.set('n', '[gina]b', ':Gina blame<CR>', { remap = true })
-      vim.keymap.set('n', '[gina]s', ':Gina status --group=gina<CR>', { remap = true })
-      vim.keymap.set('n', '[gina]c', ':Gina commit<CR>', { remap = true })
-      vim.keymap.set('n', '[gina]d', ':Gina diff --group=gina<CR>', { remap = true })
-      vim.keymap.set('n', '[gina]p', git_push, { remap = true })
-      vim.keymap.set('n', '[gina]x', ':Gina browse :<CR>', { remap = true })
-      vim.keymap.set('n', '[gina]y', ':Gina browse --yank :<CR>', { remap = true })
-      vim.keymap.set('v', '[gina]x', ':Gina browse --exact :<CR>', { remap = true })
-      vim.keymap.set('v', '[gina]y', ':Gina browse --exact --yank :<CR>', { remap = true })
     end,
     config = function()
       vim.o.diffopt = 'vertical'
@@ -792,36 +795,46 @@ require("kitagry.lazy").setup({
       vim.api.nvim_create_user_command('GitCreatePR', create_pr, {})
     end
   },
-  { "lambdalisue/fern.vim",
+  { "lambdalisue/gin.vim",
     dependencies = {
-      "lambdalisue/nerdfont.vim",
-      "lambdalisue/fern-hijack.vim",
-      "lambdalisue/fern-renderer-nerdfont.vim",
+      "vim-denops/denops.vim",
+      "nvim-telescope/telescope.nvim",
     },
-    -- cmd = {'Fern'}, for fern-hijack
     init = function()
-      vim.keymap.set('n', '[fern]', '<Nop>', { noremap = true })
-      vim.keymap.set('n', '<leader>d', '[fern]', { silent = true, remap = true })
-      vim.keymap.set('n', '[fern]a', ':<C-u>Fern . -drawer -toggle -reveal=%<CR>', { remap = true, silent = true })
-      vim.keymap.set('n', '[fern]f', ':<C-u>Fern %:h -opener=edit<CR>', { remap = true, silent = true })
-      vim.keymap.set('n', '[fern]v', ':<C-u>Fern . -opener=vsplit<CR>', { remap = true, silent = true })
-      vim.keymap.set('n', '[fern]h', ':<C-u>Fern %:h -opener=vsplit<CR>', { remap = true, silent = true })
-      vim.keymap.set('n', '[fern]m', ':<C-u>Fern ~/drive -drawer -toggle -reveal=%<CR>', { remap = true, silent = true })
-    end,
-    config = function()
-      vim.g['fern#renderer'] = 'nerdfont'
-
-      local init_fern = function()
-        vim.keymap.set('n', 'R', '<Plug>(fern-action-remove)', { remap = true, buffer = true })
-        vim.keymap.set('n', 'r', '<Plug>(fern-action-rename)', { remap = true, buffer = true })
+      local git_push = function()
+        local current_branch = vim.fn["gina#component#repo#branch"]()
+        if current_branch == 'master' or current_branch == 'main' then
+          local prompt = string.format('this wille push to %s? [y/N]', current_branch)
+          vim.ui.input({ prompt = prompt }, function(input)
+            if string.lower(input) == 'y' then
+              vim.cmd(string.format('Gin push -u origin %s', current_branch))
+            end
+          end)
+        else
+          vim.cmd(string.format('Gin push -u origin %s', current_branch))
+        end
       end
 
-      vim.api.nvim_create_augroup('my-fern', {})
-      vim.api.nvim_create_autocmd({ 'FileType' }, {
-        group = 'my-fern',
-        pattern = { 'fern' },
-        callback = function()
-          init_fern()
+      -- vim.keymap.set({ 'n', 'v' }, '[gin]', '<Nop>', { noremap = true })
+      -- vim.keymap.set({ 'n', 'v' }, '<leader>g', '[gin]', { silent = true, remap = true })
+      vim.keymap.set('n', '[gina]s', ':GinStatus<CR>', { remap = true })
+      vim.keymap.set('n', '[gina]c', ':Gin commit<CR>', { remap = true })
+      vim.keymap.set('n', '[gina]a', ':Gin commit --amend<CR>', { remap = true })
+      vim.keymap.set('n', '[gina]l', ':GinLog --oneline<CR>', { remap = true })
+      vim.keymap.set('n', '[gina]p', git_push, { remap = true })
+      vim.keymap.set('n', '[gina]d', ':GinDiff<CR>', { remap = true })
+      vim.keymap.set({ 'n', 'v' }, '[gina]x', ':GinBrowse<CR>', { remap = true })
+      vim.keymap.set({ 'n', 'v' }, '[gina]y', ':GinBrowse ++yank<CR>', { remap = true })
+    end,
+    config = function()
+      local augroup = vim.api.nvim_create_augroup('kitagry.gin', {})
+      vim.api.nvim_create_autocmd('BufReadCmd', {
+        group = augroup,
+        pattern = { 'gin://*', 'ginedit://*', 'ginlog://*', 'gindiff://*' },
+        callback = function(ctx)
+          vim.keymap.set("n", "a", function()
+            require("telescope.builtin").keymaps({ default_text = "gin-action " })
+          end, { buffer = ctx.buf })
         end
       })
     end
@@ -1010,6 +1023,31 @@ require("kitagry.lazy").setup({
   { "rcarriga/nvim-notify",
     config = function()
       vim.notify = require("notify")
+    end
+  },
+  { "kitagry/bqls.nvim",
+    dependencies = {
+      "mason.nvim"
+    },
+    config = function()
+      require("lspconfig").bqls.setup({
+        capabilities = require("kitagry.lsp").capabilities,
+        init_options = {
+          project_id = "bigquery-public-data",
+        }
+      })
+    end
+  },
+  { "iamcco/markdown-preview.nvim" },
+  { "Arekkusuva/jira-nvim",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+    },
+    config = function()
+      require("jira-nvim").setup({
+        host = vim.env.JIRA_DOMAIN,
+        token_path = "~/.local/share/nvim/jira.txt",
+      })
     end
   },
 })
