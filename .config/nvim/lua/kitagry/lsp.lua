@@ -1,13 +1,40 @@
 local vim = vim
-local nvim_lsp = require'lspconfig'
-local configs = require'lspconfig.configs'
-local util = require 'lspconfig.util'
+local nvim_lsp = require('lspconfig')
+local configs = require('lspconfig.configs')
+local util = require('lspconfig.util')
 local mason = require('mason')
 local mason_configs = require('mason-lspconfig')
 local neodev = require('neodev')
 local api = vim.api
 
 local M = {}
+--
+---@param names string[]
+---@return string[]
+local function get_plugin_paths(names)
+  local plugins = require("lazy.core.config").plugins
+  local paths = {}
+  for _, name in ipairs(names) do
+    if plugins[name] then
+      table.insert(paths, plugins[name].dir .. "/lua")
+    else
+      vim.notify("Invalid plugin name: " .. name)
+    end
+  end
+  return paths
+end
+
+---@param plugins string[]
+---@return string[]
+local function library(plugins)
+  local paths = get_plugin_paths(plugins)
+  table.insert(paths, vim.fn.stdpath("config") .. "/lua")
+  table.insert(paths, vim.env.VIMRUNTIME .. "/lua")
+  table.insert(paths, "${3rd}/luv/library")
+  table.insert(paths, "${3rd}/busted/library")
+  table.insert(paths, "${3rd}/luassert/library")
+  return paths
+end
 
 ---@return boolean
 local function has_ruff()
@@ -126,7 +153,7 @@ function M.setupLSP()
               ["kubernetes"] = {"/k8s/**/*.yml", "/k8s/**/*.yaml", "/*.k8s.yaml"},
               ["http://json.schemastore.org/kustomization"] = "kustomization.yaml",
               ["https://raw.githubusercontent.com/argoproj/argo-workflows/master/api/jsonschema/schema.json"] = {"/k8s/**/*.yml", "/k8s/**/*.yaml", "/*.k8s.yaml"},
-              ["https://raw.githubusercontent.com/magmax/atlassian-openapi/master/spec/bitbucket.yaml"] = {"bitbucket-pipelines.yml"}
+              ["https://raw.githubusercontent.com/magmax/atlassian-openapi/master/spec/bitbucket.yaml"] = {"bitbucket-pipelines.yml"},
             },
             format = {
               enable = true,
@@ -145,6 +172,15 @@ function M.setupLSP()
           Lua = {
             completion = {
               callSnippet = "Replace"
+            },
+            runtime = {
+              version = "LuaJIT",
+              pathStrict = true,
+              path = { "?.lua", "?/init.lua", "?/?.lua" },
+            },
+            workspace = {
+              library = library({ "neo-tree.nvim", "telescope.nvim" }),
+              checkThirdParty = "Disable",
             }
           }
         }
@@ -174,19 +210,26 @@ function M.setupLSP()
   nvim_lsp.regols.setup{
     capabilities = capabilities,
   }
-  configs.sqls = {
-    default_config = {
-      cmd = { 'sqls' };
-      filetypes = { 'sql' };
-      root_dir = util.root_pattern(".git");
-      init_options = {
-        command = { 'sqls' };
-      };
-    };
-  }
-  nvim_lsp.sqls.setup{
-    capabilities = capabilities,
-  }
+
+  vim.cmd[[
+    command! BQUpdateCache lua vim.lsp.buf_request(0, "bq/updateCache", nil, function() end)
+    command! BQClearCache lua vim.lsp.buf_request(0, "bq/clearCache", nil, function() end)
+    command! BQDryRun lua vim.lsp.buf_request(0, "bq/dryRun", {uri = "file://" .. vim.fn.expand("%:p")}, function() end)
+  ]]
+
+  -- configs.sqls = {
+  --   default_config = {
+  --     cmd = { 'sqls' };
+  --     filetypes = { 'sql' };
+  --     root_dir = util.root_pattern(".git");
+  --     init_options = {
+  --       command = { 'sqls' };
+  --     };
+  --   };
+  -- }
+  -- nvim_lsp.sqls.setup{
+  --   capabilities = capabilities,
+  -- }
   nvim_lsp.solargraph.setup{
     capabilities = capabilities,
   }
