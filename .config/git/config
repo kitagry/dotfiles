@@ -18,16 +18,24 @@
 [init]
 	defaultBranch = main
 [pager]
-    diff = delta
-    log = delta
-    reflog = delta
-    show = delta
-
+	diff = delta
+	log = delta
+	reflog = delta
+	show = delta
 [delta]
-    plus-style = "syntax #012800"
-    minus-style = "syntax #340001"
-    syntax-theme = Monokai Extended
-    navigate = true
-
+	plus-style = "syntax #012800"
+	minus-style = "syntax #340001"
+	syntax-theme = Monokai Extended
+	navigate = true
 [interactive]
-    diffFilter = delta --color-only
+	diffFilter = delta --color-only
+[status]
+	showUntrackedFiles = all
+[merge]
+	conflictstyle = zdiff3
+[fetch]
+	prune = true
+[rebase]
+	updateRef = true
+[stash]
+	showPatch = true
