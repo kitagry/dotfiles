@@ -2,7 +2,7 @@ if [ ! $commands[kubectl] ]; then
   exit 0
 fi
 
-source <(kubectl completion zsh)
+# source <(kubectl completion zsh)
 function right_prompt() {
   local color="blue"
 
@@ -19,8 +19,8 @@ RPROMPT='$(right_prompt)'
 # kubernetesコマンドのalias
 ###########################
 alias k='kubectl'
-alias kc='kubectx'
-alias kn='kubens'
+alias kc='kubectl ctx'
+alias kn='kubectl ns'
 alias sourceenv='(){set -a; source $1; set +a}'
 
 kjf() {
