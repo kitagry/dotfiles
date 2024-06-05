@@ -6,10 +6,11 @@
 	name = Ryo Kitagawa
 [core]
 	editor = nvim
+	quotePath = false
 [alias]
 	openpr = "!f() { hub browse -- `git log --merges --oneline --reverse --ancestry-path $1...master | grep 'Merge pull request' | head -n 1 | cut -f5 -d' ' | sed -e 's%#%pull/%'`; }; f"
 [push]
-	default = simple
+	autoSetupRemote = true
 	useForceIfIncludes = true
 [commit]
 	verbose = true
