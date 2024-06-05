@@ -1031,17 +1031,6 @@ require("kitagry.lazy").setup({
     end
   },
   { "iamcco/markdown-preview.nvim" },
-  { "Arekkusuva/jira-nvim",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-    },
-    config = function()
-      require("jira-nvim").setup({
-        host = vim.env.JIRA_DOMAIN,
-        token_path = "~/.local/share/nvim/jira.txt",
-      })
-    end
-  },
   { "stevearc/oil.nvim",
     config = function ()
       require("oil").setup()
