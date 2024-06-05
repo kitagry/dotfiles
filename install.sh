@@ -5,10 +5,9 @@ set -eu
 if !(type "mise" > /dev/null 2>&1); then
   curl https://mise.run | sh
   export PATH="$HOME/.local/bin:$PATH"
-  eval "$(mise activate zsh)"
 fi
 
-declare -a MISE_INSTALL_PLUGINS=('git go ghq wget')
+declare -a MISE_INSTALL_PLUGINS=('git go ghq')
 declare -a MISE_INSTALLED_PLUGINS=$(mise list | cut -d ' ' -f 1)
 
 array_check() {
@@ -51,7 +50,7 @@ for child_directory in $DIRECTORIES; do
     mkdir -p "${HOME}/${child_directory}/${directory}"
   done
 
-  for file in $(find . -type f | grep -v .git); do
+  for file in $(find . -type f | grep -v "\.git"); do
       ln -snfv "${DOT_DIRECTORY}/${child_directory}/${file:2}" "${HOME}/${child_directory}/${file:2}"
   done
 done
