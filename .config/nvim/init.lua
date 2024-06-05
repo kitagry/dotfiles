@@ -363,6 +363,14 @@ require("kitagry.lazy").setup({
       vim.keymap.set('i', '<C-x><C-o>', require('cmp').complete, { remap = false })
     end,
   },
+  { "CopilotC-Nvim/CopilotChat.nvim",
+    branch = "canary",
+    dependencies = {
+      "github/copilot.vim",
+      "nvim-lua/plenary.nvim",
+    },
+    opts = {},
+  },
   { -- Neovim LSP
     "williamboman/mason.nvim",
     dependencies = {
@@ -692,24 +700,23 @@ require("kitagry.lazy").setup({
             enable = true,
             border = "none",
             floating_preview_opts = {},
+            -- peek_definition_code = {
+            --   ["<leader>lf"] = "@function.outer",
+            --   ["<leader>dF"] = "@class.outer",
+            -- },
           },
         },
+        matchup = {
+          enable = true,
+        },
       }
-    end
-  },
-  { "JoosepAlviste/nvim-ts-context-commentstring",
-    dependencies = {
-      "nvim-treesitter/nvim-treesitter",
-    },
-    config = function()
-      require('ts_context_commentstring').setup({
-      })
     end
   },
   { "machakann/vim-sandwich" },
   { "numToStr/Comment.nvim",
     dependencies = {
       "JoosepAlviste/nvim-ts-context-commentstring",
+      "nvim-treesitter/nvim-treesitter",
     },
     config = function()
       require('ts_context_commentstring').setup({
@@ -770,39 +777,15 @@ require("kitagry.lazy").setup({
       })
     end
   },
-  { "lambdalisue/gina.vim",
-    dependencies = {
-      "kitagry/gina-openpr.vim",
-    },
-    init = function()
-      vim.keymap.set({ 'n', 'v' }, '[gina]', '<Nop>', { noremap = true })
-      vim.keymap.set({ 'n', 'v' }, '<leader>g', '[gina]', { silent = true, remap = true })
-      vim.keymap.set('n', '[gina]b', ':Gina blame<CR>', { remap = true })
-    end,
-    config = function()
-      vim.o.diffopt = 'vertical'
-      vim.g["gina#command#blame#formatter#format"] = "%su%=by %au %ma%in"
-
-      local create_pr = function()
-        local remote_url = vim.fn.system([[git remote get-url origin]])
-        local ind = string.find(remote_url, 'github.com')
-        if ind ~= nil then
-          vim.fn.system([[gh pr create --web]])
-        else
-          print(string.format('not support for %s', remote_url))
-        end
-      end
-      vim.api.nvim_create_user_command('GitCreatePR', create_pr, {})
-    end
-  },
   { "lambdalisue/gin.vim",
     dependencies = {
       "vim-denops/denops.vim",
       "nvim-telescope/telescope.nvim",
+      "FabijanZulj/blame.nvim",
     },
     init = function()
       local git_push = function()
-        local current_branch = vim.fn["gina#component#repo#branch"]()
+        local current_branch = vim.fn["gin#component#branch#unicode"]()
         if current_branch == 'master' or current_branch == 'main' then
           local prompt = string.format('this wille push to %s? [y/N]', current_branch)
           vim.ui.input({ prompt = prompt }, function(input)
@@ -815,16 +798,19 @@ require("kitagry.lazy").setup({
         end
       end
 
-      -- vim.keymap.set({ 'n', 'v' }, '[gin]', '<Nop>', { noremap = true })
-      -- vim.keymap.set({ 'n', 'v' }, '<leader>g', '[gin]', { silent = true, remap = true })
-      vim.keymap.set('n', '[gina]s', ':GinStatus<CR>', { remap = true })
-      vim.keymap.set('n', '[gina]c', ':Gin commit<CR>', { remap = true })
-      vim.keymap.set('n', '[gina]a', ':Gin commit --amend<CR>', { remap = true })
-      vim.keymap.set('n', '[gina]l', ':GinLog --oneline<CR>', { remap = true })
-      vim.keymap.set('n', '[gina]p', git_push, { remap = true })
-      vim.keymap.set('n', '[gina]d', ':GinDiff<CR>', { remap = true })
-      vim.keymap.set({ 'n', 'v' }, '[gina]x', ':GinBrowse<CR>', { remap = true })
-      vim.keymap.set({ 'n', 'v' }, '[gina]y', ':GinBrowse ++yank<CR>', { remap = true })
+      vim.keymap.set({ 'n', 'v' }, '[gin]', '<Nop>', { noremap = true })
+      vim.keymap.set({ 'n', 'v' }, '<leader>g', '[gin]', { silent = true, remap = true })
+      vim.keymap.set('n', '[gin]s', ':GinStatus<CR>', { remap = true })
+      vim.keymap.set('n', '[gin]c', ':Gin commit<CR>', { remap = true })
+      vim.keymap.set('n', '[gin]a', ':Gin commit --amend<CR>', { remap = true })
+      vim.keymap.set('n', '[gin]l', ':GinLog --oneline<CR>', { remap = true })
+      vim.keymap.set('n', '[gin]p', git_push, { remap = true })
+      vim.keymap.set('n', '[gin]d', ':GinDiff<CR>', { remap = true })
+      vim.keymap.set({ 'n', 'v' }, '[gin]x', ':GinBrowse<CR>', { remap = true })
+      vim.keymap.set({ 'n', 'v' }, '[gin]y', ':GinBrowse ++yank<CR>', { remap = true })
+
+      require("blame").setup()
+      vim.keymap.set('n', '[gin]b', ':BlameToggle<CR>', { remap = true })
     end,
     config = function()
       local augroup = vim.api.nvim_create_augroup('kitagry.gin', {})
@@ -853,14 +839,14 @@ require("kitagry.lazy").setup({
       vim.g["operator#flashy#flash_time"] = 200
     end
   },
-  { "windwp/nvim-autopairs",
-    event = { "InsertEnter" },
-    config = function()
-      require('nvim-autopairs').setup({
-        ignored_next_char = "[%w]"
-      })
-    end
-  },
+  -- { "windwp/nvim-autopairs",
+  --   event = { "InsertEnter" },
+  --   config = function()
+  --     require('nvim-autopairs').setup({
+  --       ignored_next_char = "[%w]"
+  --     })
+  --   end
+  -- },
   { "monkoose/matchparen.nvim",
     config = function()
       require("matchparen").setup()
@@ -1006,15 +992,21 @@ require("kitagry.lazy").setup({
     build = "make install_jsregexp",
     config = function ()
       local luasnip = require('luasnip')
-      vim.keymap.set({'i'}, '<Tab>', function()
-        return vim.fn['luasnip#expand_or_jumpable']() and '<Plug>luasnip-expand-or-jump' or '<Tab>'
-      end, { expr = true, remap = true })
-      vim.keymap.set({'s'}, '<Tab>', function()
-        luasnip.jump(1)
-      end)
-      vim.keymap.set({'i', 's'}, '<S-Tab>', function()
-        luasnip.jump(-1)
-      end)
+
+      vim.keymap.set({"i", "s"}, "<C-j>", function ()
+        if luasnip.jumpable(1) then
+          return '<cmd>lua require("luasnip").jump(1)<cr>'
+        else
+          return '<C-j>'
+        end
+      end, { expr = true })
+      vim.keymap.set({"i", "s"}, "<C-k>", function()
+        if luasnip.jumpable(-1) then
+          return '<cmd>lua require("luasnip").jump(-1)<cr>'
+        else
+          return '<C-j>'
+        end
+      end, { expr = true })
       require("luasnip.loaders.from_vscode").lazy_load()
       require("luasnip.loaders.from_vscode").load({ paths = "~/.vim/vsnip" })
       require("kitagry.snippet")
@@ -1048,6 +1040,110 @@ require("kitagry.lazy").setup({
         host = vim.env.JIRA_DOMAIN,
         token_path = "~/.local/share/nvim/jira.txt",
       })
+    end
+  },
+  { "stevearc/oil.nvim",
+    config = function ()
+      require("oil").setup()
+
+      vim.keymap.set('n', '[neotree]a', ':<C-u>Oil<CR>', { remap = true, silent = true })
+      vim.keymap.set('n', '[neotree]d', ':<C-u>Oil .<CR>', { remap = true, silent = true })
+    end
+  },
+  { "hrsh7th/nvim-insx",
+    config = function()
+      local helper = require('insx.helper')
+
+      local PAIRS_MAP = {
+        ['('] = ')',
+        ['['] = ']',
+        ['{'] = '}',
+        ['<'] = '>',
+      }
+
+      ---@param option insx.recipe.fast_break.arguments.Option
+      ---@return insx.RecipeSource
+      local function trail_comma(option)
+        return {
+          ---@param ctx insx.Context
+          action = function(ctx)
+            -- Remove spaces.
+            ctx.remove([[\s*\%#\s*]])
+
+            -- Open side.
+            local open_indent = helper.indent.get_current_indent()
+            ctx.send('<CR>')
+            ctx.send(helper.indent.adjust({
+              current = helper.indent.get_current_indent(),
+              expected = open_indent .. helper.indent.get_one_indent(),
+            }))
+
+            -- Close side.
+            local row, col = ctx.row(), ctx.col()
+            local close_pos = assert(helper.search.get_pair_close(option.open_pat, option.close_pat))
+            ctx.move(close_pos[1], close_pos[2])
+            ctx.send(',')
+            -- ctx.send(helper.indent.adjust({
+            --   current = helper.indent.get_current_indent(),
+            --   expected = open_indent,
+            -- }))
+            ctx.move(row, col)
+
+            -- Split behavior.
+            local memo_row, memo_col = ctx.row(), ctx.col()
+            local main_close_pos = helper.search.get_pair_close(option.open_pat, option.close_pat)
+            while true do
+              local comma_pos = ctx.search([[\%#.\{-},\s*\zs]])
+              if not comma_pos or comma_pos[1] ~= ctx.row() then
+                break
+              end
+              ctx.move(comma_pos[1], comma_pos[2])
+
+              local inner = false
+              for open, close in pairs(PAIRS_MAP) do
+                local curr_close_pos = helper.search.get_pair_close(helper.regex.esc(open), helper.regex.esc(close))
+                if main_close_pos and curr_close_pos and helper.position.lt(curr_close_pos, main_close_pos) then
+                  inner = true
+                  break
+                end
+              end
+
+              if not inner then
+                ctx.backspace([[\s*]])
+                ctx.send('<CR>')
+                ctx.send(helper.indent.adjust({
+                  current = helper.indent.get_current_indent(),
+                  expected = open_indent .. helper.indent.get_one_indent(),
+                }))
+                main_close_pos = helper.search.get_pair_close(option.open_pat, option.close_pat)
+              end
+            end
+            ctx.backspace(helper.indent.get_one_indent())
+            ctx.move(memo_row, memo_col)
+          end,
+          ---@param ctx insx.Context
+          enabled = function(ctx)
+            if not ctx.match(option.open_pat .. [[\s*\%#]]) then
+              return false
+            end
+            local close_pos = helper.search.get_pair_close(option.open_pat, option.close_pat)
+            if not close_pos or close_pos[1] ~= ctx.row() then
+              return false
+            end
+
+            if ctx.filetype ~= 'go' then
+              return false
+            end
+            return true
+          end,
+        }
+      end
+      require("insx").add('<CR>', trail_comma({
+        open_pat = '(',
+        close_pat = ')',
+      }))
+
+      require("insx.preset.standard").setup({})
     end
   },
 })
