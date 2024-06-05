@@ -24,3 +24,7 @@ local conds_expand = require("luasnip.extras.conditions.expand")
 --   s("iferr", {
 --   })
 -- })
+ls.add_snippets("review", {
+  s("code", { t({"@<code>{"}), i(1, ""), t({"}"}) }),
+  s("list", { t({"//list["}), i(1, "code"), t({"]["}), i(2, "explain"), t({"]["}), i(3, "lang"), t({"]{"}), i(4, ""), t({"//}"}) }),
+})
