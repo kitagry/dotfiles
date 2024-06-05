@@ -14,7 +14,3 @@ fi;
 if command -v lab 1>/dev/null 2>&1; then
   eval "$(lab completion zsh)"
 fi
-
-if command -v $HOME/.cargo/bin/mise 1>/dev/null 2>&1; then
-  eval "$($HOME/.cargo/bin/mise activate zsh)"
-fi

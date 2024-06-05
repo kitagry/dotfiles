@@ -9,6 +9,7 @@ if [ ! $commands[sheldon] ]; then
 fi
 export XDG_CONFIG_HOME="$HOME/.config"
 eval "$(sheldon source)"
+eval "$(mise activate zsh)"
 
 [ -f "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
 if (which zprof > /dev/null 2>&1) ;then
