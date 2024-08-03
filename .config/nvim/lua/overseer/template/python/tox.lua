@@ -52,7 +52,7 @@ return {
     end,
   },
   generator = function(opts, cb)
-    local content = files.read_file(files.join(opts.dir, "tox.ini"))
+    local content = files.read_file(files.join(get_tox_dir(opts), "tox.ini"))
     local targets = {}
     for line in vim.gsplit(content, "\n") do
       local envlist = line:match("^envlist%s*=%s*(.+)$")
