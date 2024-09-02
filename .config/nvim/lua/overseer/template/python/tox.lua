@@ -52,7 +52,13 @@ return {
     end,
   },
   generator = function(opts, cb)
+    local ret = { tmpl }
+
     local content = files.read_file(files.join(get_tox_dir(opts), "tox.ini"))
+    if not content then
+      cb(ret)
+      return
+    end
     local targets = {}
     for line in vim.gsplit(content, "\n") do
       local envlist = line:match("^envlist%s*=%s*(.+)$")
@@ -70,7 +76,6 @@ return {
       end
     end
 
-    local ret = { tmpl }
     for k in pairs(targets) do
       table.insert(
         ret,
