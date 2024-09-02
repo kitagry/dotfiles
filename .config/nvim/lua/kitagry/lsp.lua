@@ -115,6 +115,13 @@ function M.setupLSP()
 
   mason_configs.setup_handlers {
     function(server)
+      if server == "ruff" then
+        nvim_lsp[server].setup({
+          capabilities = capabilities,
+          autostart = has_ruff(),
+        })
+        return
+      end
       nvim_lsp[server].setup({
         capabilities = capabilities,
       })
@@ -150,9 +157,9 @@ function M.setupLSP()
         settings = {
           yaml = {
             schemas = {
-              ["kubernetes"] = {"/k8s/**/*.yml", "/k8s/**/*.yaml", "/*.k8s.yaml"},
               ["http://json.schemastore.org/kustomization"] = "kustomization.yaml",
               ["https://raw.githubusercontent.com/argoproj/argo-workflows/master/api/jsonschema/schema.json"] = {"/k8s/**/*.yml", "/k8s/**/*.yaml", "/*.k8s.yaml"},
+              ["https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.29.1-standalone-strict/all.json"] = {"/k8s/**/*.yml", "/k8s/**/*.yaml", "/*.k8s.yaml"},
               ["https://raw.githubusercontent.com/magmax/atlassian-openapi/master/spec/bitbucket.yaml"] = {"bitbucket-pipelines.yml"},
             },
             format = {
@@ -179,19 +186,12 @@ function M.setupLSP()
               path = { "?.lua", "?/init.lua", "?/?.lua" },
             },
             workspace = {
-              library = library({ "neo-tree.nvim", "telescope.nvim" }),
+              library = library({ "neo-tree.nvim", "telescope.nvim", "overseer.nvim" }),
               checkThirdParty = "Disable",
             }
           }
         }
       })
-    end,
-    ["ruff_lsp"] = function ()
-      if has_ruff() then
-        nvim_lsp.ruff_lsp.setup({
-          capabilities = capabilities,
-        })
-      end
     end,
   }
 
@@ -237,6 +237,13 @@ end
 
 function M.setupPythonLSP()
   local python_path = 'python3'
+
+  local venv_path = vim.fs.find('python', {
+    path = './.venv/bin/'
+  })
+  if #venv_path ~= 0 then
+    python_path = string.format("%s/.venv/bin/python", vim.fn.getcwd())
+  end
 
   local poetry_lock = vim.fs.find('poetry.lock', {
     upward = true,

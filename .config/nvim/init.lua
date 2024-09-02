@@ -219,6 +219,21 @@ require("kitagry.lazy").setup({
       cmd.colorscheme('sonokai')
     end,
   },
+  { "zbirenbaum/copilot.lua",
+      cmd = "Copilot",
+      event = "InsertEnter",
+      config = function()
+        require("copilot").setup({})
+      end,
+  },
+  { "zbirenbaum/copilot-cmp",
+    dependencies = {
+      "zbirenbaum/copilot.lua",
+    },
+    config = function()
+      require("copilot_cmp").setup()
+    end,
+ },
   { "hrsh7th/nvim-cmp",
     dependencies = {
       "hrsh7th/cmp-buffer",
@@ -230,8 +245,7 @@ require("kitagry.lazy").setup({
       "hrsh7th/cmp-emoji",
       "lukas-reineke/cmp-rg",
       "saadparwaiz1/cmp_luasnip",
-      "hrsh7th/cmp-copilot",
-      "github/copilot.vim",
+      "zbirenbaum/copilot-cmp",
     },
     cond = vim.fn.exists('g:vscode') == 0,
     config = function()
@@ -366,7 +380,7 @@ require("kitagry.lazy").setup({
   { "CopilotC-Nvim/CopilotChat.nvim",
     branch = "canary",
     dependencies = {
-      "github/copilot.vim",
+      "zbirenbaum/copilot.lua",
       "nvim-lua/plenary.nvim",
     },
     opts = {},
@@ -564,7 +578,7 @@ require("kitagry.lazy").setup({
         sources = vim.list_extend(sources, {
           null_ls.builtins.diagnostics.textlint.with({
             cwd = function(params)
-              return params.root:match('.textlintrc')
+              return params.root:match('.textlintrc.json')
             end,
             filetypes = { 'markdown', 'review' },
             command = textlint_path(),
@@ -784,27 +798,13 @@ require("kitagry.lazy").setup({
       "FabijanZulj/blame.nvim",
     },
     init = function()
-      local git_push = function()
-        local current_branch = vim.fn["gin#component#branch#unicode"]()
-        if current_branch == 'master' or current_branch == 'main' then
-          local prompt = string.format('this wille push to %s? [y/N]', current_branch)
-          vim.ui.input({ prompt = prompt }, function(input)
-            if string.lower(input) == 'y' then
-              vim.cmd(string.format('Gin push -u origin %s', current_branch))
-            end
-          end)
-        else
-          vim.cmd(string.format('Gin push -u origin %s', current_branch))
-        end
-      end
-
       vim.keymap.set({ 'n', 'v' }, '[gin]', '<Nop>', { noremap = true })
       vim.keymap.set({ 'n', 'v' }, '<leader>g', '[gin]', { silent = true, remap = true })
       vim.keymap.set('n', '[gin]s', ':GinStatus<CR>', { remap = true })
       vim.keymap.set('n', '[gin]c', ':Gin commit<CR>', { remap = true })
       vim.keymap.set('n', '[gin]a', ':Gin commit --amend<CR>', { remap = true })
       vim.keymap.set('n', '[gin]l', ':GinLog --oneline<CR>', { remap = true })
-      vim.keymap.set('n', '[gin]p', git_push, { remap = true })
+      vim.keymap.set('n', '[gin]p', ':Gin push<CR>', { remap = true })
       vim.keymap.set('n', '[gin]d', ':GinDiff<CR>', { remap = true })
       vim.keymap.set({ 'n', 'v' }, '[gin]x', ':GinBrowse<CR>', { remap = true })
       vim.keymap.set({ 'n', 'v' }, '[gin]y', ':GinBrowse ++yank<CR>', { remap = true })
@@ -816,7 +816,7 @@ require("kitagry.lazy").setup({
       local augroup = vim.api.nvim_create_augroup('kitagry.gin', {})
       vim.api.nvim_create_autocmd('BufReadCmd', {
         group = augroup,
-        pattern = { 'gin://*', 'ginedit://*', 'ginlog://*', 'gindiff://*' },
+        pattern = { 'gin://*', 'ginedit://*', 'ginlog://*', 'gindiff://*', 'ginstatus://*' },
         callback = function(ctx)
           vim.keymap.set("n", "a", function()
             require("telescope.builtin").keymaps({ default_text = "gin-action " })
