@@ -35,6 +35,7 @@ apply = ['defer']
 
 [plugins.kubectl]
 github = "superbrothers/zsh-kubectl-prompt"
+apply = ['defer']
 
 [plugins.dotfiles-defers]
 local = "~/.zsh/defer"
