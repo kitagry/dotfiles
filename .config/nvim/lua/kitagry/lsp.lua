@@ -157,9 +157,9 @@ function M.setupLSP()
         settings = {
           yaml = {
             schemas = {
+              kubernetes = {"/k8s/**/*.yml", "/k8s/**/*.yaml", "/*.k8s.yaml"},
               ["http://json.schemastore.org/kustomization"] = "kustomization.yaml",
               ["https://raw.githubusercontent.com/argoproj/argo-workflows/master/api/jsonschema/schema.json"] = {"/k8s/**/*.yml", "/k8s/**/*.yaml", "/*.k8s.yaml"},
-              ["https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.29.1-standalone-strict/all.json"] = {"/k8s/**/*.yml", "/k8s/**/*.yaml", "/*.k8s.yaml"},
               ["https://raw.githubusercontent.com/magmax/atlassian-openapi/master/spec/bitbucket.yaml"] = {"bitbucket-pipelines.yml"},
             },
             format = {
@@ -237,6 +237,7 @@ end
 
 function M.setupPythonLSP()
   local python_path = 'python3'
+  local root_dir = vim.fn.getcwd()
 
   local venv_path = vim.fs.find('python', {
     path = './.venv/bin/'
@@ -256,6 +257,7 @@ function M.setupPythonLSP()
     for _, line in ipairs(output) do
       if vim.fn.isdirectory(line) == 1 then
         python_path = string.format("%s/bin/python", line)
+        root_dir = poetry_dir
         break
       end
     end
@@ -272,6 +274,7 @@ function M.setupPythonLSP()
     for _, line in ipairs(output) do
       if vim.fn.isdirectory(line) == 1 then
         python_path = string.format("%s/bin/python", line)
+        root_dir = pipfile_dir
         break
       end
     end
@@ -282,7 +285,8 @@ function M.setupPythonLSP()
     settings = {
       python = {
         pythonPath = python_path;
-      }
+      };
+      root_dir = root_dir;
     }
   }
 end
