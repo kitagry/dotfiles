@@ -15,11 +15,14 @@ export PATH="/usr/local/opt/llvm/bin:$PATH"
 export QT_HOMEBREW=true
 
 export NVIM_PROFILE_PATH="$HOME/.local/state/nvim/nvim.profile"
-export EDITOR="nvim --startuptime $NVIM_PROFILE_PATH"
-alias nvim=$EDITOR
+export EDITOR="nvim"
+# alias nvim=$EDITOR
+alias v=$EDITOR
 
 export PATH="$HOME/.cargo/bin:$PATH"
 source "$HOME/.cargo/env"
+
+export PATH="$HOME/.local/bin:$PATH"
 
 ###########################
 # unixコマンドのalias
@@ -77,7 +80,7 @@ alias tf="terraform"
 
 # see nvim startup probe
 export NVIM_STARTUPTIME_PATH="${XDG_STATE_HOME:-$HOME/.local/state}/nvim/startuptime.log"
-alias nvim="nvim --startuptime $NVIM_STARTUPTIME_PATH"
+# alias NVIM="NVIM --STARTUPTIME $nvim_startuptime_path"
 
 # mkdir and cd
 mkcd() {
