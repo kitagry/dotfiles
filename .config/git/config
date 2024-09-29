@@ -38,5 +38,6 @@
 	prune = true
 [rebase]
 	updateRef = true
+	autoSquash = true
 [stash]
 	showPatch = true

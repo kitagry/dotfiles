@@ -10,7 +10,9 @@ function right_prompt() {
     color="red"
   fi
 
-  echo "%F{$color}($ZSH_KUBECTL_PROMPT)%f"
+  local gcloud_config="$(cat $HOME/.config/gcloud/active_config)"
+
+  echo "%F{$color}($gcloud_config)($ZSH_KUBECTL_PROMPT)%f"
 }
 
 RPROMPT='$(right_prompt)'
