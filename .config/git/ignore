@@ -4,3 +4,5 @@ todo.md
 # tmp directory
 tmp/
 sandbox/
+
+.errors.txt
