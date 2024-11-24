@@ -1,14 +1,15 @@
-export ZENO_GIT_CAT="bat --color=always"
-export ZENO_GIT_TREE="gtree"
-bindkey ' ' zeno-auto-snippet
-bindkey '^m' zeno-auto-snippet-and-accept-line
-bindkey '^i' zeno-completion
-bindkey '^r' zeno-history-selection
-bindkey '^x^s' zeno-insert-snippet
+export ZENO_GIT_CAT="cat"
+export ZENO_GIT_TREE="tree"
+if [[ -n $ZENO_LOADED ]]; then
+  bindkey ' ' zeno-auto-snippet
+  bindkey '^m' zeno-auto-snippet-and-accept-line
+  bindkey '^i' zeno-completion
+  bindkey '^r' zeno-history-selection
+  bindkey '^x^s' zeno-insert-snippet
 
-zle -N git-switch-branch _git_switch_branch
-bindkey '^B' git-switch-branch
-bindkey '^b' git-switch-branch
+  zle -N git-switch-branch _git_switch_branch
+  bindkey '^B' git-switch-branch
+  bindkey '^b' git-switch-branch
 
 
 # cdのよく行くところへのalias
@@ -41,3 +42,4 @@ _ghq_cd() {
 }
 zle -N ghq-cd _ghq_cd
 bindkey '^g' ghq-cd
+fi
