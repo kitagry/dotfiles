@@ -8,7 +8,8 @@ if [[ -n $ZENO_LOADED ]]; then
   bindkey '^x^s' zeno-insert-snippet
 
   zle -N git-switch-branch _git_switch_branch
-  bindkey '^B' git-switch-branch
+  zle -N git-switch-branch-with-origin _git_switch_branch_with_remote
+  bindkey '^k' git-switch-branch-with-origin
   bindkey '^b' git-switch-branch
 
 
