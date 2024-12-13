@@ -13,4 +13,40 @@ _git_switch_branch() {
   git switch $branch
   zle accept-line
 }
+
+# contains(string, substring)
+#
+# Returns 0 if the specified string contains the specified substring,
+# otherwise returns 1.
+contains() {
+    string="$1"
+    substring="$2"
+    if [ "${string#*"$substring"}" != "$string" ]; then
+        return 0    # $substring is in $string
+    else
+        return 1    # $substring is not in $string
+    fi
+}
+
+# PRかMR名からブランチを切り替える
+_git_switch_branch_with_remote() {
+  local git_origin="$(git remote get-url origin)"
+  if [[ "$git_origin" =~ .*github.com.* ]]; then
+    # github
+    local pr_number=$(gh pr list | ${ZENO_FZF_COMMAND} ${ZENO_FZF_TMUX_OPTIONS} --prompt='Switch Branch >')
+
+    if [[ "$pr_number" =~ ^([0-9]*) ]]; then
+      gh pr checkout $match[1]
+      zle accept-line
+    fi
+  else
+    # gitlab
+    local mr_number=$(glab mr list | ${ZENO_FZF_COMMAND} ${ZENO_FZF_TMUX_OPTIONS} --prompt='Switch Branch >')
+
+    if [[ "$mr_number" =~ \!([0-9]*) ]]; then
+      glab mr checkout $match[1]
+      zle accept-line
+    fi
+  fi
+}
 ###########################
