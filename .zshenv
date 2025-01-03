@@ -16,7 +16,6 @@ export QT_HOMEBREW=true
 
 export NVIM_PROFILE_PATH="$HOME/.local/state/nvim/nvim.profile"
 export EDITOR="nvim"
-# alias nvim=$EDITOR
 alias v=$EDITOR
 
 export PATH="$HOME/.cargo/bin:$PATH"
