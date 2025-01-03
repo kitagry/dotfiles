@@ -49,8 +49,6 @@ require("kitagry.lazy").setup({
 
       if vim.fn.has('mac') == 1 then
         vim.opt.clipboard = 'unnamed'
-      else
-        vim.o.clipboard = vim.o.clipboard .. 'unnamedplus'
       end
     end,
   },
@@ -258,6 +256,7 @@ require("kitagry.lazy").setup({
         end
         return vim.tbl_keys(bufs)
       end
+
       cmp.setup {
         snippet = {
           expand = function(args)
@@ -384,6 +383,45 @@ require("kitagry.lazy").setup({
       "nvim-lua/plenary.nvim",
     },
     opts = {},
+    config = function()
+      local chat = require("CopilotChat")
+      local select = require('CopilotChat.select')
+
+      chat.setup({
+        -- プロンプトの設定
+        -- デフォルトは英語なので日本語でオーバーライドしています
+        prompts = {
+          Explain = {
+            prompt = '/COPILOT_EXPLAIN カーソル上のコードの説明を段落をつけて書いてください。',
+          },
+          Tests = {
+            prompt = '/COPILOT_TESTS カーソル上のコードの詳細な単体テスト関数を書いてください。',
+          },
+          Fix = {
+            prompt = '/COPILOT_FIX このコードには問題があります。バグを修正したコードに書き換えてください。',
+          },
+          Optimize = {
+            prompt = '/COPILOT_REFACTOR 選択したコードを最適化し、パフォーマンスと可読性を向上させてください。',
+          },
+          Docs = {
+            prompt = '/COPILOT_REFACTOR 選択したコードのドキュメントを書いてください。ドキュメントをコメントとして追加した元のコードを含むコードブロックで回答してください。使用するプログラミング言語に最も適したドキュメントスタイルを使用してください（例：JavaScriptのJSDoc、Pythonのdocstringsなど）',
+          },
+          FixDiagnostic = {
+            prompt = 'ファイル内の次のような診断上の問題を解決してください：',
+            selection = select.diagnostics,
+          }
+        }
+      })
+
+      vim.api.nvim_create_user_command("CopilotChatBuffer", function()
+        local input = vim.fn.input("Quick Chat: ")
+        if input == "" then
+          return
+        end
+
+        chat.ask(input, { selection = select.buffer })
+      end, { desc = "CopilotChat with the whole buffer input", nargs = "*" })
+    end,
   },
   { -- Neovim LSP
     "williamboman/mason.nvim",
@@ -494,17 +532,24 @@ require("kitagry.lazy").setup({
       local null_ls = require("null-ls")
       local parent = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":p:h")
       local poetry_lock_path = vim.fn.findfile('poetry.lock', parent .. ';')
+      local rye_lock_path = vim.fn.findfile('requirements-dev.lock', parent .. ';')
       local util = require("kitagry.util")
 
       ---@param commands string[]
-      local function with_poetry(builtin, commands)
-        if not poetry_lock_path then
-          return builtin
+      local function with_venv(builtin, commands)
+        if poetry_lock_path then
+          return builtin.with({
+            command = vim.list_extend({'poetry', 'run'}, commands),
+          })
         end
 
-        return builtin.with({
-          command = vim.list_extend({'poetry', 'run'}, commands),
-        })
+        if rye_lock_path then
+          return builtin.with({
+            command = vim.list_extend({'rye', 'run'}, commands),
+          })
+        end
+
+        return commands
       end
 
       local function has_ruff()
@@ -547,9 +592,9 @@ require("kitagry.lazy").setup({
 
         for line in vim.gsplit(content, "\n") do
           if vim.startswith(line, "black") then
-            return with_poetry(null_ls.builtins.formatting.black, {'black'})
+            return with_venv(null_ls.builtins.formatting.black, {'black'})
           elseif vim.startswith(line, "yapf") then
-            return with_poetry(null_ls.builtins.formatting.yapf, {'yapf'})
+            return with_venv(null_ls.builtins.formatting.yapf, {'yapf'})
           end
         end
       end
@@ -560,7 +605,7 @@ require("kitagry.lazy").setup({
 
       if not has_ruff() then
         sources = vim.list_extend(sources, {
-          with_poetry(null_ls.builtins.formatting.isort, {'isort'}),
+          with_venv(null_ls.builtins.formatting.isort, {'isort'}),
           formatter_for_python(),
         })
       end
@@ -595,6 +640,7 @@ require("kitagry.lazy").setup({
     dependencies = {
       "nvim-telescope/telescope-github.nvim",
       "nvim-telescope/telescope-ghq.nvim",
+      "nvim-telescope/telescope-frecency.nvim",
       "nvim-lua/popup.nvim",
       "nvim-lua/plenary.nvim",
     },
@@ -613,6 +659,7 @@ require("kitagry.lazy").setup({
       vim.keymap.set('n', '[telescope]h', builtin.help_tags, { remap = true })
       vim.keymap.set('n', '[telescope]a', builtin.git_branches, { remap = true })
       vim.keymap.set('n', '[telescope]c', builtin.command_history, { remap = true })
+      vim.keymap.set('n', '[telescope]q', ':<C-u>Telescope frecency workspace=CWD<CR>', { remap = true, silent = true })
     end,
     cond = vim.fn.exists('g:vscode') == 0,
     event = { "BufNewFile", "BufRead" },
@@ -620,6 +667,7 @@ require("kitagry.lazy").setup({
       local telescope = require('telescope')
       local actions = require('telescope.actions')
 
+      telescope.load_extension("frecency")
       telescope.setup({ defaults = require('telescope.themes').get_ivy({
         i = {
           ["<C-w>"] = actions.send_selected_to_qflist,
@@ -759,7 +807,7 @@ require("kitagry.lazy").setup({
       "nvim-tree/nvim-web-devicons",
       "MunifTanjim/nui.nvim",
       "s1n7ax/nvim-window-picker",
-      "kitagry/bqls.nvim",
+      -- "kitagry/bqls.nvim",
     },
     init = function()
       vim.keymap.set('n', '[neotree]', '<Nop>', { noremap = true })
@@ -1038,80 +1086,8 @@ require("kitagry.lazy").setup({
   { "stevearc/oil.nvim",
     config = function ()
       require("oil").setup()
-      -- vim.keymap.set('n', '[neotree]a', ':<C-u>Oil<CR>', { remap = true, silent = true })
-      -- vim.keymap.set('n', '[neotree]d', ':<C-u>Oil .<CR>', { remap = true, silent = true })
-    end
-  },
-  { "Tronikelis/xylene.nvim",
-    config = function()
-      require("xylene").setup({
-        on_attach = function(renderer)
-          vim.keymap.set("n", "<C-o>", function()
-            local row = vim.api.nvim_win_get_cursor(0)[1]
-
-            local file = renderer:find_file(row)
-            if not file then
-              return
-            end
-
-            require("oil").open(file.path)
-          end, { buffer = renderer.buf })
-          vim.keymap.set("n", "<c-f>", function()
-            local builtin = require("telescope.builtin")
-            local action_state = require("telescope.actions.state")
-            local actions = require("telescope.actions")
-
-            local commands = {"find", "-type", "d"}
-            if vim.fn.executable("fd") then
-              commands = {"fd", "-t", "d", "--hidden"}
-            end
-
-            builtin.find_files({
-              find_command = commands,
-              attach_mappings = function(_, map)
-                map("i", "<cr>", function(prompt_bufnr)
-                  local entry = action_state.get_selected_entry()
-                  actions.close(prompt_bufnr)
-
-                  local path = vim.fs.joinpath(entry.cwd, entry[1])
-                  -- remove trailing /
-                  path = path:sub(1, -2)
-
-                  local utils = require("xylene.utils")
-
-                  --- find the file that will be rendered
-                  --- in this case the root file
-                  local root, root_row
-                  for i, f in ipairs(renderer.files) do
-                    if utils.string_starts_with(path, f.path) then
-                      root_row = i
-                      root = f
-                      break
-                    end
-                  end
-
-                  local pre_from, pre_to = renderer:pre_render_file(root, root_row)
-
-                  local file, line = renderer:open_from_filepath(path)
-                  if not file then
-                    return
-                  end
-
-                  file:open()
-                  renderer:render_file(root, pre_from, pre_to)
-
-                  vim.api.nvim_win_set_cursor(0, { line, file:indent_len() })
-                end)
-
-                return true
-              end,
-            })
-          end, { buffer = renderer.buf })
-        end,
-      })
-
-      vim.keymap.set('n', '[neotree]a', ':<C-u>Xylene<CR>', { remap = true, silent = true })
-      vim.keymap.set('n', '[neotree]d', ':<C-u>Xylene .<CR>', { remap = true, silent = true })
+      vim.keymap.set('n', '[neotree]a', ':<C-u>Oil<CR>', { remap = true, silent = true })
+      vim.keymap.set('n', '[neotree]d', ':<C-u>Oil .<CR>', { remap = true, silent = true })
     end
   },
   { "hrsh7th/nvim-insx",
@@ -1215,6 +1191,7 @@ require("kitagry.lazy").setup({
       require("diffview").setup()
     end
   },
+  {"lambdalisue/vim-suda"}
 })
 
 local local_path = vim.env.HOME .. '/.config/nvim/init.local.lua'

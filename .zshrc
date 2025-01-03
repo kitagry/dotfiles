@@ -1,6 +1,10 @@
 # 環境変数
 export LANG=ja_JP.UTF-8
 
+if command -v $HOME/.cargo/bin/mise 1>/dev/null 2>&1; then
+  eval "$($HOME/.cargo/bin/mise activate zsh)"
+fi
+
 ### Added by zinit's installer
 eval "$(mise activate zsh)"
 if [ ! $commands[sheldon] ]; then

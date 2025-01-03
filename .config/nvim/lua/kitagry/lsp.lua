@@ -280,6 +280,14 @@ function M.setupPythonLSP()
     end
   end
 
+  local rye_lock = vim.fs.find('requirements-dev.lock', {
+    upward = true,
+    path = vim.fs.dirname(vim.api.nvim_buf_get_name(0))
+  })
+  if #rye_lock ~= 0 then
+    python_path = ".venv/bin/python"
+  end
+
   nvim_lsp.pyright.setup{
     capabilities = M.capabilities,
     settings = {
