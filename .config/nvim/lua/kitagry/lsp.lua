@@ -126,11 +126,11 @@ function M.setupLSP()
         capabilities = capabilities,
       })
     end,
-    ["tsserver"] = function ()
+    ["ts_ls"] = function ()
       if package_json == "" then
         return
       end
-      nvim_lsp.tsserver.setup({
+      nvim_lsp.ts_ls.setup({
         capabilities = capabilities,
       })
     end,
@@ -161,6 +161,7 @@ function M.setupLSP()
               ["http://json.schemastore.org/kustomization"] = "kustomization.yaml",
               ["https://raw.githubusercontent.com/argoproj/argo-workflows/master/api/jsonschema/schema.json"] = {"/k8s/**/*.yml", "/k8s/**/*.yaml", "/*.k8s.yaml"},
               ["https://raw.githubusercontent.com/magmax/atlassian-openapi/master/spec/bitbucket.yaml"] = {"bitbucket-pipelines.yml"},
+              ["https://raw.githubusercontent.com/GoogleContainerTools/skaffold/main/docs-v2/content/en/schemas/v4beta11.json"] = {"skaffold.yaml"}
             },
             format = {
               enable = true,
@@ -235,15 +236,12 @@ function M.setupLSP()
   }
 end
 
-function M.setupPythonLSP()
-  local python_path = 'python3'
-  local root_dir = vim.fn.getcwd()
-
+local function find_python_path()
   local venv_path = vim.fs.find('python', {
     path = './.venv/bin/'
   })
   if #venv_path ~= 0 then
-    python_path = string.format("%s/.venv/bin/python", vim.fn.getcwd())
+    return { python_path = string.format("%s/.venv/bin/python", vim.fn.getcwd()), root_dir = vim.fn.getcwd() }
   end
 
   local poetry_lock = vim.fs.find('poetry.lock', {
@@ -256,9 +254,7 @@ function M.setupPythonLSP()
     local output = vim.split(virtual_env_path, '\n')
     for _, line in ipairs(output) do
       if vim.fn.isdirectory(line) == 1 then
-        python_path = string.format("%s/bin/python", line)
-        root_dir = poetry_dir
-        break
+        return { python_path = string.format("%s/bin/python", line), root_dir = poetry_dir }
       end
     end
   end
@@ -273,9 +269,7 @@ function M.setupPythonLSP()
     local output = vim.split(virtual_env_path, '\n')
     for _, line in ipairs(output) do
       if vim.fn.isdirectory(line) == 1 then
-        python_path = string.format("%s/bin/python", line)
-        root_dir = pipfile_dir
-        break
+        return { python_path = string.format("%s/bin/python", line), root_dir = pipfile_dir }
       end
     end
   end
@@ -285,16 +279,23 @@ function M.setupPythonLSP()
     path = vim.fs.dirname(vim.api.nvim_buf_get_name(0))
   })
   if #rye_lock ~= 0 then
-    python_path = ".venv/bin/python"
+    local rye_lock_dir = vim.fn.dirname(rye_lock[1])
+    return { python_path = string.format("%s/.venv/bin/python", rye_lock_dir), root_dir = rye_lock_dir }
   end
+
+  return { python_path = 'python3', root_dir = vim.fn.getcwd() }
+end
+
+function M.setupPythonLSP()
+  local config = find_python_path()
 
   nvim_lsp.pyright.setup{
     capabilities = M.capabilities,
     settings = {
       python = {
-        pythonPath = python_path;
+        pythonPath = config.python_path,
       };
-      root_dir = root_dir;
+      root_dir = config.root_dir,
     }
   }
 end
