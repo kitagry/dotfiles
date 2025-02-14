@@ -49,6 +49,19 @@ require("kitagry.lazy").setup({
 
       if vim.fn.has('mac') == 1 then
         vim.opt.clipboard = 'unnamed'
+      elseif vim.fn.has('wsl') then
+        vim.opt.clipboard = 'unnamedplus'
+        vim.g.clipboard = {
+          name = 'WslClipboard',
+          copy = {
+            ["+"] = "win32yank.exe -i",
+            ["*"] = "win32yank.exe -i",
+          },
+          paste = {
+            ["+"] = "win32yank.exe -o",
+            ["*"] = "win32yank.exe -o",
+          },
+        }
       end
     end,
   },
