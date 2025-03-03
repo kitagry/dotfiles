@@ -192,6 +192,7 @@ require("kitagry.lazy").setup({
 
       -- '%%'でアクティブなバッファのディレクトリを開いてくれる
       vim.keymap.set('c', '%%', "getcmdtype() == ':' ? expand('%:h').'/' : '%%'", { expr = true })
+      vim.keymap.set('c', '%F', "getcmdtype() == ':' ? expand('%:p') : '%F'", { expr = true })
 
       vim.keymap.set('i', '<C-l>', '<C-G>U<Right>', { silent = true })
       vim.keymap.set('i', '<Left>', '<C-G>U<Left>', { silent = true })
