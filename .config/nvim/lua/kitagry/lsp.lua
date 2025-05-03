@@ -259,6 +259,15 @@ local function find_python_path()
     end
   end
 
+  local uv_lock = vim.fs.find('uv.lock', {
+    upward = true,
+    path = vim.fs.dirname(vim.api.nvim_buf_get_name(0)),
+  })
+  if #uv_lock ~= 0 then
+    local uv_dir = vim.fs.dirname(uv_lock[1])
+    return { python_path = string.format("%s/.venv/bin/python", uv_dir), root_dir = uv_dir }
+  end
+
   local pipfile_lock = vim.fs.find('Pipfile.lock', {
     upward = true,
     path = vim.fs.dirname(vim.api.nvim_buf_get_name(0)),

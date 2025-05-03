@@ -116,7 +116,7 @@ require("kitagry.lazy").setup({
       })
       vim.api.nvim_create_autocmd({ 'BufNewFile', 'BufRead' }, {
         group = 'filetype_indent',
-        pattern = { '*.go', '*.rego' },
+        pattern = { '*.go', '*.rego', 'go.mod' },
         callback = function()
           vim.bo.expandtab = false
         end
@@ -232,13 +232,19 @@ require("kitagry.lazy").setup({
     end,
   },
   { "zbirenbaum/copilot.lua",
+      cond = vim.fn.exists('g:vscode') == 0,
       cmd = "Copilot",
       event = "InsertEnter",
       config = function()
-        require("copilot").setup({})
+        require("copilot").setup({
+          filetypes = {
+            gitcommit = true,
+          },
+        })
       end,
   },
   { "zbirenbaum/copilot-cmp",
+    cond = vim.fn.exists('g:vscode') == 0,
     dependencies = {
       "zbirenbaum/copilot.lua",
     },
@@ -395,36 +401,19 @@ require("kitagry.lazy").setup({
       "zbirenbaum/copilot.lua",
       "nvim-lua/plenary.nvim",
     },
+    cond = vim.fn.exists('g:vscode') == 0,
+    build = "make tiktoken",
     opts = {},
+    keys = {
+        { "<leader>cc", "<cmd>CopilotChatToggle<cr>", mode = { "n", "v" }, desc = "CopilotChat" },
+        { "<leader>ca", "<cmd>CopilotChatAgents<cr>", mode = { "n", "v" }, desc = "CopilotChatAgents" },
+        { "<leader>ct", "<cmd>CopilotChatPrompts<cr>", mode = { "n", "v" }, desc = "CopilotChatPrompts" },
+    },
     config = function()
       local chat = require("CopilotChat")
       local select = require('CopilotChat.select')
 
-      chat.setup({
-        -- プロンプトの設定
-        -- デフォルトは英語なので日本語でオーバーライドしています
-        prompts = {
-          Explain = {
-            prompt = '/COPILOT_EXPLAIN カーソル上のコードの説明を段落をつけて書いてください。',
-          },
-          Tests = {
-            prompt = '/COPILOT_TESTS カーソル上のコードの詳細な単体テスト関数を書いてください。',
-          },
-          Fix = {
-            prompt = '/COPILOT_FIX このコードには問題があります。バグを修正したコードに書き換えてください。',
-          },
-          Optimize = {
-            prompt = '/COPILOT_REFACTOR 選択したコードを最適化し、パフォーマンスと可読性を向上させてください。',
-          },
-          Docs = {
-            prompt = '/COPILOT_REFACTOR 選択したコードのドキュメントを書いてください。ドキュメントをコメントとして追加した元のコードを含むコードブロックで回答してください。使用するプログラミング言語に最も適したドキュメントスタイルを使用してください（例：JavaScriptのJSDoc、Pythonのdocstringsなど）',
-          },
-          FixDiagnostic = {
-            prompt = 'ファイル内の次のような診断上の問題を解決してください：',
-            selection = select.diagnostics,
-          }
-        }
-      })
+      chat.setup({})
 
       vim.api.nvim_create_user_command("CopilotChatBuffer", function()
         local input = vim.fn.input("Quick Chat: ")
@@ -541,6 +530,7 @@ require("kitagry.lazy").setup({
     end,
   },
   { "nvimtools/none-ls.nvim",
+    cond = vim.fn.exists('g:vscode') == 0,
     config = function()
       local null_ls = require("null-ls")
       local parent = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":p:h")
@@ -932,12 +922,15 @@ require("kitagry.lazy").setup({
       })
     end
   },
-  { "stevearc/dressing.nvim",
-    config = function()
-      require("dressing").setup()
-    end
+  { "folke/snacks.nvim",
+    opts = {
+      picker = {
+        ui_select = true
+      }
+    }
   },
   { "stevearc/overseer.nvim",
+    cond = vim.fn.exists('g:vscode') == 0,
     config = function()
       require("overseer").setup({
         templates = { "rust", "go", "python", "make", "javascript" },
@@ -972,6 +965,7 @@ require("kitagry.lazy").setup({
     dependencies = {
       "arkav/lualine-lsp-progress",
     },
+    cond = vim.fn.exists('g:vscode') == 0,
     config = function()
       require("lualine").setup({
         icons_enabled = false,
@@ -1017,6 +1011,7 @@ require("kitagry.lazy").setup({
       vim.keymap.set('n', '<C-j>', '<cmd>exe v:count1 . "ToggleTerm direction=horizontal"<CR>', {})
       vim.keymap.set('n', '<leader>t', '<cmd>exe v:count1 . "ToggleTerm direction=float"<CR>', {})
     end,
+    cond = vim.fn.exists('g:vscode') == 0,
     config = function()
       require("toggleterm").setup({
         start_in_insert = false,
@@ -1086,6 +1081,7 @@ require("kitagry.lazy").setup({
     dependencies = {
       "mason.nvim"
     },
+    cond = vim.fn.exists('g:vscode') == 0,
     config = function()
       require("lspconfig").bqls.setup({
         capabilities = require("kitagry.lsp").capabilities,
@@ -1097,6 +1093,7 @@ require("kitagry.lazy").setup({
   },
   { "iamcco/markdown-preview.nvim" },
   { "stevearc/oil.nvim",
+    cond = vim.fn.exists('g:vscode') == 0,
     config = function ()
       require("oil").setup()
       vim.keymap.set('n', '[neotree]a', ':<C-u>Oil<CR>', { remap = true, silent = true })
@@ -1208,6 +1205,7 @@ require("kitagry.lazy").setup({
   { "yetone/avante.nvim",
     event = "VeryLazy",
     build = "make",
+    cond = vim.fn.exists('g:vscode') == 0,
     dependencies = {
       "stevearc/dressing.nvim",
       "nvim-lua/plenary.nvim",

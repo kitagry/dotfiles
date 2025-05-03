@@ -15,6 +15,9 @@ local tmpl = {
     if util.search_files({'poetry.lock'}) then
       cmd = vim.list_extend({'poetry', 'run'}, cmd)
     end
+    if util.search_files({'uv.lock'}) then
+      cmd = vim.list_extend({'uv', 'run'}, cmd)
+    end
     if params.args then
       cmd = vim.list_extend(cmd, params.args)
     end
