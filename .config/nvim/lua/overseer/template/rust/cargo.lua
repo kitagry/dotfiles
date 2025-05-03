@@ -63,7 +63,8 @@ return {
     local commands = {
       {"run"},
       {"check"},
-      {"test"},
+      {"quickfix"},
+      {"quickfix", "test"},
       {"clippy", "--", "-D", "warnings"}
     }
 
