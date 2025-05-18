@@ -556,22 +556,19 @@ require("kitagry.lazy").setup({
       end
 
       local function has_ruff()
-        if not poetry_lock_path then
-          return null_ls.builtins.formatting.black
-        end
 
         local path = util.search_files({ 'pyproject.toml' })
         if path == nil then
-          return null_ls.builtins.formatting.black
+          return false
         end
 
         local content = util.read_file(path .. '/pyproject.toml')
         if content == nil then
-          return null_ls.builtins.formatting.black
+          return false
         end
 
         for line in vim.gsplit(content, "\n") do
-          if vim.startswith(line, "ruff") then
+          if string.find(line, "ruff", 1, true) ~= nil then
             return true
           end
         end
@@ -603,7 +600,7 @@ require("kitagry.lazy").setup({
       end
 
       local sources = {
-        null_ls.builtins.code_actions.gomodifytags,
+        -- null_ls.builtins.code_actions.gomodifytags,
       }
 
       if not has_ruff() then

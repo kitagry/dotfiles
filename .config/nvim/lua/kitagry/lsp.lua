@@ -53,9 +53,9 @@ local function has_ruff()
   end
 
   for line in vim.gsplit(content, "\n") do
-    if vim.startswith(line, "ruff") then
-      return true
-    end
+      if string.find(line, "ruff", 1, true) ~= nil then
+        return true
+      end
   end
   return false
 end
@@ -113,12 +113,27 @@ function M.setupLSP()
   local parent = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":p:h")
   local package_json = vim.fn.findfile('package.json', parent .. ';')
 
+  local pyprojects = vim.fs.find('pyproject.toml', {
+    upward = true,
+    path = vim.fs.dirname(vim.api.nvim_buf_get_name(0)),
+  })
+
+  local pyproject = ""
+  if #pyprojects > 0 then
+    pyproject = pyprojects[1]
+  end
+
   mason_configs.setup_handlers {
     function(server)
       if server == "ruff" then
         nvim_lsp[server].setup({
           capabilities = capabilities,
           autostart = has_ruff(),
+          settings = {
+            format = {
+              args = { "--config=" .. pyproject },
+            }
+          },
         })
         return
       end
