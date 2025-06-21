@@ -630,11 +630,24 @@ require("kitagry.lazy").setup({
     },
     init = function()
       local builtin = require('telescope.builtin')
+      local action_state = require("telescope.actions.state")
 
       vim.keymap.set('n', '[telescope]', '<Nop>', { noremap = true })
       vim.keymap.set('n', '<leader>f', '[telescope]', { silent = true, remap = true })
       vim.keymap.set('n', '[telescope]r', builtin.resume, { remap = true })
-      vim.keymap.set('n', '[telescope]f', builtin.find_files, { remap = true })
+      vim.keymap.set('n', '[telescope]f', function()
+        builtin.find_files({
+          attach_mappings = function(_, map)
+            map("i", "<C-h>", function(prompt_bufnr)
+              local current_picker = action_state.get_current_picker(prompt_bufnr)
+              local opts = current_picker:find("opts") or {}
+              opts.hidden = not opts.hidden -- hiddenをトグル
+              builtin.find_files(opts)
+            end)
+            return true
+          end,
+        })
+      end, { remap = true })
       vim.keymap.set('n', '[telescope]g', builtin.live_grep, { remap = true })
       vim.keymap.set('n', '[telescope]]', builtin.grep_string, { remap = true })
       vim.keymap.set('n', '[telescope]d', builtin.lsp_document_symbols, { remap = true })
@@ -791,7 +804,7 @@ require("kitagry.lazy").setup({
       "nvim-tree/nvim-web-devicons",
       "MunifTanjim/nui.nvim",
       "s1n7ax/nvim-window-picker",
-      -- "kitagry/bqls.nvim",
+      "kitagry/bqls.nvim",
     },
     init = function()
       vim.keymap.set('n', '[neotree]', '<Nop>', { noremap = true })
@@ -819,6 +832,9 @@ require("kitagry.lazy").setup({
               ["/"] = "noop"
             }
           }
+        },
+        bqls = {
+          project_ids = vim.env.BQLS_PROJECT_IDS and vim.split(vim.env.BQLS_PROJECT_IDS, ",") or {},
         },
       })
     end
@@ -1060,7 +1076,8 @@ require("kitagry.lazy").setup({
   },
   { "kitagry/bqls.nvim",
     dependencies = {
-      "mason.nvim"
+      "mason.nvim",
+      "mason-lspconfig.nvim",
     },
     cond = vim.fn.exists('g:vscode') == 0,
     config = function()
