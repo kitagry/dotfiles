@@ -409,21 +409,6 @@ require("kitagry.lazy").setup({
         { "<leader>ca", "<cmd>CopilotChatAgents<cr>", mode = { "n", "v" }, desc = "CopilotChatAgents" },
         { "<leader>ct", "<cmd>CopilotChatPrompts<cr>", mode = { "n", "v" }, desc = "CopilotChatPrompts" },
     },
-    config = function()
-      local chat = require("CopilotChat")
-      local select = require('CopilotChat.select')
-
-      chat.setup({})
-
-      vim.api.nvim_create_user_command("CopilotChatBuffer", function()
-        local input = vim.fn.input("Quick Chat: ")
-        if input == "" then
-          return
-        end
-
-        chat.ask(input, { selection = select.buffer })
-      end, { desc = "CopilotChat with the whole buffer input", nargs = "*" })
-    end,
   },
   { -- Neovim LSP
     "williamboman/mason.nvim",
@@ -556,7 +541,6 @@ require("kitagry.lazy").setup({
       end
 
       local function has_ruff()
-
         local path = util.search_files({ 'pyproject.toml' })
         if path == nil then
           return false
@@ -610,26 +594,26 @@ require("kitagry.lazy").setup({
         })
       end
 
-      local function textlint_path()
-        local path = util.search_files({ './node_modules/textlint/bin/textlint.js' })
-        if path then
-          return './node_modules/textlint/bin/textlint.js'
-        end
-        return 'textlint'
-      end
-
-      local has_textlint = util.search_files({ 'package.json' })
-      if has_textlint ~= nil then
-        sources = vim.list_extend(sources, {
-          null_ls.builtins.diagnostics.textlint.with({
-            cwd = function(params)
-              return params.root:match('.textlintrc.json')
-            end,
-            filetypes = { 'markdown', 'review' },
-            command = textlint_path(),
-          })
-        })
-      end
+      -- local function textlint_path()
+      --   local path = util.search_files({ './node_modules/textlint/bin/textlint.js' })
+      --   if path then
+      --     return './node_modules/textlint/bin/textlint.js'
+      --   end
+      --   return 'textlint'
+      -- end
+      --
+      -- local has_textlint = util.search_files({ 'package.json' })
+      -- if has_textlint ~= nil then
+      --   sources = vim.list_extend(sources, {
+      --     null_ls.builtins.diagnostics.textlint.with({
+      --       cwd = function(params)
+      --         return params.root:match('.textlintrc.json')
+      --       end,
+      --       filetypes = { 'markdown', 'review' },
+      --       command = textlint_path(),
+      --     })
+      --   })
+      -- end
 
       null_ls.setup({
         sources = sources,
@@ -812,7 +796,7 @@ require("kitagry.lazy").setup({
     init = function()
       vim.keymap.set('n', '[neotree]', '<Nop>', { noremap = true })
       vim.keymap.set('n', '<leader>d', '[neotree]', { silent = true, remap = true })
-      vim.keymap.set('n', '[neotree]a', ':<C-u>Neotree toggle reveal<CR>', { remap = true, silent = true })
+      vim.keymap.set('n', '[neotree]c', ':<C-u>Neotree toggle reveal<CR>', { remap = true, silent = true })
       vim.keymap.set('n', '[neotree]b', ':<C-u>Neotree toggle bqls<CR>', { remap = true, silent = true })
     end,
     config = function()
@@ -1198,51 +1182,19 @@ require("kitagry.lazy").setup({
       require("diffview").setup()
     end
   },
-  {"lambdalisue/vim-suda"},
-  { "yetone/avante.nvim",
-    event = "VeryLazy",
-    build = "make",
-    cond = vim.fn.exists('g:vscode') == 0,
+  { "lambdalisue/vim-suda" },
+  { "tokorom/vim-review" },
+  { "coder/claudecode.nvim",
     dependencies = {
-      "stevearc/dressing.nvim",
-      "nvim-lua/plenary.nvim",
-      "MunifTanjim/nui.nvim",
-      --- The below dependencies are optional,
-      "hrsh7th/nvim-cmp", -- autocompletion for avante commands and mentions
-      "nvim-tree/nvim-web-devicons", -- or echasnovski/mini.icons
-      "zbirenbaum/copilot.lua", -- for providers='copilot'
-      {
-        -- support for image pasting
-        "HakonHarnes/img-clip.nvim",
-        event = "VeryLazy",
-        opts = {
-          -- recommended settings
-          default = {
-            embed_image_as_base64 = false,
-            prompt_for_file_name = false,
-            drag_and_drop = {
-              insert_mode = true,
-            },
-            -- required for Windows users
-            use_absolute_path = true,
-          },
-        },
-      },
-      {
-        -- Make sure to set this up properly if you have lazy=true
-        'MeanderingProgrammer/render-markdown.nvim',
-        opts = {
-          file_types = { "markdown", "Avante" },
-        },
-        ft = { "markdown", "Avante" },
-      },
+      "folke/snacks.nvim", -- Optional for enhanced terminal
     },
-    config = function()
-      require("avante").setup({
-          provider = "copilot",
-      })
-    end
-  }
+    config = true,
+    keys = {
+        { "<leader>ac", "<cmd>ClaudeCode<cr>", desc = "ClaudeCode" },
+        { "<leader>as", "<cmd>ClaudeCodeSend<cr>", mode = "v", desc = "Send to Claude" },
+        { "<leader>as", "<cmd>ClaudeCodeTreeAdd<cr>", desc = "Add file", ft = { "NvimTree", "neo-tree" }},
+    },
+  },
 })
 
 local local_path = vim.env.HOME .. '/.config/nvim/init.local.lua'
