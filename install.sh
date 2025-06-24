@@ -7,7 +7,7 @@ if !(type "mise" > /dev/null 2>&1); then
   export PATH="$HOME/.local/bin:$PATH"
 fi
 
-declare -a MISE_INSTALL_PLUGINS=('git go ghq')
+declare -a MISE_INSTALL_PLUGINS=('go ghq deno fzf gh neovim node rust tmux')
 declare -a MISE_INSTALLED_PLUGINS=$(mise list | cut -d ' ' -f 1)
 
 array_check() {
