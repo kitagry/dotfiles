@@ -9,7 +9,6 @@ export GOPATH="$HOME/go/"
 export GO111MODULE=on
 
 export PATH="$GOPATH/bin:$PATH"
-export NVIM_LISTEN_ADDRESS="/tmp/nvimsocket"
 
 export PATH="/usr/local/opt/llvm/bin:$PATH"
 export QT_HOMEBREW=true
