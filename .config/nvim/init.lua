@@ -689,7 +689,7 @@ require("kitagry.lazy").setup({
     config = function()
       require('nvim-treesitter.configs').setup {
         ensure_installed = 'all',
-        ignore_install = { 'haskell' },
+        ignore_install = { 'haskell', 'ipkg' },
         highlight = {
           enable = true,
           additional_vim_regex_highlighting = { 'org' },
