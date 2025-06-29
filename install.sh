@@ -7,27 +7,6 @@ if !(type "mise" > /dev/null 2>&1); then
   export PATH="$HOME/.local/bin:$PATH"
 fi
 
-declare -a MISE_INSTALL_PLUGINS=('go ghq deno fzf gh neovim node rust tmux')
-declare -a MISE_INSTALLED_PLUGINS=$(mise list | cut -d ' ' -f 1)
-
-array_check() {
-  for installed_item in $MISE_INSTALLED_PLUGINS
-  do
-    if [ "$installed_item" = "$1" ]; then
-      return 1
-    fi
-  done
-  return 0
-}
-
-for item in $MISE_INSTALL_PLUGINS
-do
-  if !(mise list | grep $item > /dev/null 2>&1); then
-    mise install "$item@latest"
-    mise use -g "$item@latest"
-  fi
-done
-
 source ./download_file.sh
 
 DOT_DIRECTORY=${PWD}

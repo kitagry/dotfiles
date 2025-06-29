@@ -1,0 +1,11 @@
+[tools]
+go = 'latest'
+ghq = 'latest'
+deno = 'latest'
+fzf = 'latest'
+gh = 'latest'
+neovim = 'latest'
+node = 'latest'
+rust = 'latest'
+tmux = 'latest'
+"npm:@anthropic-ai/claude-code" = 'latest'
