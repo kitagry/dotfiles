@@ -10,7 +10,7 @@ fi
 source ./download_file.sh
 
 DOT_DIRECTORY=${PWD}
-declare -a DIRECTORIES=('.config .vim .zsh')
+declare -a DIRECTORIES=('.config .vim .zsh .claude')
 
 for f in .??*
 do
