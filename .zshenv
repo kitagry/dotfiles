@@ -5,7 +5,9 @@ export LC_TYPE=ja_JP.UTF-8
 export PATH="/usr/local/bin:/usr/local/sbin:/sbin/:$PATH"
 export PATH="/usr/local/opt/python@3/bin:$PATH"
 export PATH="/usr/local/lib:/usr/local/texlive/2017/bin/x86_64-darwin/tlmgr:$PATH"
-export GOPATH="$HOME/go/"
+export GOPATH="$HOME/go"
+export GOBIN="$GOPATH/bin"
+export CXX=clang++
 export GO111MODULE=on
 
 export PATH="$GOPATH/bin:$PATH"

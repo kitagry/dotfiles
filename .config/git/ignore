@@ -6,3 +6,10 @@ tmp/
 sandbox/
 
 .errors.txt
+
+# for ruby
+gems/
+
+CLAUDE.local.md
+
+**/.claude/settings.local.json
