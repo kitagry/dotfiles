@@ -9,3 +9,4 @@ node = 'latest'
 rust = 'latest'
 tmux = 'latest'
 "npm:@anthropic-ai/claude-code" = 'latest'
+eza = "latest"
