@@ -1219,6 +1219,18 @@ require("kitagry.lazy").setup({
         { "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>", desc = "Deny diff" },
     },
   },
+  { "NeogitOrg/neogit",
+    dependencies = {
+      "nvim-lua/plenary.nvim",         -- required
+      "sindrets/diffview.nvim",        -- optional - Diff integration
+
+      -- Only one of these is needed.
+      "nvim-telescope/telescope.nvim", -- optional
+      "ibhagwan/fzf-lua",              -- optional
+      "echasnovski/mini.pick",         -- optional
+      "folke/snacks.nvim",             -- optional
+    },
+  },
 })
 
 local local_path = vim.env.HOME .. '/.config/nvim/init.local.lua'
