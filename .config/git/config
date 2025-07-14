@@ -14,8 +14,9 @@
 	useForceIfIncludes = true
 [commit]
 	verbose = true
-[url "git@github.com:"]
-	insteadOf = https://github.com/
+[credential "https://github.com"]
+	helper =
+	helper = !gh auth git-credential
 [init]
 	defaultBranch = main
 [pager]
