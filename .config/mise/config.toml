@@ -16,3 +16,11 @@ direnv = "latest"
 poetry = "latest"
 yq = "latest"
 "npm:@google/gemini-cli" = "latest"
+fd = "latest"
+python = "latest"
+"pipx:mcp-obsidian" = "latest"
+duckdb = "latest"
+uv = "latest"
+
+[settings]
+idiomatic_version_file_enable_tools = ["python"]
