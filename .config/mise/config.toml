@@ -4,7 +4,7 @@ ghq = 'latest'
 deno = 'latest'
 fzf = 'latest'
 gh = 'latest'
-neovim = "latest"
+neovim = "nightly"
 node = 'latest'
 rust = 'latest'
 tmux = 'latest'
@@ -21,6 +21,7 @@ python = "latest"
 "pipx:mcp-obsidian" = "latest"
 duckdb = "latest"
 uv = "latest"
+gcloud = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["python"]
