@@ -1070,7 +1070,7 @@ require("kitagry.lazy").setup({
     },
     cond = vim.fn.exists('g:vscode') == 0,
     config = function()
-      vim.lsp.config.bqls.setup({
+      vim.lsp.config('bqls', {
         capabilities = require("kitagry.lsp").capabilities,
         init_options = {
           project_id = "bigquery-public-data",
