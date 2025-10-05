@@ -12,10 +12,12 @@ local tmpl = {
   },
   builder = function(params)
     local cmd = { "tox" }
-    if util.search_files({'poetry.lock'}) then
+    local poetry_lock_paths = vim.fs.find({ 'poetry.lock' }, { type = 'file' })
+    if #poetry_lock_paths ~= 0 then
       cmd = vim.list_extend({'poetry', 'run'}, cmd)
     end
-    if util.search_files({'uv.lock'}) then
+    local uv_lock_path = vim.fs.find({ 'uv.lock' }, { type = 'file' })
+    if #uv_lock_path ~= 0 then
       cmd = vim.list_extend({'uv', 'run'}, cmd)
     end
     if params.args then

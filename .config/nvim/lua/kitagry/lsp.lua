@@ -1,5 +1,4 @@
 local vim = vim
-local nvim_lsp = require('lspconfig')
 local configs = require('lspconfig.configs')
 local util = require('lspconfig.util')
 local mason = require('mason')
@@ -260,7 +259,7 @@ function M.setupLSP()
       };
     }
   end
-  nvim_lsp.regols.setup{
+  vim.lsp.config.regols.setup{
     capabilities = capabilities,
   }
 
@@ -280,10 +279,10 @@ function M.setupLSP()
   --     };
   --   };
   -- }
-  -- nvim_lsp.sqls.setup{
+  -- vim.lsp.config.sqls.setup{
   --   capabilities = capabilities,
   -- }
-  nvim_lsp.solargraph.setup{
+  vim.lsp.config.solargraph.setup{
     capabilities = capabilities,
   }
 end
