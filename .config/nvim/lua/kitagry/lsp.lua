@@ -247,8 +247,8 @@ function M.setupLSP()
     },
   }
 
-  if not configs.regols then
-    configs.regols = {
+  if not vim.lsp.config.regols then
+    vim.lsp.config.regols = {
       default_config = {
         cmd = { 'regols' };
         filetypes = { 'rego' };
@@ -259,9 +259,9 @@ function M.setupLSP()
       };
     }
   end
-  vim.lsp.config.regols.setup{
+  vim.lsp.config('regols', {
     capabilities = capabilities,
-  }
+  })
 
   vim.cmd[[
     command! BQUpdateCache lua vim.lsp.buf_request(0, "bq/updateCache", nil, function() end)
@@ -282,9 +282,9 @@ function M.setupLSP()
   -- vim.lsp.config.sqls.setup{
   --   capabilities = capabilities,
   -- }
-  vim.lsp.config.solargraph.setup{
+  vim.lsp.config('solargraph', {
     capabilities = capabilities,
-  }
+  })
 end
 
 local function code_action_sync_handler(actions)
