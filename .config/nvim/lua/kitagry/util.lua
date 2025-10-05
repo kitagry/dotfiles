@@ -5,13 +5,6 @@ local M = {}
 local is_windows = vim.loop.os_uname().version:match("Windows")
 local path_sep = is_windows and "\\" or "/"
 
-local function path_join(...)
-  local result =
-    table.concat(
-      vim.tbl_flatten {...}, path_sep):gsub(path_sep.."+", path_sep)
-  return result
-end
-
 local is_fs_root
 if is_windows then
   is_fs_root = function(path)
@@ -53,23 +46,6 @@ local function search_ancestors(startpath, func)
   for path in iterate_parents(startpath) do
     if func(path) then return path end
   end
-end
-
--- util.search_files({'SEARCH_FILE'})
-function M.search_files(...)
-  local patterns = vim.tbl_flatten {...}
-  local function matcher(path)
-    for _, pattern in ipairs(patterns) do
-      for _, p in ipairs(vim.fn.glob(path_join(path, pattern), true, true)) do
-        local f = io.open(p, "r")
-        if f ~= nil then
-          f.close()
-          return path
-        end
-      end
-    end
-  end
-  return search_ancestors(vim.fn.expand("%:p:h"), matcher)
 end
 
 ---@param filepath string

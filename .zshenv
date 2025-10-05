@@ -35,7 +35,36 @@ alias ll="ls -la"
 # neovimコマンドのalias
 ###########################
 rgvim() {
-  file=$(rg --color=never --no-heading -n $@ | fzf)
+  local rg_args=()
+  local search_path="."
+  local pattern=""
+
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      -h|--hidden)
+        rg_args+=(--hidden)
+        shift
+        ;;
+      -g|--glob)
+        rg_args+=(--glob "$2")
+        shift 2
+        ;;
+      *)
+        pattern="$*"
+        break
+        ;;
+    esac
+  done
+
+  if [[ -z "$pattern" ]]; then
+    echo "Usage: rgvim [OPTIONS] PATTERN"
+    echo "Options:"
+    echo "  -h, --hidden      Include hidden files"
+    echo "  -g, --glob GLOB   Add glob pattern"
+    return 1
+  fi
+
+  file=$(rg --color=never --no-heading -n "${rg_args[@]}" "$pattern" "$search_path" | fzf)
   if [ $file ]; then
     file_name=$(echo $file | cut -d ':' -f 1)
     line=$(echo $file | cut -d ':' -f 2)

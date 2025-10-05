@@ -541,12 +541,12 @@ require("kitagry.lazy").setup({
       end
 
       local function has_ruff()
-        local path = util.search_files({ 'pyproject.toml' })
-        if path == nil then
+        local path = vim.fs.find({ 'pyproject.toml' }, { type = 'file' })
+        if #path == 0 then
           return false
         end
 
-        local content = util.read_file(path .. '/pyproject.toml')
+        local content = util.read_file(path[1] .. '/pyproject.toml')
         if content == nil then
           return false
         end
@@ -564,12 +564,12 @@ require("kitagry.lazy").setup({
           return null_ls.builtins.formatting.black
         end
 
-        local path = util.search_files({ 'pyproject.toml' })
-        if path == nil then
+        local path = vim.fs.find({ 'pyproject.toml' }, { type = 'file' })
+        if #path == 0 then
           return null_ls.builtins.formatting.black
         end
 
-        local content = util.read_file(path .. '/pyproject.toml')
+        local content = util.read_file(path[1] .. '/pyproject.toml')
         if content == nil then
           return null_ls.builtins.formatting.black
         end
@@ -593,27 +593,6 @@ require("kitagry.lazy").setup({
           formatter_for_python(),
         })
       end
-
-      -- local function textlint_path()
-      --   local path = util.search_files({ './node_modules/textlint/bin/textlint.js' })
-      --   if path then
-      --     return './node_modules/textlint/bin/textlint.js'
-      --   end
-      --   return 'textlint'
-      -- end
-      --
-      -- local has_textlint = util.search_files({ 'package.json' })
-      -- if has_textlint ~= nil then
-      --   sources = vim.list_extend(sources, {
-      --     null_ls.builtins.diagnostics.textlint.with({
-      --       cwd = function(params)
-      --         return params.root:match('.textlintrc.json')
-      --       end,
-      --       filetypes = { 'markdown', 'review' },
-      --       command = textlint_path(),
-      --     })
-      --   })
-      -- end
 
       null_ls.setup({
         sources = sources,
@@ -648,7 +627,17 @@ require("kitagry.lazy").setup({
           end,
         })
       end, { remap = true })
-      vim.keymap.set('n', '[telescope]g', builtin.live_grep, { remap = true })
+      vim.keymap.set('n', '[telescope]g', function(_, map)
+        builtin.live_grep({
+          glob_pattern = '!.git',
+          additional_args = function(opts)
+            return {
+              '--hidden',
+              '--ignore-case'
+            }
+          end
+        })
+      end, { remap = true })
       vim.keymap.set('n', '[telescope]]', builtin.grep_string, { remap = true })
       vim.keymap.set('n', '[telescope]d', builtin.lsp_document_symbols, { remap = true })
       vim.keymap.set('n', '[telescope]b', builtin.buffers, { remap = true })
@@ -1081,7 +1070,7 @@ require("kitagry.lazy").setup({
     },
     cond = vim.fn.exists('g:vscode') == 0,
     config = function()
-      require("lspconfig").bqls.setup({
+      vim.lsp.config.bqls.setup({
         capabilities = require("kitagry.lsp").capabilities,
         init_options = {
           project_id = "bigquery-public-data",
@@ -1093,7 +1082,21 @@ require("kitagry.lazy").setup({
   { "stevearc/oil.nvim",
     cond = vim.fn.exists('g:vscode') == 0,
     config = function ()
-      require("oil").setup()
+      require("oil").setup({
+        delete_to_trash = true,
+        keymaps = {
+        ["<leader>ff"] = {
+            function()
+                require("telescope.builtin").find_files({
+                    cwd = require("oil").get_current_dir()
+                })
+            end,
+            mode = "n",
+            nowait = true,
+            desc = "Find files in the current directory"
+        },
+        },
+      })
       vim.keymap.set('n', '[neotree]a', ':<C-u>Oil<CR>', { remap = true, silent = true })
       vim.keymap.set('n', '[neotree]d', ':<C-u>Oil .<CR>', { remap = true, silent = true })
     end
