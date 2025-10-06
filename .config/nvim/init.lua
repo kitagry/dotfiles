@@ -302,6 +302,7 @@ require("kitagry.lazy").setup({
           { name = 'nvim_lsp' },
           { name = 'nvim_lua' },
           { name = 'luasnip' },
+          { name = 'path' },
           {
             name = 'buffer',
             option = {
@@ -1204,24 +1205,24 @@ require("kitagry.lazy").setup({
   },
   { "lambdalisue/vim-suda" },
   { "tokorom/vim-review" },
-  { "coder/claudecode.nvim",
-    dependencies = {
-      "folke/snacks.nvim", -- Optional for enhanced terminal
-    },
-    config = true,
-    keys = {
-        { "<leader>ac", "<cmd>ClaudeCode<cr>", desc = "ClaudeCode" },
-        { "<leader>as", "<cmd>ClaudeCodeSend<cr>", mode = "v", desc = "Send to Claude" },
-        { "<leader>as", "<cmd>ClaudeCodeTreeAdd<cr>", desc = "Add file", ft = { "NvimTree", "neo-tree", "oil" }},
-        { "<leader>af", "<cmd>ClaudeCodeFocus<cr>", desc = "Focus Claude" },
-        { "<leader>ar", "<cmd>ClaudeCode --resume<cr>", desc = "Resume Claude" },
-        { "<leader>aC", "<cmd>ClaudeCode --continue<cr>", desc = "Continue Claude" },
-        { "<leader>ab", "<cmd>ClaudeCodeAdd %<cr>", desc = "Add current buffer" },
-        -- Diff management
-        { "<leader>aa", "<cmd>ClaudeCodeDiffAccept<cr>", desc = "Accept diff" },
-        { "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>", desc = "Deny diff" },
-    },
-  },
+  -- { "coder/claudecode.nvim",
+  --   dependencies = {
+  --     "folke/snacks.nvim", -- Optional for enhanced terminal
+  --   },
+  --   config = true,
+  --   keys = {
+  --       { "<leader>ac", "<cmd>ClaudeCode<cr>", desc = "ClaudeCode" },
+  --       { "<leader>as", "<cmd>ClaudeCodeSend<cr>", mode = "v", desc = "Send to Claude" },
+  --       { "<leader>as", "<cmd>ClaudeCodeTreeAdd<cr>", desc = "Add file", ft = { "NvimTree", "neo-tree", "oil" }},
+  --       { "<leader>af", "<cmd>ClaudeCodeFocus<cr>", desc = "Focus Claude" },
+  --       { "<leader>ar", "<cmd>ClaudeCode --resume<cr>", desc = "Resume Claude" },
+  --       { "<leader>aC", "<cmd>ClaudeCode --continue<cr>", desc = "Continue Claude" },
+  --       { "<leader>ab", "<cmd>ClaudeCodeAdd %<cr>", desc = "Add current buffer" },
+  --       -- Diff management
+  --       { "<leader>aa", "<cmd>ClaudeCodeDiffAccept<cr>", desc = "Accept diff" },
+  --       { "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>", desc = "Deny diff" },
+  --   },
+  -- },
   { "NeogitOrg/neogit",
     dependencies = {
       "nvim-lua/plenary.nvim",         -- required
@@ -1232,6 +1233,51 @@ require("kitagry.lazy").setup({
       "ibhagwan/fzf-lua",              -- optional
       "echasnovski/mini.pick",         -- optional
       "folke/snacks.nvim",             -- optional
+    },
+  },
+  { "lambdalisue/nvim-aibo",
+    config = function()
+      -- Function to yank file path
+      local function yank_file_path()
+        local file_path = vim.fn.expand('%:p')
+        if file_path == '' then
+          vim.notify('No file in buffer', vim.log.levels.WARN)
+          return
+        end
+
+        local mode = vim.fn.mode()
+        local yanked_text = file_path
+
+        if mode == 'v' or mode == 'V' or mode == '\22' then  -- visual modes
+          local start_line = vim.fn.line('v')
+          local end_line = vim.fn.line('.')
+
+          if start_line > end_line then
+            start_line, end_line = end_line, start_line
+          end
+
+          if start_line == end_line then
+            yanked_text = file_path .. '#' .. start_line
+          else
+            yanked_text = file_path .. '#' .. start_line .. '-' .. end_line
+          end
+
+          -- Exit visual mode
+          vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'n', false)
+        end
+
+        vim.fn.setreg('+', yanked_text)
+        vim.fn.setreg('"', yanked_text)
+      end
+
+      vim.keymap.set('n', '<leader>yp', yank_file_path, { desc = 'Yank file path' })
+      vim.keymap.set('v', '<leader>yp', yank_file_path, { desc = 'Yank file path with line numbers' })
+
+      require("aibo").setup({})
+    end,
+    keys = {
+        { "<leader>ac", "<cmd>Aibo -opener=vsplit claude<cr>", desc = "Aibo claude code" },
+        { "<leader>as", "<cmd>AiboSend<cr>", mode = {"n", "v"}, desc = "Send to Aibo" },
     },
   },
 })
