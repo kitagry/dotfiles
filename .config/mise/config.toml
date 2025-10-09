@@ -23,6 +23,7 @@ python = "latest"
 duckdb = "latest"
 uv = "latest"
 gcloud = "latest"
+bat = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["python"]
