@@ -824,7 +824,7 @@ require("kitagry.lazy").setup({
           }
         },
         bqls = {
-          project_ids = vim.env.BQLS_PROJECT_IDS and vim.split(vim.env.BQLS_PROJECT_IDS, ",") or {},
+          project_ids = vim.env.BQLS_PROJECT_IDS and vim.split(vim.env.BQLS_PROJECT_IDS, ",") or { "bigquery-public-data" },
         },
       })
     end
@@ -1074,9 +1074,10 @@ require("kitagry.lazy").setup({
       vim.lsp.config('bqls', {
         capabilities = require("kitagry.lsp").capabilities,
         init_options = {
-          project_id = "bigquery-public-data",
+          project_id = os.getenv("GOOGLE_CLOUD_PROJECT") or "bigquery-public-data",
         }
       })
+      vim.lsp.enable('bqls')
     end
   },
   { "iamcco/markdown-preview.nvim" },
