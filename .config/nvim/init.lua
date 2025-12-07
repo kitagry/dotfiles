@@ -914,6 +914,10 @@ require("kitagry.lazy").setup({
       picker = {
         ui_select = true
       }
+    },
+    keys = {
+        { "<leader>ghp", function() Snacks.gh.pr() end, desc = "ClaudeCode" },
+        { "<leader>ghi", function() Snacks.gh.issue() end, desc = "ClaudeCode" },
     }
   },
   { "stevearc/overseer.nvim",
@@ -1016,14 +1020,13 @@ require("kitagry.lazy").setup({
     end
   },
   { "lewis6991/gitsigns.nvim",
-    config = function ()
-      local gitsigns = require('gitsigns')
-      gitsigns.setup({
-        current_line_blame = true,
-      })
-      vim.keymap.set('n', ']c', gitsigns.next_hunk)
-      vim.keymap.set('n', '[c', gitsigns.prev_hunk)
-    end
+    opts = {
+      current_line_blame = true,
+    },
+    keys = {
+      { ']c', function() require('gitsigns').next_hunk() end, desc = 'gitsigns next hunk' },
+      { '[c', function() require('gitsigns').prev_hunk() end, desc = 'gitsigns prev hunk' },
+    },
   },
   { "oky-123/marksign.vim" },
   { "tokorom/vim-review" },
@@ -1084,19 +1087,35 @@ require("kitagry.lazy").setup({
   { "stevearc/oil.nvim",
     cond = vim.fn.exists('g:vscode') == 0,
     config = function ()
+      -- Declare a global function to retrieve the current directory
+      function _G.get_oil_winbar()
+        local bufnr = vim.api.nvim_win_get_buf(vim.g.statusline_winid)
+        local dir = require("oil").get_current_dir(bufnr)
+        if dir then
+          return vim.fn.fnamemodify(dir, ":~")
+        else
+          -- If there is no current directory (e.g. over ssh), just show the buffer name
+          return vim.api.nvim_buf_get_name(0)
+        end
+      end
+
       require("oil").setup({
         delete_to_trash = true,
         keymaps = {
-        ["<leader>ff"] = {
-            function()
-                require("telescope.builtin").find_files({
-                    cwd = require("oil").get_current_dir()
-                })
-            end,
-            mode = "n",
-            nowait = true,
-            desc = "Find files in the current directory"
+          ["<leader>ff"] = {
+              function()
+                  require("telescope.builtin").find_files({
+                      cwd = require("oil").get_current_dir(),
+                      hidden = true,
+                  })
+              end,
+              mode = "n",
+              nowait = true,
+              desc = "Find files in the current directory"
+          },
         },
+        win_options = {
+          winbar = "%!v:lua.get_oil_winbar()",
         },
       })
       vim.keymap.set('n', '[neotree]a', ':<C-u>Oil<CR>', { remap = true, silent = true })
@@ -1277,8 +1296,15 @@ require("kitagry.lazy").setup({
       require("aibo").setup({})
     end,
     keys = {
-        { "<leader>ac", "<cmd>Aibo -opener=vsplit claude<cr>", desc = "Aibo claude code" },
+        { "<leader>ac", "<cmd>Aibo -opener=vsplit claude --mcp-config=" .. vim.env.HOME .. "/.claude/mcp.json<cr>", desc = "Aibo claude code" },
+        { "<leader>aC", "<cmd>Aibo -opener=vsplit claude --continue --mcp-config=" .. vim.env.HOME .. "/.claude/mcp.json<cr>", desc = "Aibo claude code" },
+        { "<leader>ar", "<cmd>Aibo -opener=vsplit claude --resume --mcp-config=" .. vim.env.HOME .. "/.claude/mcp.json<cr>", desc = "Aibo claude code" },
         { "<leader>as", "<cmd>AiboSend<cr>", mode = {"n", "v"}, desc = "Send to Aibo" },
+    },
+  },
+  { "kitagry/gh-review.nvim"
+    keys = {
+      { "<leader>ghr", ":GhReview<CR>", desc = "Review GitHub Pull Request" },
     },
   },
 })
