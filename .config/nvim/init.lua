@@ -1302,7 +1302,7 @@ require("kitagry.lazy").setup({
         { "<leader>as", "<cmd>AiboSend<cr>", mode = {"n", "v"}, desc = "Send to Aibo" },
     },
   },
-  { "kitagry/gh-review.nvim"
+  { "kitagry/gh-review.nvim",
     keys = {
       { "<leader>ghr", ":GhReview<CR>", desc = "Review GitHub Pull Request" },
     },
