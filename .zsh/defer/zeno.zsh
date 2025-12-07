@@ -29,13 +29,8 @@ _ghq_cd() {
     repository=${dir##*/}
     session=${repository//./-}
 
-    BUFFER="cd ${dir}"
+    BUFFER="cd ${dir} && tmux rename-window \"${session}\""
     zle accept-line
-
-    current_session=$(tmux list-sessions | grep 'attached' | cut -d":" -f1)
-    if [[ $session -eq $current_session ]]; then
-      tmux rename-session "${session}"
-    fi
   else
     BUFFER="cd ${dir}"
     zle accept-line
