@@ -23,7 +23,10 @@ python = "latest"
 duckdb = "latest"
 uv = "latest"
 gcloud = "latest"
+bun = "latest"
 bat = "latest"
+delta = "latest"
+"pipx:pyrefly" = "latest"
 
 [settings]
-idiomatic_version_file_enable_tools = ["python"]
+idiomatic_version_file_enable_tools = ["terraform"]
