@@ -4,6 +4,11 @@ local cmd = vim.cmd
 local local_path = vim.env.HOME .. '/.config/nvim/init.local.vim'
 vim.cmd('source ' .. local_path)
 
+local local_path = vim.env.HOME .. '/.config/nvim/init.local.lua'
+if require("kitagry.util").exists(local_path) then
+  vim.cmd('source ' .. local_path)
+end
+
 require("kitagry.lazy").setup({
   { "general setting",
     setting = true,
@@ -222,6 +227,9 @@ require("kitagry.lazy").setup({
           vim.keymap.set('n', '[special_lang]t', require("kitagry.go").toggle_test_file, { buffer = true, remap = true })
         end
       })
+
+      vim.keymap.set('n', '<leader>yp', require("kitagry.util").yank_file_path, { desc = 'Yank file path' })
+      vim.keymap.set('v', '<leader>yp', require("kitagry.util").yank_file_path, { desc = 'Yank file path with line numbers' })
     end,
   },
   { "sainnhe/sonokai",
@@ -514,91 +522,6 @@ require("kitagry.lazy").setup({
         end
       })
     end,
-  },
-  { "nvimtools/none-ls.nvim",
-    cond = vim.fn.exists('g:vscode') == 0,
-    config = function()
-      local null_ls = require("null-ls")
-      local parent = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":p:h")
-      local poetry_lock_path = vim.fn.findfile('poetry.lock', parent .. ';')
-      local rye_lock_path = vim.fn.findfile('requirements-dev.lock', parent .. ';')
-      local util = require("kitagry.util")
-
-      ---@param commands string[]
-      local function with_venv(builtin, commands)
-        if poetry_lock_path then
-          return builtin.with({
-            command = vim.list_extend({'poetry', 'run'}, commands),
-          })
-        end
-
-        if rye_lock_path then
-          return builtin.with({
-            command = vim.list_extend({'rye', 'run'}, commands),
-          })
-        end
-
-        return commands
-      end
-
-      local function has_ruff()
-        local path = vim.fs.find({ 'pyproject.toml' }, { type = 'file' })
-        if #path == 0 then
-          return false
-        end
-
-        local content = util.read_file(path[1] .. '/pyproject.toml')
-        if content == nil then
-          return false
-        end
-
-        for line in vim.gsplit(content, "\n") do
-          if string.find(line, "ruff", 1, true) ~= nil then
-            return true
-          end
-        end
-        return false
-      end
-
-      local function formatter_for_python()
-        if not poetry_lock_path then
-          return null_ls.builtins.formatting.black
-        end
-
-        local path = vim.fs.find({ 'pyproject.toml' }, { type = 'file' })
-        if #path == 0 then
-          return null_ls.builtins.formatting.black
-        end
-
-        local content = util.read_file(path[1] .. '/pyproject.toml')
-        if content == nil then
-          return null_ls.builtins.formatting.black
-        end
-
-        for line in vim.gsplit(content, "\n") do
-          if vim.startswith(line, "black") then
-            return with_venv(null_ls.builtins.formatting.black, {'black'})
-          elseif vim.startswith(line, "yapf") then
-            return with_venv(null_ls.builtins.formatting.yapf, {'yapf'})
-          end
-        end
-      end
-
-      local sources = {
-        -- null_ls.builtins.code_actions.gomodifytags,
-      }
-
-      if not has_ruff() then
-        sources = vim.list_extend(sources, {
-          with_venv(null_ls.builtins.formatting.isort, {'isort'}),
-          formatter_for_python(),
-        })
-      end
-
-      null_ls.setup({
-        sources = sources,
-      })
-    end
   },
   { "nvim-telescope/telescope.nvim",
     dependencies = {
@@ -1077,51 +1000,54 @@ require("kitagry.lazy").setup({
       vim.lsp.config('bqls', {
         capabilities = require("kitagry.lsp").capabilities,
         init_options = {
-          project_id = os.getenv("GOOGLE_CLOUD_PROJECT") or "bigquery-public-data",
+          project_id = os.getenv("BIGQUERY_GOOGLE_CLOUD_PROJECT") or "bigquery-public-data",
         }
       })
       vim.lsp.enable('bqls')
     end
   },
   { "iamcco/markdown-preview.nvim" },
-  { "stevearc/oil.nvim",
-    cond = vim.fn.exists('g:vscode') == 0,
-    config = function ()
-      -- Declare a global function to retrieve the current directory
-      function _G.get_oil_winbar()
-        local bufnr = vim.api.nvim_win_get_buf(vim.g.statusline_winid)
-        local dir = require("oil").get_current_dir(bufnr)
-        if dir then
-          return vim.fn.fnamemodify(dir, ":~")
-        else
-          -- If there is no current directory (e.g. over ssh), just show the buffer name
-          return vim.api.nvim_buf_get_name(0)
-        end
-      end
-
-      require("oil").setup({
-        delete_to_trash = true,
-        keymaps = {
-          ["<leader>ff"] = {
-              function()
-                  require("telescope.builtin").find_files({
-                      cwd = require("oil").get_current_dir(),
-                      hidden = true,
-                  })
-              end,
-              mode = "n",
-              nowait = true,
-              desc = "Find files in the current directory"
-          },
-        },
-        win_options = {
-          winbar = "%!v:lua.get_oil_winbar()",
-        },
-      })
-      vim.keymap.set('n', '[neotree]a', ':<C-u>Oil<CR>', { remap = true, silent = true })
-      vim.keymap.set('n', '[neotree]d', ':<C-u>Oil .<CR>', { remap = true, silent = true })
-    end
-  },
+  -- { "stevearc/oil.nvim",
+  --   dependencies = {
+  --     "echasnovski/mini.icons"
+  --   },
+  --   cond = vim.fn.exists('g:vscode') == 0,
+  --   config = function ()
+  --     -- Declare a global function to retrieve the current directory
+  --     function _G.get_oil_winbar()
+  --       local bufnr = vim.api.nvim_win_get_buf(vim.g.statusline_winid)
+  --       local dir = require("oil").get_current_dir(bufnr)
+  --       if dir then
+  --         return vim.fn.fnamemodify(dir, ":~")
+  --       else
+  --         -- If there is no current directory (e.g. over ssh), just show the buffer name
+  --         return vim.api.nvim_buf_get_name(0)
+  --       end
+  --     end
+  --
+  --     require("oil").setup({
+  --       delete_to_trash = true,
+  --       keymaps = {
+  --         ["<leader>ff"] = {
+  --             function()
+  --                 require("telescope.builtin").find_files({
+  --                     cwd = require("oil").get_current_dir(),
+  --                     hidden = true,
+  --                 })
+  --             end,
+  --             mode = "n",
+  --             nowait = true,
+  --             desc = "Find files in the current directory"
+  --         },
+  --       },
+  --       win_options = {
+  --         winbar = "%!v:lua.get_oil_winbar()",
+  --       },
+  --     })
+  --     vim.keymap.set('n', '[neotree]a', ':<C-u>Oil<CR>', { remap = true, silent = true })
+  --     vim.keymap.set('n', '[neotree]d', ':<C-u>Oil .<CR>', { remap = true, silent = true })
+  --   end
+  -- },
   { "hrsh7th/nvim-insx",
     config = function()
       local helper = require('insx.helper')
@@ -1243,56 +1169,8 @@ require("kitagry.lazy").setup({
   --       { "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>", desc = "Deny diff" },
   --   },
   -- },
-  { "NeogitOrg/neogit",
-    dependencies = {
-      "nvim-lua/plenary.nvim",         -- required
-      "sindrets/diffview.nvim",        -- optional - Diff integration
-
-      -- Only one of these is needed.
-      "nvim-telescope/telescope.nvim", -- optional
-      "ibhagwan/fzf-lua",              -- optional
-      "echasnovski/mini.pick",         -- optional
-      "folke/snacks.nvim",             -- optional
-    },
-  },
   { "lambdalisue/nvim-aibo",
     config = function()
-      -- Function to yank file path
-      local function yank_file_path()
-        local file_path = vim.fn.expand('%:p')
-        if file_path == '' then
-          vim.notify('No file in buffer', vim.log.levels.WARN)
-          return
-        end
-
-        local mode = vim.fn.mode()
-        local yanked_text = file_path
-
-        if mode == 'v' or mode == 'V' or mode == '\22' then  -- visual modes
-          local start_line = vim.fn.line('v')
-          local end_line = vim.fn.line('.')
-
-          if start_line > end_line then
-            start_line, end_line = end_line, start_line
-          end
-
-          if start_line == end_line then
-            yanked_text = file_path .. '#' .. start_line
-          else
-            yanked_text = file_path .. '#' .. start_line .. '-' .. end_line
-          end
-
-          -- Exit visual mode
-          vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'n', false)
-        end
-
-        vim.fn.setreg('+', yanked_text)
-        vim.fn.setreg('"', yanked_text)
-      end
-
-      vim.keymap.set('n', '<leader>yp', yank_file_path, { desc = 'Yank file path' })
-      vim.keymap.set('v', '<leader>yp', yank_file_path, { desc = 'Yank file path with line numbers' })
-
       require("aibo").setup({})
     end,
     keys = {
@@ -1307,9 +1185,23 @@ require("kitagry.lazy").setup({
       { "<leader>ghr", ":GhReview<CR>", desc = "Review GitHub Pull Request" },
     },
   },
-})
+  { "A7Lavinraj/fyler.nvim",
+    dependencies = { "nvim-mini/mini.icons" },
+    branch = "stable",
+    config = function ()
+      local fyler = require("fyler")
+      fyler.setup({
+        views = {
+          finder = {
+            mappings = {
+              ["zc"] = "CollapseNode",
+              ["zM"] = "CollapseAll",
+            },
+          },
+        },
+      })
 
-local local_path = vim.env.HOME .. '/.config/nvim/init.local.lua'
-if require("kitagry.util").exists(local_path) then
-  vim.cmd('source ' .. local_path)
-end
+      vim.keymap.set('n', '[neotree]a', function() fyler.toggle({  kind = "split_left_most"  }) end)
+    end,
+  },
+})
