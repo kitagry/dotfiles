@@ -752,11 +752,11 @@ require("kitagry.lazy").setup({
       })
     end
   },
-  { "lambdalisue/gin.vim",
+  { "vim-denops/denops-shared-server.vim" },
+  { "lambdalisue/vim-gin",
     dependencies = {
       "vim-denops/denops.vim",
       "nvim-telescope/telescope.nvim",
-      "FabijanZulj/blame.nvim",
     },
     init = function()
       vim.keymap.set({ 'n', 'v' }, '[gin]', '<Nop>', { noremap = true })
@@ -769,9 +769,10 @@ require("kitagry.lazy").setup({
       vim.keymap.set('n', '[gin]d', ':GinDiff<CR>', { remap = true })
       vim.keymap.set({ 'n', 'v' }, '[gin]x', ':GinBrowse<CR>', { remap = true })
       vim.keymap.set({ 'n', 'v' }, '[gin]y', ':GinBrowse ++yank<CR>', { remap = true })
-
-      require("blame").setup()
-      vim.keymap.set('n', '[gin]b', ':BlameToggle<CR>', { remap = true })
+      vim.keymap.set('n', '[gin]b', function()
+        local current_file = vim.fn.expand('%')
+        vim.cmd('GinBlame ++emojify HEAD ' .. current_file)
+      end, { remap = true })
     end,
     config = function()
       local augroup = vim.api.nvim_create_augroup('kitagry.gin', {})
@@ -800,14 +801,6 @@ require("kitagry.lazy").setup({
       vim.g["operator#flashy#flash_time"] = 200
     end
   },
-  -- { "windwp/nvim-autopairs",
-  --   event = { "InsertEnter" },
-  --   config = function()
-  --     require('nvim-autopairs').setup({
-  --       ignored_next_char = "[%w]"
-  --     })
-  --   end
-  -- },
   { "monkoose/matchparen.nvim",
     config = function()
       require("matchparen").setup()
@@ -1007,47 +1000,6 @@ require("kitagry.lazy").setup({
     end
   },
   { "iamcco/markdown-preview.nvim" },
-  -- { "stevearc/oil.nvim",
-  --   dependencies = {
-  --     "echasnovski/mini.icons"
-  --   },
-  --   cond = vim.fn.exists('g:vscode') == 0,
-  --   config = function ()
-  --     -- Declare a global function to retrieve the current directory
-  --     function _G.get_oil_winbar()
-  --       local bufnr = vim.api.nvim_win_get_buf(vim.g.statusline_winid)
-  --       local dir = require("oil").get_current_dir(bufnr)
-  --       if dir then
-  --         return vim.fn.fnamemodify(dir, ":~")
-  --       else
-  --         -- If there is no current directory (e.g. over ssh), just show the buffer name
-  --         return vim.api.nvim_buf_get_name(0)
-  --       end
-  --     end
-  --
-  --     require("oil").setup({
-  --       delete_to_trash = true,
-  --       keymaps = {
-  --         ["<leader>ff"] = {
-  --             function()
-  --                 require("telescope.builtin").find_files({
-  --                     cwd = require("oil").get_current_dir(),
-  --                     hidden = true,
-  --                 })
-  --             end,
-  --             mode = "n",
-  --             nowait = true,
-  --             desc = "Find files in the current directory"
-  --         },
-  --       },
-  --       win_options = {
-  --         winbar = "%!v:lua.get_oil_winbar()",
-  --       },
-  --     })
-  --     vim.keymap.set('n', '[neotree]a', ':<C-u>Oil<CR>', { remap = true, silent = true })
-  --     vim.keymap.set('n', '[neotree]d', ':<C-u>Oil .<CR>', { remap = true, silent = true })
-  --   end
-  -- },
   { "hrsh7th/nvim-insx",
     config = function()
       local helper = require('insx.helper')
@@ -1151,24 +1103,6 @@ require("kitagry.lazy").setup({
   },
   { "lambdalisue/vim-suda" },
   { "tokorom/vim-review" },
-  -- { "coder/claudecode.nvim",
-  --   dependencies = {
-  --     "folke/snacks.nvim", -- Optional for enhanced terminal
-  --   },
-  --   config = true,
-  --   keys = {
-  --       { "<leader>ac", "<cmd>ClaudeCode<cr>", desc = "ClaudeCode" },
-  --       { "<leader>as", "<cmd>ClaudeCodeSend<cr>", mode = "v", desc = "Send to Claude" },
-  --       { "<leader>as", "<cmd>ClaudeCodeTreeAdd<cr>", desc = "Add file", ft = { "NvimTree", "neo-tree", "oil" }},
-  --       { "<leader>af", "<cmd>ClaudeCodeFocus<cr>", desc = "Focus Claude" },
-  --       { "<leader>ar", "<cmd>ClaudeCode --resume<cr>", desc = "Resume Claude" },
-  --       { "<leader>aC", "<cmd>ClaudeCode --continue<cr>", desc = "Continue Claude" },
-  --       { "<leader>ab", "<cmd>ClaudeCodeAdd %<cr>", desc = "Add current buffer" },
-  --       -- Diff management
-  --       { "<leader>aa", "<cmd>ClaudeCodeDiffAccept<cr>", desc = "Accept diff" },
-  --       { "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>", desc = "Deny diff" },
-  --   },
-  -- },
   { "lambdalisue/nvim-aibo",
     config = function()
       require("aibo").setup({})
