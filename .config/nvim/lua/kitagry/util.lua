@@ -68,4 +68,36 @@ function M.read_file(filepath)
   return content
 end
 
+function M.yank_file_path()
+  local file_path = vim.fn.expand('%:p')
+  if file_path == '' then
+    vim.notify('No file in buffer', vim.log.levels.WARN)
+    return
+  end
+
+  local mode = vim.fn.mode()
+  local yanked_text = file_path
+
+  if mode == 'v' or mode == 'V' or mode == '\22' then  -- visual modes
+    local start_line = vim.fn.line('v')
+    local end_line = vim.fn.line('.')
+
+    if start_line > end_line then
+      start_line, end_line = end_line, start_line
+    end
+
+    if start_line == end_line then
+      yanked_text = file_path .. '#' .. start_line
+    else
+      yanked_text = file_path .. '#' .. start_line .. '-' .. end_line
+    end
+
+    -- Exit visual mode
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'n', false)
+  end
+
+  vim.fn.setreg('+', yanked_text)
+  vim.fn.setreg('"', yanked_text)
+end
+
 return M
