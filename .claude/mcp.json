@@ -1,9 +1,5 @@
 {
   "mcpServers": {
-    "filesystem": {
-      "command": "uvx",
-      "args": ["--from", "git+https://github.com/oraios/serena", "serena", "start-mcp-server"]
-    },
     "github": {
       "command": "sh",
       "args": ["-c", "GITHUB_PERSONAL_ACCESS_TOKEN=$(gh auth token) go run github.com/github/github-mcp-server/cmd/github-mcp-server@latest stdio"]
