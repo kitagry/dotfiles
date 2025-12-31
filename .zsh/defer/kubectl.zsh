@@ -2,7 +2,7 @@ if [ ! $commands[kubectl] ]; then
   return
 fi
 
-# source <(kubectl completion zsh)
+source <(kubectl completion zsh)
 function right_prompt() {
   local color="blue"
 
@@ -11,8 +11,9 @@ function right_prompt() {
   fi
 
   local gcloud_config="$(cat $HOME/.config/gcloud/active_config)"
+  local kube_context="$(cat $HOME/.kube/kubectx)"
 
-  echo "%F{$color}($gcloud_config)($ZSH_KUBECTL_PROMPT)%f"
+  echo "%F{$color}($gcloud_config)($kube_context)%f"
 }
 
 RPROMPT='$(right_prompt)'
@@ -118,6 +119,22 @@ kubectl_describe() {
   fi
 }
 alias kdes='kubectl_describe'
+
+kubectl_output_yaml() {
+  if [ $1 ]; then
+    resource=$1
+  else
+    resource=$(echo "pods\ndeployment\nservice" | fzf)
+  fi
+
+  if [ $resource ]; then
+    target=$(kubectl get $resource | sed -e '1d' | fzf | cut -d ' ' -f 1)
+    if [ $target ]; then
+      kubectl get -o yaml $resource $target
+    fi
+  fi
+}
+alias kyaml='kubectl_output_yaml'
 
 kubectl_stern() {
   target_pod=$(kubectl get pods | sed -e '1d' | fzf | cut -d ' ' -f 1)

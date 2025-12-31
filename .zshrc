@@ -1,8 +1,8 @@
 # 環境変数
 export LANG=ja_JP.UTF-8
 
-if command -v $HOME/.cargo/bin/mise 1>/dev/null 2>&1; then
-  eval "$($HOME/.cargo/bin/mise activate zsh)"
+if command -v $HOME/.local/bin/mise 1>/dev/null 2>&1; then
+  eval "$($HOME/.local/bin/mise activate zsh)"
 fi
 
 ### Added by zinit's installer
@@ -15,6 +15,7 @@ fi
 export XDG_CONFIG_HOME="$HOME/.config"
 eval "$(sheldon source)"
 
+export SHELDON_PROFILE=$HOME/.local/state/sheldon/profile.log
 [ -f "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
 if (which zprof > /dev/null 2>&1) ;then
   zprof
