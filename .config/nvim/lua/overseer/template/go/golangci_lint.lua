@@ -1,5 +1,5 @@
 return {
-  name = "run golangci-lint",
+  name = "golangci-lint run ./...",
   builder = function()
     return {
       cmd = { "golangci-lint" },
