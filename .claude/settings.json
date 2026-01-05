@@ -1,6 +1,48 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(gh pr list)",
+      "Bash(gh pr view)",
+      "Bash(gh pr diff)",
+      "Bash(gh pr checks)",
+      "mcp__github__get_*",
+      "mcp__github__list_*",
+      "mcp__github__search_*",
+      "mcp__github__pull_request_read",
+      "mcp__github__issue_read",
+      "ReadMcpResourceTool(server=github)"
+    ]
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "idle_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"[$(date)] idle_prompt hook triggered\" >> /tmp/claude-hooks.log && /Users/ryo.kitagawa/.zsh/claude-notify.sh '入力を待っています'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"[$(date)] Stop hook triggered\" >> /tmp/claude-hooks.log && /Users/ryo.kitagawa/.zsh/claude-notify.sh 'タスクが完了しました'"
+          }
+        ]
+      }
+    ]
+  },
   "enabledPlugins": {
     "pyright-lsp@claude-plugins-official": true,
-    "rust-analyzer-lsp@claude-plugins-official": true
+    "gopls-lsp@claude-plugins-official": true,
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "example-skills@anthropic-agent-skills": true,
+    "gokart@m3-claude-plugins": false,
+    "gokart@m3ai-claude-plugins": true,
+    "lua-lsp@claude-plugins-official": true
   }
 }
