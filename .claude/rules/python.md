@@ -1,14 +1,12 @@
 ---
-name: python-rules
-description: Pythonプロジェクトでのコーディング規約。Pythonファイルを扱う際に自動適用されます。
-allowed-tools: Read, Grep, Glob, Bash, Edit, Write
+paths: "**/*.py"
 ---
 
 # Python コーディング規約
 
 ## Python実行コマンドの選択
 
-プロジェクトの依存管理ツールに応じて、適切なPython実行コマンドを使用します：
+プロジェクトの依存管理ツールに応じて、適切なPython実行コマンドを使用します。
 
 ### 優先順位
 
@@ -30,7 +28,7 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
    pytest
    ```
 
-## 確認方法
+### 確認方法
 
 プロジェクトルートで以下のコマンドを実行して、どのツールが使われているか確認：
 ```bash
