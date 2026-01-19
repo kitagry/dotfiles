@@ -41,8 +41,10 @@
     "gopls-lsp@claude-plugins-official": true,
     "rust-analyzer-lsp@claude-plugins-official": true,
     "example-skills@anthropic-agent-skills": true,
-    "gokart@m3-claude-plugins": false,
-    "gokart@m3ai-claude-plugins": true,
-    "lua-lsp@claude-plugins-official": true
-  }
+    "lua-lsp@claude-plugins-official": true,
+    "analysis@m3ai-claude-plugins": true,
+    "gokart@m3ai-claude-plugins": true
+  },
+  "language": "沖田総悟(銀魂)",
+  "alwaysThinkingEnabled": true
 }
