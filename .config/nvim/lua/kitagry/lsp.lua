@@ -155,7 +155,7 @@ function M.setupLSP()
     },
   })
   mason_configs.setup({
-    ensure_installed = { "rust_analyzer", "gopls", "pyright" }
+    ensure_installed = { "rust_analyzer", "gopls", "pyrefly" }
   })
   neodev.setup({})
 
@@ -219,13 +219,13 @@ function M.setupLSP()
   }
 
   local config = find_python_path()
-  vim.lsp.config.pyright = {
+  vim.lsp.config.pyrefly = {
+    autostart = true,
     settings = {
       python = {
         pythonPath = config.python_path,
-      };
-      root_dir = config.root_dir,
-    }
+      },
+    },
   }
 
   vim.lsp.config.lua_ls = {
