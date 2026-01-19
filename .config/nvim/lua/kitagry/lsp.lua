@@ -59,17 +59,19 @@ local function has_ruff()
   return false
 end
 
-local function find_python_path()
+local function find_python_path(search_dir)
+  search_dir = search_dir or vim.fs.dirname(vim.api.nvim_buf_get_name(0))
+
   local venv_path = vim.fs.find('python', {
-    path = './.venv/bin/'
+    path = search_dir .. '/.venv/bin/'
   })
   if #venv_path ~= 0 then
-    return { python_path = string.format("%s/.venv/bin/python", vim.fn.getcwd()), root_dir = vim.fn.getcwd() }
+    return { python_path = string.format("%s/.venv/bin/python", search_dir), root_dir = search_dir }
   end
 
   local poetry_lock = vim.fs.find('poetry.lock', {
     upward = true,
-    path = vim.fs.dirname(vim.api.nvim_buf_get_name(0)),
+    path = search_dir,
   })
   if #poetry_lock ~= 0 then
     local poetry_dir = vim.fs.dirname(poetry_lock[1])
@@ -84,7 +86,7 @@ local function find_python_path()
 
   local uv_lock = vim.fs.find('uv.lock', {
     upward = true,
-    path = vim.fs.dirname(vim.api.nvim_buf_get_name(0)),
+    path = search_dir,
   })
   if #uv_lock ~= 0 then
     local uv_dir = vim.fs.dirname(uv_lock[1])
@@ -93,7 +95,7 @@ local function find_python_path()
 
   local pipfile_lock = vim.fs.find('Pipfile.lock', {
     upward = true,
-    path = vim.fs.dirname(vim.api.nvim_buf_get_name(0)),
+    path = search_dir,
   })
   if #pipfile_lock ~= 0 then
     local pipfile_dir = vim.fs.dirname(pipfile_lock[1])
@@ -106,7 +108,7 @@ local function find_python_path()
     end
   end
 
-  return { python_path = 'python3', root_dir = vim.fn.getcwd() }
+  return { python_path = 'python3', root_dir = search_dir }
 end
 
 function M.setupLSP()
@@ -218,12 +220,18 @@ function M.setupLSP()
     },
   }
 
-  local config = find_python_path()
   vim.lsp.config.pyrefly = {
     autostart = true,
+    before_init = function(params, config)
+      local root_dir = vim.uri_to_fname(params.rootUri) or params.rootPath
+      if root_dir then
+        local python_config = find_python_path(root_dir)
+        config.settings.python.pythonPath = python_config.python_path
+      end
+    end,
     settings = {
       python = {
-        pythonPath = config.python_path,
+        pythonPath = 'python3',
       },
     },
   }
