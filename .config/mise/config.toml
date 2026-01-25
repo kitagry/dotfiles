@@ -27,6 +27,7 @@ bun = "latest"
 bat = "latest"
 delta = "latest"
 "pipx:pyrefly" = "latest"
+"go:github.com/k1LoW/git-wt" = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["terraform"]

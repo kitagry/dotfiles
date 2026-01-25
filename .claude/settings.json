@@ -20,7 +20,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"[$(date)] idle_prompt hook triggered\" >> /tmp/claude-hooks.log && /Users/ryo.kitagawa/.zsh/claude-notify.sh '入力を待っています'"
+            "command": "echo \"[$(date)] idle_prompt hook triggered\" >> /tmp/claude-hooks.log && ~/.zsh/claude-notify.sh '入力を待っています'"
           }
         ]
       }
@@ -30,7 +30,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"[$(date)] Stop hook triggered\" >> /tmp/claude-hooks.log && /Users/ryo.kitagawa/.zsh/claude-notify.sh 'タスクが完了しました'"
+            "command": "echo \"[$(date)] Stop hook triggered\" >> /tmp/claude-hooks.log && ~/.zsh/claude-notify.sh 'タスクが完了しました'"
           }
         ]
       }
