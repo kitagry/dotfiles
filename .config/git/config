@@ -42,3 +42,5 @@
 	autoSquash = true
 [stash]
 	showPatch = true
+[wt]
+	basedir = "../{gitroot}-wt"
