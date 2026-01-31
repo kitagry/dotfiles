@@ -5,12 +5,19 @@
       "Bash(gh pr view)",
       "Bash(gh pr diff)",
       "Bash(gh pr checks)",
+      "Bash(gh run view)",
       "mcp__github__get_*",
       "mcp__github__list_*",
       "mcp__github__search_*",
       "mcp__github__pull_request_read",
       "mcp__github__issue_read",
-      "ReadMcpResourceTool(server=github)"
+      "ReadMcpResourceTool(server=github)",
+      "Bash(uv run ruff)",
+      "Bash(uv run mypy)",
+      "Bash(uv run tox)",
+      "Bash(uv run pytest)",
+      "Bash(go test)",
+      "Bash(go build)"
     ]
   },
   "hooks": {

@@ -18,7 +18,7 @@ yq = "latest"
 "npm:@google/gemini-cli" = "latest"
 mysqldef = "latest"
 fd = "latest"
-python = "latest"
+python = "3.13"
 "pipx:mcp-obsidian" = "latest"
 duckdb = "latest"
 uv = "latest"
@@ -31,3 +31,4 @@ delta = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["terraform"]
+experimental = true
