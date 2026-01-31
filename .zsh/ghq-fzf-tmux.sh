@@ -68,11 +68,40 @@ if [ -n "$selected" ]; then
   fi
 
   if [ -n "$dir" ] && [ -d "$dir" ]; then
-    session=$(basename "$dir" | sed 's/\./-/g')
-    if tmux list-windows -F "#{window_name}" | grep -q "^$session$"; then
-      tmux select-window -t ":$session"
+    cd "$dir"
+
+    # ブランチ名を取得
+    branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main")
+
+    # プロジェクトルートを取得（worktree対応）
+    # git worktree listの最初の行がメインリポジトリ
+    main_worktree=$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')
+    if [ -n "$main_worktree" ]; then
+      project_root="$main_worktree"
     else
-      tmux new-window -c "$dir" -n "$session"
+      project_root=$(git rev-parse --show-toplevel 2>/dev/null || echo "$dir")
     fi
+
+    # Session名 = プロジェクト名、Window名 = ブランチ名
+    session=$(basename "$project_root" | sed 's/\./-/g')
+    window=$(echo "$branch" | sed 's/\./-/g')
+
+    # Sessionが存在するか確認
+    if ! tmux has-session -t "$session" 2>/dev/null; then
+      # Sessionを新規作成（最初のWindowはブランチ名）
+      tmux new-session -d -s "$session" -c "$dir" -n "$window"
+    fi
+
+    # 対象SessionのWindowが存在するか確認
+    if tmux list-windows -t "$session" -F "#{window_name}" | grep -q "^$window$"; then
+      # 既存Windowに移動
+      tmux switch-client -t "$session:$window"
+    else
+      # 新規Windowを作成して移動
+      tmux new-window -t "$session:" -c "$dir" -n "$window"
+      tmux switch-client -t "$session:$window"
+    fi
+
+    cd - > /dev/null
   fi
 fi
