@@ -1,7 +1,7 @@
 ---
 name: tdd-workflow
 description: TDD（テスト駆動開発）で実装します。赤-緑-リファクタリングのサイクルに従って開発を進めます。
-allowed-tools: Read, Grep, Glob, Bash, Edit, Write, TodoWrite
+allowed-tools: Read, Grep, Glob, Bash, Edit, Write, TodoWrite, Task
 ---
 
 # TDD ワークフロー
@@ -37,30 +37,43 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write, TodoWrite
 - WHATは複数行にまたがる等、コードの可読性に響く場合のみ
 - 余計なコメントは書かない
 
-## テスト実行コマンド
+## テスト実行方法
 
-プロジェクトの種類に応じて適切なテストコマンドを使用：
+**重要**: テスト実行は必ず `test-runner` エージェントを使用すること
 
-### Python
-```bash
-# uv.lockがある場合
-uv run python -m pytest -v
+テストの実行出力は大量になりコンテキストを汚染するため、直接Bashで実行せず、
+必ずTaskツールで `test-runner` エージェントに委譲します。
 
-# poetry.lockがある場合
-poetry run python -m pytest -v
+test-runnerエージェントは以下を自動で行います：
+- プロジェクトの種類を判別（Python/Go/Node.js等）
+- 適切なテストコマンドを実行
+- テスト結果をパースしてフィルタリング
+- 失敗したテストの詳細のみを抽出
+- 成功/失敗の統計情報を報告
 
-# それ以外
-python -m pytest -v
+### 効率的な使用パターン
+
+test-runnerエージェントは初回実行時に「実行コマンド」を返します。
+このコマンドをコンテキストに保持し、2回目以降の実行で指定することで、
+プロジェクト構成スキャンをスキップできます。
+
+初回実行（コマンド自動判別）:
+```
+Task tool:
+  subagent_type: test-runner
+  prompt: "全テストを実行して結果を要約してください"
+
+→ 返答: 「実行コマンド: uv run pytest -v」を含む
+→ コンテキストに記憶: このプロジェクトは `uv run pytest` を使う
 ```
 
-### Go
-```bash
-go test ./... -v
+2回目以降（コマンド指定で効率化）:
 ```
+Task tool:
+  subagent_type: test-runner
+  prompt: "uv run pytest tests/test_user.py::TestUser::test_create -v を実行してください"
 
-### Node.js
-```bash
-npm test
+→ スキャンをスキップして即実行
 ```
 
 ## TDDサイクルの実施手順
@@ -68,19 +81,19 @@ npm test
 ### 赤フェーズ（テストを書く）
 1. 実装したい機能の小さな動作を特定
 2. その動作を検証するテストを書く
-3. テストを実行して失敗することを確認
+3. **test-runnerエージェント**でテストを実行して失敗することを確認
 4. 失敗理由が想定通りか確認
 
 ### 緑フェーズ（実装する）
 1. テストを通すための最小限の実装を行う
 2. 過度な設計や抽象化は避ける
-3. テストを実行して成功することを確認
+3. **test-runnerエージェント**でテストを実行して成功することを確認
 
 ### リファクタリングフェーズ
 1. テストが通っている状態で開始
 2. コードの重複を削除
 3. 可読性を向上させる
-4. 各変更後にテストを実行して動作を確認
+4. 各変更後に**test-runnerエージェント**でテストを実行して動作を確認
 5. 過度な抽象化や将来の拡張性は考慮しない
 
 ## スラッシュコマンド
