@@ -344,6 +344,15 @@ require("kitagry.lazy").setup({
             cmp.config.compare.offset,
             cmp.config.compare.exact,
             cmp.config.compare.score,
+            function(entry1, entry2)
+              local word1 = entry1:get_completion_item().label
+              local word2 = entry2:get_completion_item().label
+              local has_eq1 = vim.endswith(word1, '=')
+              local has_eq2 = vim.endswith(word2, '=')
+              if has_eq1 ~= has_eq2 then
+                return has_eq1
+              end
+            end,
             function (entry1, entry2)
               local types = require('cmp.types')
               local kind1 = entry1:get_kind()
