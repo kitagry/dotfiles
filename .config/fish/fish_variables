@@ -1,0 +1,10 @@
+# This file contains fish universal variable definitions.
+# VERSION: 3.0
+SETUVAR --export ZENO_ROOT:/Users/kitagry/\x2elocal/share/zeno\x2ezsh
+SETUVAR __fish_initialized:4300
+SETUVAR _fisher_jorgebucaran_2F_fisher_files:\x7e/\x2econfig/fish/functions/fisher\x2efish\x1e\x7e/\x2econfig/fish/completions/fisher\x2efish
+SETUVAR _fisher_patrickf1_2F_fzf_2E_fish_files:\x7e/\x2econfig/fish/functions/_fzf_configure_bindings_help\x2efish\x1e\x7e/\x2econfig/fish/functions/_fzf_extract_var_info\x2efish\x1e\x7e/\x2econfig/fish/functions/_fzf_preview_changed_file\x2efish\x1e\x7e/\x2econfig/fish/functions/_fzf_preview_file\x2efish\x1e\x7e/\x2econfig/fish/functions/_fzf_report_diff_type\x2efish\x1e\x7e/\x2econfig/fish/functions/_fzf_report_file_type\x2efish\x1e\x7e/\x2econfig/fish/functions/_fzf_search_directory\x2efish\x1e\x7e/\x2econfig/fish/functions/_fzf_search_git_log\x2efish\x1e\x7e/\x2econfig/fish/functions/_fzf_search_git_status\x2efish\x1e\x7e/\x2econfig/fish/functions/_fzf_search_history\x2efish\x1e\x7e/\x2econfig/fish/functions/_fzf_search_processes\x2efish\x1e\x7e/\x2econfig/fish/functions/_fzf_search_variables\x2efish\x1e\x7e/\x2econfig/fish/functions/_fzf_wrapper\x2efish\x1e\x7e/\x2econfig/fish/functions/fzf_configure_bindings\x2efish\x1e\x7e/\x2econfig/fish/conf\x2ed/fzf\x2efish\x1e\x7e/\x2econfig/fish/completions/fzf_configure_bindings\x2efish
+SETUVAR _fisher_plugins:jorgebucaran/fisher\x1epatrickf1/fzf\x2efish
+SETUVAR _fisher_upgraded_to_4_4:\x1d
+SETUVAR fish_function_path:/Users/kitagry/\x2econfig/fish/functions\x1e/Users/kitagry/\x2elocal/share/mise/installs/aqua\x2dfish\x2dshell\x2dfish\x2dshell/4\x2e6\x2e0/fish\x2epkg/Payload/usr/local/etc/fish/functions\x1e/Users/kitagry/\x2elocal/share/fish/vendor_functions\x2ed\x1e/usr/local/share/fish/vendor_functions\x2ed\x1e/Users/kitagry/\x2elocal/share/zeno\x2ezsh/shells/fish/functions
+SETUVAR fish_user_paths:/Users/kitagry/go/bin\x1e/Users/kitagry/\x2ecargo/bin\x1e/Users/kitagry/\x2elocal/bin
