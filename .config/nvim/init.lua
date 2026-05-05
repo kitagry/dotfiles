@@ -74,7 +74,7 @@ require("kitagry.lazy").setup({
     setting = true,
     config = function()
       vim.o.foldmethod = 'expr'
-      vim.o.foldexpr = 'nvim_treesitter#foldexpr()'
+      vim.o.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
       vim.o.foldenable = false
       vim.api.nvim_create_autocmd({ 'BufNewFile', 'BufRead' }, {
         callback = function()
@@ -603,101 +603,78 @@ require("kitagry.lazy").setup({
     end
   },
   { "nvim-treesitter/nvim-treesitter",
+    branch = "main",
     dependencies = {
-      "nvim-treesitter/nvim-treesitter-textobjects",
-      "nvim-treesitter/playground",
-      "andymass/vim-matchup"
+      { "nvim-treesitter/nvim-treesitter-textobjects", branch = "main" },
+      "andymass/vim-matchup",
     },
+    lazy = false,
+    build = ":TSUpdate",
     config = function()
-      require('nvim-treesitter.configs').setup {
-        ensure_installed = 'all',
-        ignore_install = { 'haskell', 'ipkg' },
-        highlight = {
-          enable = true,
-          additional_vim_regex_highlighting = { 'org' },
-          disable = function(lang, buf)
-              -- 100 KB 以上のファイルでは tree-sitter によるシンタックスハイライトを行わない
-              local max_filesize = 100 * 1024
-              local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
-              if ok and stats and stats.size > max_filesize then
-                  return true
-              end
-          end,
-        },
-        playground = {
-          enable = true,
-          disable = {},
-          updatetime = 25, -- Debounced time for highlighting nodes in the playground from source code
-          persist_queries = false -- Whether the query persists across vim sessions
-        },
-        textobjects = {
-          select = {
-            enable = true,
-            keymaps = {
-              ["if"] = "@function.inner",
-              ["af"] = "@function.outer",
-              ["ic"] = "@class.inner",
-              ["ac"] = "@class.outer",
-              ["i,"] = "@parameter.inner",
-              ["a,"] = "@parameter.outer",
-              ["il"] = "@loop.inner",
-              ["al"] = "@loop.outer",
-            },
-          },
-          swap = {
-            enable = true,
-            swap_next = {
-              ["<leader>sp"] = "@parameter.inner",
-              ["<leader>sf"] = "@function.outer",
-              ["<leader>sc"] = "@class.outer",
-            },
-            swap_previous = {
-              ["<leader>sP"] = "@function.outer",
-              ["<leader>sF"] = "@function.outer",
-              ["<leader>sC"] = "@class.outer",
-            },
-          },
-          move = {
-            enable = true,
-            set_jumps = true,
-            goto_next_start = {
-              ["]m"] = "@function.outer",
-              ["]]"] = "@class.outer",
-            },
-            goto_next_end = {
-              ["]M"] = "@function.outer",
-              ["]["] = "@class.outer",
-            },
-            goto_previous_start = {
-              ["[m"] = "@function.outer",
-              ["[["] = "@class.outer",
-            },
-            goto_previous_end = {
-              ["[M"] = "@function.outer",
-              ["[]"] = "@class.outer",
-            },
-          },
-          lsp_interop = {
-            enable = true,
-            border = "none",
-            floating_preview_opts = {},
-            -- peek_definition_code = {
-            --   ["<leader>lf"] = "@function.outer",
-            --   ["<leader>dF"] = "@class.outer",
-            -- },
-          },
-        },
-        matchup = {
-          enable = true,
-        },
+      vim.api.nvim_create_autocmd("FileType", {
+        callback = function()
+          local max_filesize = 100 * 1024
+          local ok, stats = pcall(vim.uv.fs_stat, vim.api.nvim_buf_get_name(0))
+          if ok and stats and stats.size > max_filesize then
+            return
+          end
+          pcall(vim.treesitter.start)
+          vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+        end,
+      })
+
+      local ensure_installed = {
+        "markdown", "markdown_inline", "html", "typescript", "javascript",
+        "java", "css", "lua", "python", "go", "yaml", "toml", "json", "rust",
       }
+      local already_installed = require("nvim-treesitter.config").get_installed()
+      local to_install = vim.iter(ensure_installed)
+        :filter(function(parser)
+          return not vim.tbl_contains(already_installed, parser)
+        end)
+        :totable()
+      if #to_install > 0 then
+        require("nvim-treesitter").install(to_install)
+      end
+
+      require("nvim-treesitter-textobjects").setup {
+        select = { lookahead = true },
+        move = { set_jumps = true },
+      }
+
+      local select = require("nvim-treesitter-textobjects.select")
+      vim.keymap.set({ "x", "o" }, "if", function() select.select_textobject("@function.inner", "textobjects") end)
+      vim.keymap.set({ "x", "o" }, "af", function() select.select_textobject("@function.outer", "textobjects") end)
+      vim.keymap.set({ "x", "o" }, "ic", function() select.select_textobject("@class.inner", "textobjects") end)
+      vim.keymap.set({ "x", "o" }, "ac", function() select.select_textobject("@class.outer", "textobjects") end)
+      vim.keymap.set({ "x", "o" }, "i,", function() select.select_textobject("@parameter.inner", "textobjects") end)
+      vim.keymap.set({ "x", "o" }, "a,", function() select.select_textobject("@parameter.outer", "textobjects") end)
+      vim.keymap.set({ "x", "o" }, "il", function() select.select_textobject("@loop.inner", "textobjects") end)
+      vim.keymap.set({ "x", "o" }, "al", function() select.select_textobject("@loop.outer", "textobjects") end)
+
+      local swap = require("nvim-treesitter-textobjects.swap")
+      vim.keymap.set("n", "<leader>sp", function() swap.swap_next("@parameter.inner") end)
+      vim.keymap.set("n", "<leader>sf", function() swap.swap_next("@function.outer") end)
+      vim.keymap.set("n", "<leader>sc", function() swap.swap_next("@class.outer") end)
+      vim.keymap.set("n", "<leader>sP", function() swap.swap_previous("@function.outer") end)
+      vim.keymap.set("n", "<leader>sF", function() swap.swap_previous("@function.outer") end)
+      vim.keymap.set("n", "<leader>sC", function() swap.swap_previous("@class.outer") end)
+
+      local move = require("nvim-treesitter-textobjects.move")
+      vim.keymap.set({ "n", "x", "o" }, "]m", function() move.goto_next_start("@function.outer", "textobjects") end)
+      vim.keymap.set({ "n", "x", "o" }, "]]", function() move.goto_next_start("@class.outer", "textobjects") end)
+      vim.keymap.set({ "n", "x", "o" }, "]M", function() move.goto_next_end("@function.outer", "textobjects") end)
+      vim.keymap.set({ "n", "x", "o" }, "][", function() move.goto_next_end("@class.outer", "textobjects") end)
+      vim.keymap.set({ "n", "x", "o" }, "[m", function() move.goto_previous_start("@function.outer", "textobjects") end)
+      vim.keymap.set({ "n", "x", "o" }, "[[", function() move.goto_previous_start("@class.outer", "textobjects") end)
+      vim.keymap.set({ "n", "x", "o" }, "[M", function() move.goto_previous_end("@function.outer", "textobjects") end)
+      vim.keymap.set({ "n", "x", "o" }, "[]", function() move.goto_previous_end("@class.outer", "textobjects") end)
     end
   },
   { "machakann/vim-sandwich" },
   { "numToStr/Comment.nvim",
     dependencies = {
       "JoosepAlviste/nvim-ts-context-commentstring",
-      "nvim-treesitter/nvim-treesitter",
     },
     config = function()
       require('ts_context_commentstring').setup({
