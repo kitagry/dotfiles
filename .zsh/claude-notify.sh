@@ -1,13 +1,44 @@
 #!/bin/bash
 
-# Claude Code用の通知スクリプト
-# 引数: $1 = メッセージ
-
 MESSAGE="${1:-通知}"
 
-if [ -n "$TMUX" ]; then
-  WINDOW_NAME=$(tmux display-message -p -t "$TMUX_PANE" '#W')
-  osascript -e "display notification \"${MESSAGE} (${WINDOW_NAME})\" with title \"Claude Code\""
+notify_macos() {
+  local msg="$1"
+  if [ -n "$TMUX" ]; then
+    local window_name
+    window_name=$(tmux display-message -p -t "$TMUX_PANE" '#W')
+    osascript -e "display notification \"${msg} (${window_name})\" with title \"Claude Code\""
+  else
+    osascript -e "display notification \"${msg}\" with title \"Claude Code\""
+  fi
+}
+
+notify_wsl() {
+  local msg="$1"
+  powershell.exe -noprofile -command "
+    Add-Type -AssemblyName System.Windows.Forms
+    \$n = New-Object System.Windows.Forms.NotifyIcon
+    \$n.Icon = [System.Drawing.SystemIcons]::Application
+    \$n.BalloonTipTitle = 'Claude Code'
+    \$n.BalloonTipText = '$msg'
+    \$n.Visible = \$true
+    \$n.ShowBalloonTip(3000)
+    Start-Sleep 4
+    \$n.Dispose()
+  " &
+}
+
+notify_linux() {
+  local msg="$1"
+  if command -v notify-send &>/dev/null; then
+    notify-send "Claude Code" "$msg"
+  fi
+}
+
+if command -v osascript &>/dev/null; then
+  notify_macos "$MESSAGE"
+elif grep -qi microsoft /proc/version 2>/dev/null; then
+  notify_wsl "$MESSAGE"
 else
-  osascript -e "display notification \"${MESSAGE}\" with title \"Claude Code\""
+  notify_linux "$MESSAGE"
 fi
