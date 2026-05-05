@@ -1,4 +1,7 @@
 {
+  "env": {
+    "CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION": "false"
+  },
   "permissions": {
     "allow": [
       "Bash(gh pr list)",
@@ -52,6 +55,6 @@
     "analysis@m3ai-claude-plugins": true,
     "gokart@m3ai-claude-plugins": true
   },
-  "language": "沖田総悟(銀魂)",
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": true,
+  "preferredNotifChannel": "iterm2"
 }
