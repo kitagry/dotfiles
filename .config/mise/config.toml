@@ -1,14 +1,13 @@
 [tools]
 go = 'latest'
 ghq = 'latest'
-deno = 'latest'
+deno = "latest"
 fzf = 'latest'
 gh = 'latest'
 "aqua:neovim/neovim" = "latest"
 node = 'latest'
 rust = 'latest'
 tmux = 'latest'
-"npm:@anthropic-ai/claude-code" = 'latest'
 eza = "latest"
 lazygit = "latest"
 ripgrep = "latest"
@@ -29,6 +28,12 @@ delta = "latest"
 "pipx:pyrefly" = "latest"
 "go:github.com/k1LoW/git-wt" = "latest"
 tree-sitter = "latest"
+"npm:dotenv-cli" = "latest"
+k9s = "latest"
+git-lfs = "latest"
+pnpm = "latest"
+pinact = "latest"
+helm = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["terraform"]
