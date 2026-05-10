@@ -1,5 +1,13 @@
 ;; extends
 
+; --- Auto-highlight strings starting with SELECT/INSERT/UPDATE/DELETE/WITH ---
+(
+  [(interpreted_string_literal (interpreted_string_literal_content) @injection.content)
+   (raw_string_literal (raw_string_literal_content) @injection.content)]
+  (#lua-match? @injection.content "^%s*[Ss][Ee][Ll][Ee][Cc][Tt]")
+  (#set! injection.language "sql")
+)
+
 ; --- Enable magic comment (// language=sql) ---
 (
   (comment) @_comment

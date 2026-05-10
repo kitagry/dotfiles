@@ -626,6 +626,7 @@ require("kitagry.lazy").setup({
       local ensure_installed = {
         "markdown", "markdown_inline", "html", "typescript", "javascript",
         "java", "css", "lua", "python", "go", "yaml", "toml", "json", "rust",
+        "fish",
       }
       local already_installed = require("nvim-treesitter.config").get_installed()
       local to_install = vim.iter(ensure_installed)
