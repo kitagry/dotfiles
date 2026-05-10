@@ -1,11 +1,14 @@
 if status is-interactive
+    fish_vi_key_bindings
+
     if not functions -q fisher
         curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source
         fisher install jorgebucaran/fisher
     end
 
-    bind \cg _ghq_cd
-    bind \t _fzf_tab_complete
+    bind -M insert \cg _ghq_cd
+    bind -M insert \t _fzf_tab_complete
+    bind -M insert \cl accept-autosuggestion
 
     # Aliases
     alias v nvim
@@ -21,7 +24,4 @@ if status is-interactive
     abbr -a gd 'git diff'
     abbr -a gcim "git commit -m ''"
 
-    if test -f ~/.config/fish/config.local.fish
-        source ~/.config/fish/config.local.fish
-    end
 end

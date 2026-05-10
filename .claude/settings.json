@@ -4,11 +4,11 @@
   },
   "permissions": {
     "allow": [
-      "Bash(gh pr list)",
-      "Bash(gh pr view)",
-      "Bash(gh pr diff)",
-      "Bash(gh pr checks)",
-      "Bash(gh run view)",
+      "Bash(gh pr list *)",
+      "Bash(gh pr view *)",
+      "Bash(gh pr diff *)",
+      "Bash(gh pr checks *)",
+      "Bash(gh run view *)",
       "mcp__github__get_*",
       "mcp__github__list_*",
       "mcp__github__search_*",
@@ -19,8 +19,11 @@
       "Bash(uv run mypy)",
       "Bash(uv run tox)",
       "Bash(uv run pytest)",
-      "Bash(go test)",
-      "Bash(go build)"
+      "Bash(uv sync *)",
+      "Bash(go test *)",
+      "Bash(go build *)",
+      "Bash(grep *)",
+      "Bash(golangci-lint run *)"
     ]
   },
   "hooks": {
@@ -52,8 +55,6 @@
     "rust-analyzer-lsp@claude-plugins-official": true,
     "example-skills@anthropic-agent-skills": true,
     "lua-lsp@claude-plugins-official": true,
-    "analysis@m3ai-claude-plugins": true,
-    "gokart@m3ai-claude-plugins": true
   },
   "alwaysThinkingEnabled": true,
   "preferredNotifChannel": "iterm2"

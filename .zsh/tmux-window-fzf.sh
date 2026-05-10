@@ -3,44 +3,51 @@
 # tmuxのウィンドウをfzfで選択して切り替える
 # プロセスツリーを辿りclaudeの存在をwindowに付与する（nvim-aibo対応）
 
-# pane PIDの子孫プロセスにclaudeが存在するか確認
-has_claude_descendant() {
-  local pid=$1
-  local children
-  children=$(pgrep -P "$pid" 2>/dev/null) || return 1
-  for child in $children; do
-    local comm
-    comm=$(ps -p "$child" -o comm= 2>/dev/null | tr -d ' ')
-    if [[ "$comm" == *"claude"* ]]; then
-      return 0
-    fi
-    has_claude_descendant "$child" && return 0
-  done
-  return 1
+# claudeが存在するウィンドウIDを検出
+# 「ペイン→子孫」の再帰探索ではなく「claudeプロセス→祖先」の逆方向探索に変更
+# ps/pgrepの呼び出しを1回にまとめてawkで一括処理
+claude_wins_file=$(mktemp)
+trap "rm -f $claude_wins_file" EXIT
+
+awk '
+NR == FNR {
+  parent[$1] = $2
+  command[$1] = $3
+  next
 }
+{
+  is_pane[$2] = $1
+}
+END {
+  for (pid in command) {
+    if (command[pid] ~ /claude/) {
+      current = pid
+      for (i = 0; i < 30; i++) {
+        if (current + 0 <= 1) break
+        if (current in is_pane) {
+          claude_wins[is_pane[current]] = 1
+          break
+        }
+        if (!(current in parent) || parent[current] == current) break
+        current = parent[current]
+      }
+    }
+  }
+  for (win in claude_wins) print win
+}' <(ps -eo pid=,ppid=,comm= 2>/dev/null) \
+  <(tmux list-panes -a -F "#{session_name}:#{window_index} #{pane_pid}" 2>/dev/null) \
+  > "$claude_wins_file"
 
-# claudeが存在するwindow IDをtmpファイルに記録
-claude_windows=$(mktemp)
-trap "rm -f $claude_windows" EXIT
-
-while IFS=' ' read -r win_id pane_pid; do
-  grep -qxF "$win_id" "$claude_windows" && continue
-  if has_claude_descendant "$pane_pid"; then
-    echo "$win_id" >> "$claude_windows"
-  fi
-done < <(tmux list-panes -a -F "#{session_name}:#{window_index} #{pane_pid}" 2>/dev/null)
-
-# ウィンドウ一覧にagentステータスを付与してfzfに渡す
+# ウィンドウ一覧にclaudeステータスを付与してfzfに渡す
 selected=$(
-  tmux list-windows -a -F "#{session_name}:#{window_index} #{window_name} #{pane_current_path}" | \
-    while IFS= read -r line; do
-      key=$(echo "$line" | awk '{print $1}')
-      if grep -qxF "$key" "$claude_windows" 2>/dev/null; then
-        echo "$line  ✻"
-      else
-        echo "$line"
-      fi
-    done | \
+  tmux list-windows -a -F "#{session_name}:#{window_index} #{window_name} #{pane_current_path}" 2>/dev/null | \
+  awk '
+  NR == FNR {
+    wins[$1] = 1
+    next
+  }
+  { print ($1 in wins) ? $0 "  ✻" : $0 }
+  ' "$claude_wins_file" - | \
   fzf --prompt='Window >' \
     --preview 'echo {}' \
     --preview-window down:3:wrap \
