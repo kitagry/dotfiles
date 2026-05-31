@@ -697,48 +697,6 @@ require("kitagry.lazy").setup({
       "Julian/vim-textobj-variable-segment",
     },
   },
-  { "nvim-neo-tree/neo-tree.nvim",
-    branch = "v3.x",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "nvim-tree/nvim-web-devicons",
-      "MunifTanjim/nui.nvim",
-      "s1n7ax/nvim-window-picker",
-      "kitagry/bqls.nvim",
-    },
-    init = function()
-      vim.keymap.set('n', '[neotree]', '<Nop>', { noremap = true })
-      vim.keymap.set('n', '<leader>d', '[neotree]', { silent = true, remap = true })
-      vim.keymap.set('n', '[neotree]c', ':<C-u>Neotree toggle reveal<CR>', { remap = true, silent = true })
-      vim.keymap.set('n', '[neotree]b', ':<C-u>Neotree toggle bqls<CR>', { remap = true, silent = true })
-    end,
-    config = function()
-      require("neo-tree").setup({
-        sources = {
-          "filesystem",
-          "buffers",
-          "git_status",
-          "bqls"
-        },
-        source_selector = {
-            winbar = true,
-            statusline = false
-        },
-        filesystem = {
-          bind_to_cwd = false,
-          window = {
-            mappings = {
-              -- disable fuzzy finder
-              ["/"] = "noop"
-            }
-          }
-        },
-        bqls = {
-          project_ids = vim.env.BQLS_PROJECT_IDS and vim.split(vim.env.BQLS_PROJECT_IDS, ",") or { "bigquery-public-data" },
-        },
-      })
-    end
-  },
   { "vim-denops/denops-shared-server.vim" },
   { "lambdalisue/vim-gin",
     dependencies = {
@@ -978,6 +936,9 @@ require("kitagry.lazy").setup({
       "mason-lspconfig.nvim",
     },
     cond = vim.fn.exists('g:vscode') == 0,
+    init = function()
+      vim.keymap.set('n', '<leader>db', function() require("bqls").sidebar.toggle() end, { silent = true, desc = "Toggle BigQuery sidebar" })
+    end,
     config = function()
       vim.lsp.config('bqls', {
         capabilities = require("kitagry.lsp").capabilities,
@@ -986,6 +947,9 @@ require("kitagry.lazy").setup({
         }
       })
       vim.lsp.enable('bqls')
+      require("bqls").setup({
+        project_ids = vim.env.BQLS_PROJECT_IDS and vim.split(vim.env.BQLS_PROJECT_IDS, ",") or { "bigquery-public-data" },
+      })
     end
   },
   { "iamcco/markdown-preview.nvim" },
@@ -1126,7 +1090,7 @@ require("kitagry.lazy").setup({
         },
       })
 
-      vim.keymap.set('n', '[neotree]a', function() fyler.toggle({  kind = "split_left_most"  }) end)
+      vim.keymap.set('n', '<leader>da', function() fyler.toggle({  kind = "split_left_most"  }) end)
     end,
   },
 })
