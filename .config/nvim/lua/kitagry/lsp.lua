@@ -248,7 +248,7 @@ function M.setupLSP()
           path = { "?.lua", "?/init.lua", "?/?.lua" },
         },
         workspace = {
-          library = library({ "neo-tree.nvim", "telescope.nvim", "overseer.nvim" }),
+          library = library({ "telescope.nvim", "overseer.nvim" }),
           checkThirdParty = "Disable",
         }
       }
