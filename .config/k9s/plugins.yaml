@@ -1,0 +1,75 @@
+# k9s plugins. Docs: https://k9scli.io/topics/plugins/
+#
+# Cloud Logging (GCP structured JSON) log viewers. k9s exports the selected
+# resource as $CONTEXT/$NAMESPACE/$NAME/$POD env vars, which cloud-logging.sh
+# reads. Shortcuts are available in the pods/containers views.
+plugins:
+  # Ctrl-T: paged snapshot of the latest logs, JSON pretty-printed (one line
+  # per entry, severity-colored). Quit the pager with q.
+  cloud-logging-pod:
+    shortCut: Ctrl-T
+    description: "CloudLog"
+    scopes:
+      - pods
+    command: bash
+    background: false
+    args:
+      - -c
+      - exec ~/.config/k9s/cloud-logging.sh pod snapshot "$CONTEXT" "$NAMESPACE" "$NAME"
+
+  cloud-logging-container:
+    shortCut: Ctrl-T
+    description: "CloudLog"
+    scopes:
+      - containers
+    command: bash
+    background: false
+    args:
+      - -c
+      - exec ~/.config/k9s/cloud-logging.sh container snapshot "$CONTEXT" "$NAMESPACE" "$POD" "$NAME"
+
+  # Job view: logs of the job's pod(s) via `kubectl logs job/<name>`.
+  cloud-logging-job:
+    shortCut: Ctrl-T
+    description: "CloudLog"
+    scopes:
+      - jobs
+    command: bash
+    background: false
+    args:
+      - -c
+      - exec ~/.config/k9s/cloud-logging.sh job snapshot "$CONTEXT" "$NAMESPACE" "$NAME"
+
+  # Ctrl-Y: live follow (streams new entries). Quit with Ctrl-C.
+  cloud-logging-pod-follow:
+    shortCut: Ctrl-Y
+    description: "CloudLog-f"
+    scopes:
+      - pods
+    command: bash
+    background: false
+    args:
+      - -c
+      - exec ~/.config/k9s/cloud-logging.sh pod follow "$CONTEXT" "$NAMESPACE" "$NAME"
+
+  cloud-logging-container-follow:
+    shortCut: Ctrl-Y
+    description: "CloudLog-f"
+    scopes:
+      - containers
+    command: bash
+    background: false
+    args:
+      - -c
+      - exec ~/.config/k9s/cloud-logging.sh container follow "$CONTEXT" "$NAMESPACE" "$POD" "$NAME"
+
+  cloud-logging-job-follow:
+    shortCut: Ctrl-Y
+    description: "CloudLog-f"
+    scopes:
+      - jobs
+    command: bash
+    background: false
+    args:
+      - -c
+      - exec ~/.config/k9s/cloud-logging.sh job follow "$CONTEXT" "$NAMESPACE" "$NAME"
