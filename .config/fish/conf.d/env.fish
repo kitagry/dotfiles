@@ -10,7 +10,7 @@ set -gx NVIM_STARTUPTIME_PATH $HOME/.local/state/nvim/startuptime.log
 
 set -gx XDG_CONFIG_HOME $HOME/.config
 
-set -gx PATH $HOME/.local/bin $HOME/.cargo/bin $GOPATH/bin /usr/local/bin /usr/local/sbin $PATH
+set -gx PATH $HOME/.local/bin $HOME/.cargo/bin $GOPATH/bin /opt/homebrew/bin /usr/local/bin /usr/local/sbin $PATH
 # texlive
 fish_add_path /usr/local/texlive/2017/bin/x86_64-darwin
 
