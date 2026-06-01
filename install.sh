@@ -22,7 +22,7 @@ do
     ln -snfv "${DOT_DIRECTORY}/$f" "$HOME/$f"
 done
 
-for child_directory in $DIRECTORIES; do
+for child_directory in "${DIRECTORIES[@]}"; do
   cd "${DOT_DIRECTORY}/${child_directory}"
 
   for directory in $(find . -type d); do
