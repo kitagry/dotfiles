@@ -2,12 +2,8 @@
 [ -z "$TMUX" ] && exit 0
 
 data=$(cat)
-transcript=$(echo "$data" | jq -r '.transcript_path')
-title=$(jq -rs '
-  ([ .[] | select(.type=="ai-title")   | .aiTitle   ] | last)   //
-  ([ .[] | select(.type=="last-prompt") | .lastPrompt ] | last) //
-  empty
-  | gsub("\\s+";" ") | .[0:60]
-' "$transcript" 2>/dev/null)
+label=$(echo "$data" | jq -r '.prompt // empty' | tr '\n' ' ' | sed 's/^ *//;s/ *$//' | cut -c1-60)
+label="${label:-Claude Code}"
 
-tmux select-pane -T "✳ ${title:-Claude Code}"
+tmux set-option -p -t "$TMUX_PANE" @claude_label "$label"
+tmux select-pane -t "$TMUX_PANE" -T "✳ $label"

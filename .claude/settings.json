@@ -9,9 +9,6 @@
       "Bash(gh pr diff *)",
       "Bash(gh pr checks *)",
       "Bash(gh run view *)",
-      "mcp__github__get_*",
-      "mcp__github__list_*",
-      "mcp__github__search_*",
       "mcp__github__pull_request_read",
       "mcp__github__issue_read",
       "ReadMcpResourceTool(server=github)",
@@ -27,6 +24,26 @@
     ]
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -n \"$TMUX\" ] && { label=$(tmux display-message -t \"$TMUX_PANE\" -p '#{@claude_label}'); tmux select-pane -t \"$TMUX_PANE\" -T \"? ${label:-Claude Code}\"; }"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -n \"$TMUX\" ] && { label=$(tmux display-message -t \"$TMUX_PANE\" -p '#{@claude_label}'); tmux select-pane -t \"$TMUX_PANE\" -T \"✳ ${label:-Claude Code}\"; }"
+          }
+        ]
+      }
+    ],
     "UserPromptSubmit": [
       {
         "hooks": [
@@ -43,7 +60,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"[$(date)] idle_prompt hook triggered\" >> /tmp/claude-hooks.log && ~/.zsh/claude-notify.sh '入力を待っています'"
+            "command": "echo \"[$(date)] idle_prompt hook triggered\" >> /tmp/claude-hooks.log && ~/.zsh/claude-notify.sh '入力を待っています' && [ -n \"$TMUX\" ] && { label=$(tmux display-message -t \"$TMUX_PANE\" -p '#{@claude_label}'); tmux select-pane -t \"$TMUX_PANE\" -T \"? ${label:-Claude Code}\"; }"
           }
         ]
       }
@@ -53,7 +70,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"[$(date)] Stop hook triggered\" >> /tmp/claude-hooks.log && ~/.zsh/claude-notify.sh 'タスクが完了しました' && [ -n \"$TMUX\" ] && tmux select-pane -T '✳'"
+            "command": "echo \"[$(date)] Stop hook triggered\" >> /tmp/claude-hooks.log && ~/.zsh/claude-notify.sh 'タスクが完了しました' && ~/.claude/hooks/stop-tmux-title.sh"
           }
         ]
       }
@@ -67,5 +84,6 @@
     "lua-lsp@claude-plugins-official": true
   },
   "alwaysThinkingEnabled": true,
+  "tui": "default",
   "preferredNotifChannel": "iterm2"
 }
