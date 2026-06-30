@@ -44,7 +44,7 @@
       "Bash(go test *)",
       "Bash(go build *)",
       "Bash(grep *)",
-      "Bash(golangci-lint run *)"
+      "Bash(golangci-lint run *)",
       "Bash(go test)",
       "Bash(go build)",
       "Bash(gws schema *)",
