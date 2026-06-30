@@ -1,3 +1,5 @@
+set -gx SHELL (which fish)
+
 if status is-interactive
     fish_vi_key_bindings
 

@@ -14,6 +14,17 @@ set -gx PATH $HOME/.local/bin $HOME/.cargo/bin $GOPATH/bin /opt/homebrew/bin /us
 # texlive
 fish_add_path /usr/local/texlive/2017/bin/x86_64-darwin
 
+# mysql-client (keg-only)
+if type -q brew
+    set -l mysql_client_prefix (brew --prefix mysql-client 2>/dev/null)
+    if test -d "$mysql_client_prefix"
+        fish_add_path $mysql_client_prefix/bin
+        set -gx LDFLAGS "-L$mysql_client_prefix/lib"
+        set -gx CPPFLAGS "-I$mysql_client_prefix/include"
+        set -gx PKG_CONFIG_PATH "$mysql_client_prefix/lib/pkgconfig"
+    end
+end
+
 alias k kubectl
 
 if test -f $HOME/.cargo/env.fish
