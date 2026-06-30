@@ -4,11 +4,35 @@
   },
   "permissions": {
     "allow": [
+      "Bash(git fetch *)",
+      "Bash(git status *)",
+      "Bash(git stash:*)",
       "Bash(gh pr list *)",
       "Bash(gh pr view *)",
       "Bash(gh pr diff *)",
       "Bash(gh pr checks *)",
       "Bash(gh run view *)",
+      "mcp__github__get_file_contents",
+      "mcp__github__get_commit",
+      "mcp__github__get_me",
+      "mcp__github__get_label",
+      "mcp__github__get_latest_release",
+      "mcp__github__get_release_by_tag",
+      "mcp__github__get_tag",
+      "mcp__github__get_team_members",
+      "mcp__github__get_teams",
+      "mcp__github__list_branches",
+      "mcp__github__list_commits",
+      "mcp__github__list_issues",
+      "mcp__github__list_issue_types",
+      "mcp__github__list_pull_requests",
+      "mcp__github__list_releases",
+      "mcp__github__list_tags",
+      "mcp__github__search_pull_requests",
+      "mcp__github__search_issues",
+      "mcp__github__search_code",
+      "mcp__github__search_repositories",
+      "mcp__github__search_users",
       "mcp__github__pull_request_read",
       "mcp__github__issue_read",
       "ReadMcpResourceTool(server=github)",
@@ -21,6 +45,31 @@
       "Bash(go build *)",
       "Bash(grep *)",
       "Bash(golangci-lint run *)"
+      "Bash(go test)",
+      "Bash(go build)",
+      "Bash(gws schema *)",
+      "Bash(gws drive files list *)",
+      "Bash(gws drive files get *)",
+      "Bash(gws sheets spreadsheets get *)",
+      "Bash(gws sheets spreadsheets values get *)",
+      "Bash(gws docs documents get *)",
+      "Bash(gws slides presentations get *)",
+      "Bash(gws gmail users messages list *)",
+      "Bash(gws gmail users messages get *)",
+      "Bash(gws gmail users threads list *)",
+      "Bash(gws gmail users threads get *)",
+      "Bash(gws calendar events list *)",
+      "Bash(gws calendar events get *)",
+      "Bash(gws calendar calendarList list *)",
+      "Bash(kubectl get *)",
+      "Bash(kubectl describe *)",
+      "Bash(kubectl logs *)",
+      "Bash(kubectl top *)",
+      "Bash(kubectl explain *)",
+      "Bash(kubectl config get-contexts *)",
+      "Bash(kubectl config get-contexts)",
+      "Bash(kubectl config current-context *)",
+      "Bash(kubectl config current-context)"
     ]
   },
   "hooks": {
@@ -29,7 +78,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ -n \"$TMUX\" ] && { label=$(tmux display-message -t \"$TMUX_PANE\" -p '#{@claude_label}'); tmux select-pane -t \"$TMUX_PANE\" -T \"? ${label:-Claude Code}\"; }"
+            "command": "[ -z \"$TMUX\" ] && exit 0; label=$(tmux display-message -t \"$TMUX_PANE\" -p '#{@claude_label}'); tmux select-pane -t \"$TMUX_PANE\" -T \"? ${label:-Claude Code}\""
           }
         ]
       }
@@ -39,7 +88,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ -n \"$TMUX\" ] && { label=$(tmux display-message -t \"$TMUX_PANE\" -p '#{@claude_label}'); tmux select-pane -t \"$TMUX_PANE\" -T \"✳ ${label:-Claude Code}\"; }"
+            "command": "[ -z \"$TMUX\" ] && exit 0; label=$(tmux display-message -t \"$TMUX_PANE\" -p '#{@claude_label}'); tmux select-pane -t \"$TMUX_PANE\" -T \"✳ ${label:-Claude Code}\""
           }
         ]
       }
@@ -60,7 +109,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"[$(date)] idle_prompt hook triggered\" >> /tmp/claude-hooks.log && ~/.zsh/claude-notify.sh '入力を待っています' && [ -n \"$TMUX\" ] && { label=$(tmux display-message -t \"$TMUX_PANE\" -p '#{@claude_label}'); tmux select-pane -t \"$TMUX_PANE\" -T \"? ${label:-Claude Code}\"; }"
+            "command": "echo \"[$(date)] idle_prompt hook triggered\" >> /tmp/claude-hooks.log; ~/.zsh/claude-notify.sh '入力を待っています'; if [ -n \"$TMUX\" ]; then label=$(tmux display-message -t \"$TMUX_PANE\" -p '#{@claude_label}'); tmux select-pane -t \"$TMUX_PANE\" -T \"? ${label:-Claude Code}\"; fi"
           }
         ]
       }
@@ -76,6 +125,11 @@
       }
     ]
   },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh",
+    "padding": 0
+  },
   "enabledPlugins": {
     "pyright-lsp@claude-plugins-official": true,
     "gopls-lsp@claude-plugins-official": true,
@@ -85,5 +139,12 @@
   },
   "alwaysThinkingEnabled": true,
   "tui": "default",
-  "preferredNotifChannel": "iterm2"
+  "voice": {
+    "enabled": true,
+    "mode": "hold"
+  },
+  "preferredNotifChannel": "notifications_disabled",
+  "autoCompactEnabled": true,
+  "voiceEnabled": true,
+  "language": "Japanese"
 }

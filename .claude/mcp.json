@@ -13,6 +13,13 @@
         "OBSIDIAN_API_KEY": "${OBSIDIAN_API_KEY}",
         "OBSIDIAN_BASE_URL": "https://127.0.0.1:27124"
       }
+    },
+    "bigquery": {
+      "command": "toolbox",
+      "args": ["--prebuilt","bigquery","--stdio"],
+      "env": {
+        "BIGQUERY_PROJECT": "astute-strategy-90909"
+      }
     }
   }
 }
