@@ -12,6 +12,7 @@
       "Bash(gh pr diff *)",
       "Bash(gh pr checks *)",
       "Bash(gh run view *)",
+      "Bash(gh run rerun *)",
       "mcp__github__get_file_contents",
       "mcp__github__get_commit",
       "mcp__github__get_me",
@@ -41,37 +42,16 @@
       "Bash(uv run tox)",
       "Bash(uv run pytest)",
       "Bash(uv sync *)",
+      "Bash(uv lock *)",
       "Bash(go test *)",
       "Bash(go build *)",
       "Bash(grep *)",
       "Bash(golangci-lint run *)",
       "Bash(go test)",
-      "Bash(go build)",
-      "Bash(gws schema *)",
-      "Bash(gws drive files list *)",
-      "Bash(gws drive files get *)",
-      "Bash(gws sheets spreadsheets get *)",
-      "Bash(gws sheets spreadsheets values get *)",
-      "Bash(gws docs documents get *)",
-      "Bash(gws slides presentations get *)",
-      "Bash(gws gmail users messages list *)",
-      "Bash(gws gmail users messages get *)",
-      "Bash(gws gmail users threads list *)",
-      "Bash(gws gmail users threads get *)",
-      "Bash(gws calendar events list *)",
-      "Bash(gws calendar events get *)",
-      "Bash(gws calendar calendarList list *)",
-      "Bash(kubectl get *)",
-      "Bash(kubectl describe *)",
-      "Bash(kubectl logs *)",
-      "Bash(kubectl top *)",
-      "Bash(kubectl explain *)",
-      "Bash(kubectl config get-contexts *)",
-      "Bash(kubectl config get-contexts)",
-      "Bash(kubectl config current-context *)",
-      "Bash(kubectl config current-context)"
+      "Bash(go build)"
     ]
   },
+  "model": "claude-opus-4-7",
   "hooks": {
     "PreToolUse": [
       {
@@ -135,16 +115,19 @@
     "gopls-lsp@claude-plugins-official": true,
     "rust-analyzer-lsp@claude-plugins-official": true,
     "example-skills@anthropic-agent-skills": true,
-    "lua-lsp@claude-plugins-official": true
+    "lua-lsp@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "figma@claude-plugins-official": true
   },
+  "language": "Japanese",
   "alwaysThinkingEnabled": true,
   "tui": "default",
   "voice": {
     "enabled": true,
     "mode": "hold"
   },
+  "skipWorkflowUsageWarning": true,
   "preferredNotifChannel": "notifications_disabled",
   "autoCompactEnabled": true,
-  "voiceEnabled": true,
-  "language": "Japanese"
+  "voiceEnabled": true
 }
