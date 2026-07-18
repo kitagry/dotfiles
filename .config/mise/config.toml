@@ -35,6 +35,7 @@ git-lfs = "latest"
 pnpm = "latest"
 pinact = "latest"
 helm = "latest"
+"npm:@googleworkspace/cli" = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["terraform"]
