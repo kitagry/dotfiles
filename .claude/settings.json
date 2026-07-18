@@ -1,7 +1,54 @@
 {
+  "alwaysThinkingEnabled": true,
+  "autoCompactEnabled": true,
+  "enabledPlugins": {
+    "example-skills@anthropic-agent-skills": true,
+    "figma@claude-plugins-official": true,
+    "gopls-lsp@claude-plugins-official": true,
+    "lua-lsp@claude-plugins-official": true,
+    "pyright-lsp@claude-plugins-official": true,
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true
+  },
   "env": {
     "CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION": "false"
   },
+  "hooks": {
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "command": "echo \"[$(date)] idle_prompt hook triggered\" >> /tmp/claude-hooks.log; ~/.zsh/claude-notify.sh '入力を待っています'",
+            "type": "command"
+          }
+        ],
+        "matcher": "idle_prompt"
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "bash '/Users/kitagry/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10,
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "echo \"[$(date)] Stop hook triggered\" >> /tmp/claude-hooks.log && ~/.zsh/claude-notify.sh 'タスクが完了しました'",
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  },
+  "language": "Japanese",
   "permissions": {
     "allow": [
       "Bash(git fetch *)",
@@ -62,94 +109,17 @@
       "Bash(golangci-lint run *)"
     ]
   },
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash '/Users/kitagry/.claude/hooks/herdr-agent-state.sh' session",
-            "timeout": 10
-          }
-        ],
-        "matcher": "*"
-      }
-    ],
-    "PreToolUse": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "[ -z \"$TMUX\" ] && exit 0; label=$(tmux display-message -t \"$TMUX_PANE\" -p '#{@claude_label}'); tmux select-pane -t \"$TMUX_PANE\" -T \"? ${label:-Claude Code}\""
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "[ -z \"$TMUX\" ] && exit 0; label=$(tmux display-message -t \"$TMUX_PANE\" -p '#{@claude_label}'); tmux select-pane -t \"$TMUX_PANE\" -T \"✳ ${label:-Claude Code}\""
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/set-tmux-title.sh"
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "matcher": "idle_prompt",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo \"[$(date)] idle_prompt hook triggered\" >> /tmp/claude-hooks.log; ~/.zsh/claude-notify.sh '入力を待っています'; if [ -n \"$TMUX\" ]; then label=$(tmux display-message -t \"$TMUX_PANE\" -p '#{@claude_label}'); tmux select-pane -t \"$TMUX_PANE\" -T \"? ${label:-Claude Code}\"; fi"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo \"[$(date)] Stop hook triggered\" >> /tmp/claude-hooks.log && ~/.zsh/claude-notify.sh 'タスクが完了しました' && ~/.claude/hooks/stop-tmux-title.sh"
-          }
-        ]
-      }
-    ]
-  },
+  "preferredNotifChannel": "notifications_disabled",
+  "skipWorkflowUsageWarning": true,
   "statusLine": {
-    "type": "command",
     "command": "~/.claude/statusline.sh",
-    "padding": 0
+    "padding": 0,
+    "type": "command"
   },
-  "enabledPlugins": {
-    "pyright-lsp@claude-plugins-official": true,
-    "gopls-lsp@claude-plugins-official": true,
-    "rust-analyzer-lsp@claude-plugins-official": true,
-    "example-skills@anthropic-agent-skills": true,
-    "lua-lsp@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true,
-    "figma@claude-plugins-official": true
-  },
-  "language": "Japanese",
-  "alwaysThinkingEnabled": true,
   "tui": "default",
   "voice": {
     "enabled": true,
     "mode": "hold"
   },
-  "skipWorkflowUsageWarning": true,
-  "preferredNotifChannel": "notifications_disabled",
-  "autoCompactEnabled": true,
   "voiceEnabled": true
 }

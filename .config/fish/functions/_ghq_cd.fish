@@ -8,12 +8,6 @@ function _ghq_cd
         return
     end
 
-    set session (string replace -a '.' '-' (basename $dir))
-
-    if set -q TMUX
-        commandline -r "cd $dir && tmux rename-window $session"
-    else
-        commandline -r "cd $dir"
-    end
+    commandline -r "cd $dir"
     commandline -f execute
 end

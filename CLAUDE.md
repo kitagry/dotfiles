@@ -14,7 +14,7 @@ This is a personal dotfiles repository containing configuration files for a deve
 - `./download_file.sh` - Downloads additional completion files
 
 ### Tool Management
-- `mise install <tool>@latest` - Install development tools (go, ghq, deno, fzf, gh, neovim, node, rust, tmux)
+- `mise install <tool>@latest` - Install development tools (go, ghq, deno, fzf, gh, neovim, node, rust)
 - `mise use -g <tool>@latest` - Set global version of a tool
 - `mise list` - List installed tools and versions
 
@@ -28,7 +28,7 @@ This is a personal dotfiles repository containing configuration files for a deve
 ### Core Components
 
 **Configuration Management**: The repository uses a symlink-based approach where dotfiles are linked from the repo to home directory locations. Three main categories:
-- Direct dotfiles (`.zshrc`, `.vimrc`, `.tmux.conf`, etc.) linked to `$HOME`
+- Direct dotfiles (`.zshrc`, `.vimrc`, etc.) linked to `$HOME`
 - Directory structures (`.config`, `.vim`, `.zsh`) with recursive file linking
 - Selective exclusions for git and system files
 
