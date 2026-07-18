@@ -4,13 +4,7 @@ MESSAGE="${1:-通知}"
 
 notify_macos() {
   local msg="$1"
-  if [ -n "$TMUX" ]; then
-    local window_name
-    window_name=$(tmux display-message -p -t "$TMUX_PANE" '#W')
-    osascript -e "display notification \"${msg} (${window_name})\" with title \"Claude Code\""
-  else
-    osascript -e "display notification \"${msg}\" with title \"Claude Code\""
-  fi
+  osascript -e "display notification \"${msg}\" with title \"Claude Code\""
 }
 
 notify_wsl() {

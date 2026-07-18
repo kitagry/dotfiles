@@ -18,23 +18,15 @@ alias cdg='cd $(ghq root)/github.com/kitagry'
 
 # ghqで移動
 _ghq_cd() {
-  local project dir repository session current_session
+  local project dir current_session
   dir=$(ghq list -p | sed -e "s|${HOME}|~|" | ${ZENO_FZF_COMMAND} ${ZENO_FZF_TMUX_OPTIONS} --prompt='Project >' --preview "bat --color=always --style=numbers --line-range=:500 \$(eval echo {})/README.md" --bind ctrl-d:preview-page-down,ctrl-u:preview-page-up)
 
   if [[ $dir == "" ]]; then
     return 1
   fi
 
-  if [[ ! -z ${TMUX} ]]; then
-    repository=${dir##*/}
-    session=${repository//./-}
-
-    BUFFER="cd ${dir} && tmux rename-window \"${session}\""
-    zle accept-line
-  else
-    BUFFER="cd ${dir}"
-    zle accept-line
-  fi
+  BUFFER="cd ${dir}"
+  zle accept-line
 }
 zle -N ghq-cd _ghq_cd
 bindkey '^g' ghq-cd
