@@ -11,7 +11,12 @@ function _fzf_tab_complete
         end
 
         set -l search_dir (eval echo "$dir_prefix" 2>/dev/null)
-        if test -z "$search_dir" || not test -d "$search_dir"
+        set -l insert_prefix $dir_prefix
+        if test -n "$search_dir" && test -d "$search_dir"
+            # ~ や $HOME 等はシングルクオート内で展開されないため、
+            # string escape に渡す前に展開済みパスへ置き換える
+            set insert_prefix $search_dir
+        else
             set search_dir "."
         end
 
@@ -31,7 +36,7 @@ function _fzf_tab_complete
             --exclude build \
             2>/dev/null | fzf --height 40% --reverse --query "$fzf_query")
         if test -n "$result"
-            commandline -t -- (string escape "$dir_prefix$result")
+            commandline -t -- (string escape "$insert_prefix$result")
         end
         commandline -f repaint
     else
