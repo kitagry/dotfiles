@@ -62,8 +62,19 @@
       "Bash(golangci-lint run *)"
     ]
   },
-  "model": "claude-opus-4-7",
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/Users/kitagry/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
     "PreToolUse": [
       {
         "hooks": [
