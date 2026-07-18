@@ -27,6 +27,10 @@ end
 
 alias k kubectl
 
+# herdr plugins resolve the herdr binary via this var before falling back to
+# a PATH lookup; mise-managed herdr isn't on the trimmed PATH plugin scripts use.
+set -gx HERDR_BIN_PATH $HOME/.local/share/mise/shims/herdr
+
 if test -f $HOME/.cargo/env.fish
     source $HOME/.cargo/env.fish
 end
