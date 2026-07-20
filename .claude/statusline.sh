@@ -12,8 +12,18 @@ COST=$(echo "$input" | jq -r '.cost.total_cost_usd // 0')
 DURATION_MS=$(echo "$input" | jq -r '.cost.total_duration_ms // 0')
 PCT=$(echo "$input" | jq -r '.context_window.used_percentage // 0' | cut -d. -f1)
 FIVE_H=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty')
+FIVE_H_RESET=$(echo "$input" | jq -r '.rate_limits.five_hour.resets_at // empty')
 WEEK=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // empty')
+WEEK_RESET=$(echo "$input" | jq -r '.rate_limits.seven_day.resets_at // empty')
 PR_NUM=$(echo "$input" | jq -r '.pr.number // empty')
+
+fmt_reset() {
+  TZ=Asia/Tokyo date -r "$1" +%H:%M
+}
+
+fmt_reset_day() {
+  TZ=Asia/Tokyo date -r "$1" '+%m/%d %H:%M'
+}
 
 CYAN='\033[36m'; GREEN='\033[32m'; YELLOW='\033[33m'; RED='\033[31m'; DIM='\033[2m'; RESET='\033[0m'
 
@@ -34,8 +44,15 @@ COST_FMT=$(printf '$%.2f' "$COST")
 MINS=$((DURATION_MS / 60000))
 
 RL_SEG=""
-[ -n "$FIVE_H" ] && RL_SEG="5h:$(printf '%.0f' "$FIVE_H")%"
-[ -n "$WEEK" ] && RL_SEG="${RL_SEG:+$RL_SEG }7d:$(printf '%.0f' "$WEEK")%"
+if [ -n "$FIVE_H" ]; then
+  RL_SEG="5h:$(printf '%.0f' "$FIVE_H")%"
+  [ -n "$FIVE_H_RESET" ] && RL_SEG="${RL_SEG}($(fmt_reset "$FIVE_H_RESET")JST)"
+fi
+if [ -n "$WEEK" ]; then
+  WEEK_SEG="7d:$(printf '%.0f' "$WEEK")%"
+  [ -n "$WEEK_RESET" ] && WEEK_SEG="${WEEK_SEG}($(fmt_reset_day "$WEEK_RESET")JST)"
+  RL_SEG="${RL_SEG:+$RL_SEG }${WEEK_SEG}"
+fi
 
 PR_SEG=""
 [ -n "$PR_NUM" ] && PR_SEG=" | #${PR_NUM}"
