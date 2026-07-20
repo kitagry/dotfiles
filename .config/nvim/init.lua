@@ -1079,6 +1079,17 @@ require("kitagry.lazy").setup({
       vim.keymap.set("n", "<leader>rx", "<cmd>ClaudeReviewDiscard<cr>", { desc = "Claude review: discard" })
     end,
   },
+  { "herdr send",
+    setting = true,
+    config = function()
+      local herdr_send = require("kitagry.herdr_send")
+      vim.keymap.set("n", "<leader>ah", herdr_send.send_normal, { desc = "Send line to herdr agent" })
+      vim.keymap.set("v", "<leader>ah", function()
+        vim.cmd("normal! \27") -- exit visual mode so '< '> marks are set
+        herdr_send.send_visual()
+      end, { desc = "Send selection to herdr agent" })
+    end,
+  },
   { "otavioschwanck/github-pr-reviewer.nvim",
     keys = {
       { "<leader>ghr", "<cmd>PRReviewMenu<cr>", desc = "Review GitHub Pull Request" },
