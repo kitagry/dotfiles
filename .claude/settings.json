@@ -106,7 +106,13 @@
       "Bash(go test *)",
       "Bash(go build *)",
       "Bash(grep *)",
-      "Bash(golangci-lint run *)"
+      "Bash(golangci-lint run *)",
+      "Bash(cargo build *)",
+      "Bash(cargo test *)",
+      "Bash(cargo check *)",
+      "Bash(cargo clippy *)",
+      "Bash(cargo fmt *)",
+      "Bash(cargo run *)"
     ]
   },
   "preferredNotifChannel": "notifications_disabled",
