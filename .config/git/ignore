@@ -13,3 +13,9 @@ gems/
 CLAUDE.local.md
 
 **/.claude/settings.local.json
+
+.claude/worktrees/
+
+.config/git/private.config
+
+.DS_Store
