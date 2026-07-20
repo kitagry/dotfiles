@@ -1067,6 +1067,18 @@ require("kitagry.lazy").setup({
         { "<leader>as", "<cmd>AiboSend<cr>", mode = {"n", "v"}, desc = "Send to Aibo" },
     },
   },
+  { "claude review",
+    setting = true,
+    config = function()
+      require("kitagry.claude_review").setup()
+      vim.keymap.set("n", "<leader>rv", "<cmd>ClaudeReview<cr>", { desc = "Claude review: open diffview" })
+      vim.keymap.set("n", "<leader>rc", "<cmd>ClaudeReviewComment<cr>", { desc = "Claude review: add comment" })
+      vim.keymap.set("n", "<leader>rd", "<cmd>ClaudeReviewDelete<cr>", { desc = "Claude review: delete comment" })
+      vim.keymap.set("n", "<leader>rl", "<cmd>ClaudeReviewList<cr>", { desc = "Claude review: list comments" })
+      vim.keymap.set("n", "<leader>rs", "<cmd>ClaudeReviewSubmit<cr>", { desc = "Claude review: submit to Aibo" })
+      vim.keymap.set("n", "<leader>rx", "<cmd>ClaudeReviewDiscard<cr>", { desc = "Claude review: discard" })
+    end,
+  },
   { "otavioschwanck/github-pr-reviewer.nvim",
     keys = {
       { "<leader>ghr", "<cmd>PRReviewMenu<cr>", desc = "Review GitHub Pull Request" },
