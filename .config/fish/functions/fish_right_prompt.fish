@@ -1,9 +1,11 @@
 function fish_right_prompt
     set -l parts
 
-    set -l kube_ctx (kubectl config current-context 2>/dev/null)
-    if test -n "$kube_ctx"
-        set -a parts (set_color yellow)"⎈ $kube_ctx"(set_color normal)
+    if type -q kubectl
+        set -l kube_ctx (kubectl config current-context 2>/dev/null)
+        if test -n "$kube_ctx"
+            set -a parts (set_color yellow)"⎈ $kube_ctx"(set_color normal)
+        end
     end
 
     set -l gcloud_cfg_file "$HOME/.config/gcloud/active_config"
