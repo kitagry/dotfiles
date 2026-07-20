@@ -18,6 +18,20 @@ This is a personal dotfiles repository containing configuration files for a deve
 - `mise use -g <tool>@latest` - Set global version of a tool
 - `mise list` - List installed tools and versions
 
+#### mise config の分割ルール
+
+mise は `~/.config/mise/conf.d/*.toml` を自動でマージするので、用途別にファイルを分けて管理する:
+
+- `dotfiles/.config/mise/config.toml` → **共通ツールのみ**。dotfiles で symlink 管理されるため、全環境共通で必要なものだけ書く
+- `~/.config/mise/conf.d/work.toml` → 仕事用 (dotfiles 管理外)。社内ツール (`bee`, `mcp-obsidian`, `mysqldef`, `pyrefly`, `teams.cli` など)
+- `~/.config/mise/conf.d/private.toml` → 個人用 (dotfiles 管理外)
+
+新しいツールを追加する時は「全マシンで使うか？」を判断:
+- Yes → `dotfiles/.config/mise/config.toml`
+- No (仕事 or 個人固有) → 該当する `conf.d/*.toml`
+
+`mise config` で実際に読まれているファイルと tools を確認できる。
+
 ### Shell Management
 - `sheldon source` - Generate shell plugin configuration
 - `sheldon add <plugin>` - Add new zsh plugin
