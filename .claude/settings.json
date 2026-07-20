@@ -112,7 +112,11 @@
       "Bash(cargo check *)",
       "Bash(cargo clippy *)",
       "Bash(cargo fmt *)",
-      "Bash(cargo run *)"
+      "Bash(cargo run *)",
+      "Bash(make test)",
+      "Bash(make lint)",
+      "Bash(make format)",
+      "Bash(make help)"
     ]
   },
   "preferredNotifChannel": "notifications_disabled",
