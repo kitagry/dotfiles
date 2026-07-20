@@ -20,6 +20,10 @@
       "env": {
         "BIGQUERY_PROJECT": "${BIGQUERY_PROJECT}"
       }
+    },
+    "datadog": {
+      "type": "http",
+      "url": "https://mcp.datadoghq.com/api/unstable/mcp-server/mcp"
     }
   }
 }
