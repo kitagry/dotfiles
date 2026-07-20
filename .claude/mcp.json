@@ -20,6 +20,10 @@
       "env": {
         "BIGQUERY_PROJECT": "astute-strategy-90909"
       }
+    },
+    "datadog": {
+      "type": "http",
+      "url": "https://mcp.datadoghq.com/api/unstable/mcp-server/mcp"
     }
   }
 }
