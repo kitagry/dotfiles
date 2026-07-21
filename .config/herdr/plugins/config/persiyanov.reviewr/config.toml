@@ -1,0 +1,1 @@
+base_branches = ["develop", "main", "master"]
