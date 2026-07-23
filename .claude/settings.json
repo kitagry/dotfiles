@@ -29,7 +29,7 @@
       {
         "hooks": [
           {
-            "command": "bash '/Users/kitagry/.claude/hooks/herdr-agent-state.sh' session",
+            "command": "bash \"$HOME/.claude/hooks/herdr-agent-state.sh\" session",
             "timeout": 10,
             "type": "command"
           }
@@ -52,6 +52,7 @@
   "permissions": {
     "allow": [
       "Bash(git fetch *)",
+      "Bash(git pull *)",
       "Bash(git status *)",
       "Bash(git stash:*)",
       "Bash(git log:*)",
