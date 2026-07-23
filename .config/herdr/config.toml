@@ -130,6 +130,12 @@ next_agent = "prefix+a"
 
 [[keys.command]]
 key = "prefix+d"
+type = "shell"
+command = "~/.config/herdr/scripts/gin-focus-or-spawn.sh"
+description = "focus or spawn nvim GinStatus in current workspace"
+
+[[keys.command]]
+key = "prefix+shift+d"
 type = "plugin_action"
 command = "persiyanov.reviewr.toggle"
 description = "toggle reviewr sidebar"
