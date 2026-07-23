@@ -105,6 +105,7 @@
       "Bash(uv lock *)",
       "Bash(go test *)",
       "Bash(go build *)",
+      "Bash(go vet *)",
       "Bash(grep *)",
       "Bash(golangci-lint run *)",
       "Bash(cargo build *)",
