@@ -1,1 +1,2 @@
 base_branches = ["develop", "main", "master"]
+auto_open = false
