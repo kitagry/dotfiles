@@ -54,6 +54,7 @@
       "Bash(git fetch *)",
       "Bash(git pull *)",
       "Bash(git status *)",
+      "Bash(git add:*)",
       "Bash(git stash:*)",
       "Bash(git log:*)",
       "Bash(git show:*)",
