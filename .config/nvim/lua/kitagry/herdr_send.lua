@@ -62,7 +62,11 @@ local function git_root()
 end
 
 local function buf_path_relative()
-  local file = vim.api.nvim_buf_get_name(0)
+  -- Resolve gin's virtual buffers (ginedit://, gindiff://, ...) back to their real path.
+  local ok, file = pcall(vim.fn["gin#util#expand"], "%")
+  if not ok or not file or file == "" then
+    file = vim.api.nvim_buf_get_name(0)
+  end
   if file == "" then return nil end
   local root = git_root()
   if not root then return file end
