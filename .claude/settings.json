@@ -109,6 +109,7 @@
       "Bash(go build *)",
       "Bash(go vet *)",
       "Bash(grep *)",
+      "Bash(unzip:*)",
       "Bash(golangci-lint run *)",
       "Bash(cargo build *)",
       "Bash(cargo test *)",
