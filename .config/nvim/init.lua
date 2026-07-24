@@ -485,7 +485,7 @@ require("kitagry.lazy").setup({
           vim.cmd("sleep 100ms")
           vim.cmd('edit')
         end, { remap = true })
-        vim.keymap.set('n', '[vim-lsp]s', ':<C-u>LspInfo<CR>', { remap = true })
+        vim.keymap.set('n', '[vim-lsp]s', ':<C-u>checkhealth vim.lsp<CR>', { remap = true })
       end
     end,
     config = function()
