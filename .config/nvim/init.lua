@@ -479,6 +479,12 @@ require("kitagry.lazy").setup({
         vim.keymap.set('n', '[vim-lsp]i', function()
           require('telescope.builtin').lsp_implementations()
         end, { remap = true })
+        vim.keymap.set('n', '[vim-lsp]c', function()
+          require('kitagry.lsp').incoming_call_tree(vim.v.count > 0 and vim.v.count or nil)
+        end, { remap = true })
+        vim.keymap.set('n', '[vim-lsp]o', function()
+          require('kitagry.lsp').outgoing_call_tree(vim.v.count > 0 and vim.v.count or nil)
+        end, { remap = true })
         vim.keymap.set('n', '[vim-lsp]q', function()
           print("restarting lsp...")
           vim.lsp.stop_client(vim.lsp.get_active_clients())
@@ -1115,5 +1121,17 @@ require("kitagry.lazy").setup({
 
       vim.keymap.set('n', '<leader>da', function() fyler.toggle({  kind = "split_left_most"  }) end)
     end,
+  },
+  { "kitagry/marimo.nvim",
+    ft = "python",
+    opts = {},
+  },
+  { "3rd/image.nvim",
+    build = false,
+    opts = {
+      tmux_show_only_in_active_window = true,
+      editor_only_render_when_focused = true,
+      processor = "magick_cli",
+    }
   },
 })
