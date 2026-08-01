@@ -64,7 +64,6 @@ herdr worktree create \
   --workspace "$PARENT_WS" \
   --branch "$BRANCH" \
   --base "origin/$BASE" \
-  --focus \
   --json > /tmp/herdr-delegate.json
 
 WS_ID=$(jq -r '.result.workspace.workspace_id' /tmp/herdr-delegate.json)
@@ -72,7 +71,7 @@ WT_PATH=$(jq -r '.result.worktree.path' /tmp/herdr-delegate.json)
 ```
 
 - `--workspace "$PARENT_WS"` を明示することで linked worktree 内からでも呼び出せる
-- `--focus` を付けているので、この時点で **新 workspace に focus が移る**
+- **`--focus` は付けない**。呼び出し元 (今 user が見ている workspace) の focus を奪わないため。新 workspace は裏で作られるだけで画面は切り替わらない
 - 検証: `[ -n "$WS_ID" ] && [ -n "$WT_PATH" ]`。失敗なら `/tmp/herdr-delegate.json` の中身を報告して中断
 
 ### 4. Claude 起動
@@ -104,12 +103,13 @@ script は renamed 対象の pane_id を stdout に出す (rename しなかっ�
 ```bash
 herdr agent start claude \
   --workspace "$WS_ID" \
-  --focus \
   --cwd "$WT_PATH" \
   -- claude --mcp-config "$HOME/.claude/mcp.json"
 ```
 
 `--cwd` を明示するのは、agent 起動時の cwd が新 worktree ディレクトリになるように保証するため。
+`--focus` は付けない(理由は手順 3 と同じ)。以降の `agent wait` / `agent send` / `pane send-keys` は
+すべて pane_id / workspace_id 指定で動くので、focus が無くても支障は無い。
 
 ### 5. Claude の pane_id を特定 → ready 待ち
 
@@ -160,7 +160,7 @@ herdr agent wait "$TARGET" --status working --timeout 15000
 - **worktree path**: `$WT_PATH`
 - **branch name**: `$BRANCH`
 - **投げた指示の要約**
-- 「新 workspace に focus が移りました。この session (元 workspace) に戻るには `prefix + shift + a` などで agent 切替してください」
+- focus は元 workspace のまま(切り替わっていない)。新 workspace を見たくなったら agent 切替 (`prefix + shift + a` など) で `$WS_ID` / pane を選んでください
 
 ## 失敗時の後始末
 
@@ -174,7 +174,7 @@ herdr agent wait "$TARGET" --status working --timeout 15000
 - **`herdr worktree create` を引数なしで実行しない** — ランダム名の worktree が生成されて掃除が面倒
 - **linked worktree 内から `herdr worktree create` を `--workspace` 無しで呼ばない** — `linked_worktree_source` エラーで拒否される。必ず parent (non-linked) workspace の ID を明示する
 - **`--force` オプションを worktree remove に安易に付けない** — 未 push の commit が消える
-- **`herdr agent start` に `--focus` を付け忘れない** — focus が元 workspace のままだと user が新 Claude を確認できない
+- **`herdr worktree create` / `herdr agent start` に `--focus` を付けない** — 付けると呼び出し元の画面が新 workspace に奪われ、作業のノイズになる。この skill は「裏で静かに作って投げる」ことが目的
 - **`herdr agent start ... -- <argv>` の argv 先頭に binary 名 (`claude`) を省略しない** — herdr は argv 先頭を spawn 対象として扱うので、`-- --mcp-config /path` だけ書くと `--mcp-config` を PATH で探して失敗する
 - **Enter 送信直後に delegate を完了扱いにしない** — `herdr agent wait --status working` で新 Claude が実際に処理を開始したことを確認してから完了報告する。しないと、Enter が届いてなくても「送った気」になって離れてしまい、user が新 workspace を開いた時に空プロンプトのまま止まっている事故になる
 - **`INSTRUCTION` に対話フローを含めない** — 「まず X して次に Y」ではなく「X と Y を一気にやって」の形で 1 メッセージにまとめる。段階的な指示なら、そもそもこのスキルではなく元 session で TDD ワークフローを回した方が良い
