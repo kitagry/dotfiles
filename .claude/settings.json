@@ -1,54 +1,7 @@
 {
-  "alwaysThinkingEnabled": true,
-  "autoCompactEnabled": true,
-  "enabledPlugins": {
-    "example-skills@anthropic-agent-skills": true,
-    "figma@claude-plugins-official": true,
-    "gopls-lsp@claude-plugins-official": true,
-    "lua-lsp@claude-plugins-official": true,
-    "pyright-lsp@claude-plugins-official": true,
-    "rust-analyzer-lsp@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true
-  },
   "env": {
     "CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION": "false"
   },
-  "hooks": {
-    "Notification": [
-      {
-        "hooks": [
-          {
-            "command": "echo \"[$(date)] idle_prompt hook triggered\" >> /tmp/claude-hooks.log; ~/.zsh/claude-notify.sh '入力を待っています'",
-            "type": "command"
-          }
-        ],
-        "matcher": "idle_prompt"
-      }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "command": "bash \"$HOME/.claude/hooks/herdr-agent-state.sh\" session",
-            "timeout": 10,
-            "type": "command"
-          }
-        ],
-        "matcher": "*"
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "command": "echo \"[$(date)] Stop hook triggered\" >> /tmp/claude-hooks.log && ~/.zsh/claude-notify.sh 'タスクが完了しました'",
-            "type": "command"
-          }
-        ]
-      }
-    ]
-  },
-  "language": "Japanese",
   "permissions": {
     "allow": [
       "Bash(git fetch *)",
@@ -132,17 +85,65 @@
       "Bash(herdr pane run:*)"
     ]
   },
-  "preferredNotifChannel": "notifications_disabled",
-  "skipWorkflowUsageWarning": true,
-  "statusLine": {
-    "command": "~/.claude/statusline.sh",
-    "padding": 0,
-    "type": "command"
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "idle_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"[$(date)] idle_prompt hook triggered\" >> /tmp/claude-hooks.log; ~/.zsh/claude-notify.sh '入力を待っています'"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/herdr-agent-state.sh\" session",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"[$(date)] Stop hook triggered\" >> /tmp/claude-hooks.log && ~/.zsh/claude-notify.sh 'タスクが完了しました'"
+          }
+        ]
+      }
+    ]
   },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh",
+    "padding": 0
+  },
+  "enabledPlugins": {
+    "example-skills@anthropic-agent-skills": true,
+    "figma@claude-plugins-official": true,
+    "gopls-lsp@claude-plugins-official": true,
+    "lua-lsp@claude-plugins-official": true,
+    "pyright-lsp@claude-plugins-official": true,
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true
+  },
+  "language": "Japanese",
+  "alwaysThinkingEnabled": true,
   "tui": "default",
   "voice": {
     "enabled": true,
     "mode": "hold"
   },
-  "voiceEnabled": true
+  "skipWorkflowUsageWarning": true,
+  "preferredNotifChannel": "notifications_disabled",
+  "autoCompactEnabled": true,
+  "voiceEnabled": true,
+  "agentPushNotifEnabled": true
 }
