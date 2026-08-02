@@ -18,11 +18,11 @@ WEEK_RESET=$(echo "$input" | jq -r '.rate_limits.seven_day.resets_at // empty')
 PR_NUM=$(echo "$input" | jq -r '.pr.number // empty')
 
 fmt_reset() {
-  TZ=Asia/Tokyo date -r "$1" +%H:%M
+  TZ=Asia/Tokyo date -d "@$1" +%H:%M 2>/dev/null || TZ=Asia/Tokyo date -r "$1" +%H:%M
 }
 
 fmt_reset_day() {
-  TZ=Asia/Tokyo date -r "$1" '+%m/%d %H:%M'
+  TZ=Asia/Tokyo date -d "@$1" '+%m/%d %H:%M' 2>/dev/null || TZ=Asia/Tokyo date -r "$1" '+%m/%d %H:%M'
 }
 
 CYAN='\033[36m'; GREEN='\033[32m'; YELLOW='\033[33m'; RED='\033[31m'; DIM='\033[2m'; RESET='\033[0m'
