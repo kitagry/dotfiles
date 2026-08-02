@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 # herdr keybind script: focus an existing nvim GinStatus pane in the current
 # workspace, or spawn a new one to the right if none exists.
 #

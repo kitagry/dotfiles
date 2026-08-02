@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Minimal footer, inspired by pi-minimal-footer:
 # https://github.com/ogulcancelik/pi-extensions/tree/main/packages/pi-minimal-footer
 # repo/branch already shown in herdr's sidebar, so this stays to one line:

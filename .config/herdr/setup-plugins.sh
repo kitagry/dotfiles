@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Installs the herdr plugins this setup uses. Idempotent (safe to re-run).
 #
 # Not wired into install.sh on purpose: herdr is an optional tool, and if it's
