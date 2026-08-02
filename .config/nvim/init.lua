@@ -67,6 +67,8 @@ require("kitagry.lazy").setup({
             ["*"] = "win32yank.exe -o",
           },
         }
+      else
+        vim.opt.clipboard = 'unnamedplus'
       end
     end,
   },
