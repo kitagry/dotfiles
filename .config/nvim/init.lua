@@ -54,7 +54,7 @@ require("kitagry.lazy").setup({
 
       if vim.fn.has('mac') == 1 then
         vim.opt.clipboard = 'unnamed'
-      elseif vim.fn.has('wsl') then
+      elseif vim.fn.has('wsl') == 1 then
         vim.opt.clipboard = 'unnamedplus'
         vim.g.clipboard = {
           name = 'WslClipboard',
