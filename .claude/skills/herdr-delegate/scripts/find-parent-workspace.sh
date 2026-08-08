@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
-# Prints the workspace_id of the parent (non-linked) herdr workspace for the given repo root.
+# Prints the workspace_id of the parent (non-linked) herdr workspace for the current repo.
 #
-# Usage: find-parent-workspace.sh <repo_root> [label]
+# Usage: find-parent-workspace.sh [repo_root] [label]
+#
+# <repo_root> defaults to the current repo's root, resolved via git's common-dir so
+# this works from inside a linked worktree too (git-common-dir lives in the parent).
 #
 # 1st attempt: match workspaces where worktree.repo_root == <repo_root> and is_linked_worktree == false.
 # 2nd attempt (fallback): match by workspace label = basename(repo_root) or the provided [label].
@@ -10,12 +13,7 @@
 # Exits with error if no match is found.
 set -euo pipefail
 
-if [ $# -lt 1 ]; then
-  echo "usage: $0 <repo_root> [label]" >&2
-  exit 2
-fi
-
-repo_root="$1"
+repo_root="${1:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")}"
 label="${2:-$(basename "$repo_root")}"
 
 list_json=$(herdr workspace list)
