@@ -33,3 +33,13 @@ for child_directory in "${DIRECTORIES[@]}"; do
       ln -snfv "${DOT_DIRECTORY}/${child_directory}/${file:2}" "${HOME}/${child_directory}/${file:2}"
   done
 done
+
+if type "fish" > /dev/null 2>&1; then
+  fish -c '
+    if not functions -q fisher
+      curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source
+      fisher install jorgebucaran/fisher
+    end
+    fisher update
+  '
+fi
