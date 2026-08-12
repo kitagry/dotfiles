@@ -89,6 +89,7 @@
       "Bash(~/.claude/skills/herdr-delegate/scripts/read-pane.sh:*)"
     ]
   },
+  "model": "claude-opus-4-7",
   "hooks": {
     "Notification": [
       {
