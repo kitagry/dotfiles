@@ -30,6 +30,9 @@ for child_directory in "${DIRECTORIES[@]}"; do
   done
 
   for file in $(find . -type f | grep -v "\.git"); do
+      # .claude/settings.json is a merged output (public + private via jq deep-merge)
+      # written by the private dotfiles install.sh. Skip symlinking to avoid clobbering it.
+      [[ "${child_directory}/${file:2}" == ".claude/settings.json" ]] && continue
       ln -snfv "${DOT_DIRECTORY}/${child_directory}/${file:2}" "${HOME}/${child_directory}/${file:2}"
   done
 done
