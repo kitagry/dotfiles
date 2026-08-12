@@ -1,7 +1,7 @@
 ---
 name: herdr-delegate
 description: 現在の git repo で新規 worktree + herdr workspace を作成し、そこで別の Claude Code セッションを起動して指示を投げるスキル。「別 worktree で並列に作業させて」「delegate to worktree」「別の Claude に〜させて」「新しい workspace で〜」などのリクエスト時、または /delegate-workspace で起動する。
-allowed-tools: Bash(~/.claude/skills/herdr-delegate/scripts/resolve-base.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/find-parent-workspace.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/create-worktree.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/create-workspace-for-new-repo.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/start-claude-agent.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/send-instruction.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/confirm-trust-dialog.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/find-agent-pane.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/rename-existing-claude.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/read-pane.sh:*), Bash(ghq get:*), Skill
+allowed-tools: Bash(~/.claude/skills/herdr-delegate/scripts/resolve-base.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/find-parent-workspace.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/ensure-parent-workspace.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/create-worktree.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/create-workspace-for-new-repo.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/start-claude-agent.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/send-instruction.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/confirm-trust-dialog.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/find-agent-pane.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/rename-existing-claude.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/read-pane.sh:*), Bash(ghq get:*), Skill
 ---
 
 # Delegate work to a new herdr workspace
@@ -35,7 +35,7 @@ BASE=$(~/.claude/skills/herdr-delegate/scripts/resolve-base.sh)
 
 解決順序 (`resolve-base.sh` 内): (1) `gh pr view --json baseRefName`、(2) `git symbolic-ref --short refs/remotes/origin/HEAD`、(3) fallback `main`。
 
-### 2. parent workspace の検出
+### 2. parent workspace の検出 (無ければ作成)
 
 linked worktree (`~/.herdr/worktrees/...`) から呼ばれた場合、`herdr worktree create` は
 `linked_worktree_source` エラーで拒否される。**必ず parent (non-linked) workspace を明示指定する**。
@@ -49,6 +49,31 @@ PARENT_WS=$(~/.claude/skills/herdr-delegate/scripts/find-parent-workspace.sh)
 `find-parent-workspace.sh` は引数無しなら現在の repo (linked worktree の中でも git common-dir から
 親 repo root を自動算出) を対象にする。2 段でマッチ: (1) `worktree.repo_root` が一致かつ non-linked、
 (2) fallback として `label == basename(repo_root)`。
+
+#### 別リポで workspace がまだ開かれていないケース
+
+既にローカルに clone 済みだが herdr workspace が無い別リポに delegate したいとき (今の作業リポ ≠ 委譲先) は、
+find + refresh + create を一発で済ませる `ensure-parent-workspace.sh` を使うと安全:
+
+```bash
+REPO_ROOT=$HOME/go/src/github.com/foo/bar
+PARENT_WS=$(~/.claude/skills/herdr-delegate/scripts/ensure-parent-workspace.sh "$REPO_ROOT")
+```
+
+script の挙動:
+
+1. **find** — `find-parent-workspace.sh` で既存 workspace を探す。あればその ID を返して終了
+2. **無ければ refresh** — 新規作成する前に repo を最新化:
+   - `git fetch origin` (常に実行、失敗しても続行)
+   - working tree が **clean** の場合のみ `git switch <default>` + `git pull --ff-only`
+     (default branch は `symbolic-ref refs/remotes/origin/HEAD` → fallback で `ls-remote --symref` → 最終手段 `main`)
+   - **dirty** なら switch/pull は skip し、warn を stderr に流す (ユーザーが元 workspace で作業中の可能性があるため、勝手に branch を切り替えない安全弁)
+3. **workspace 作成** — `herdr workspace create --cwd $REPO_ROOT --label $(basename ...) --no-focus --json`
+4. **新 workspace_id を stdout に返す**
+
+`ensure-parent-workspace.sh` が exit 1 するのは `$REPO_ROOT` が git repo でない / herdr が使えないなどの根本的な問題のとき。中断してユーザーに状況を報告する。
+
+**未 clone の完全新規 repo** の場合は下の「新規 repo に対して使う場合」参照 (`ghq get` + `create-workspace-for-new-repo.sh` フロー)。
 
 ### 3. worktree + workspace 作成
 

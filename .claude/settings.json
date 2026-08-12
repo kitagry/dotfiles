@@ -82,7 +82,11 @@
       "Bash(herdr agent list:*)",
       "Bash(herdr pane send-keys:*)",
       "Bash(herdr pane send-text:*)",
-      "Bash(herdr pane run:*)"
+      "Bash(herdr pane run:*)",
+      "Bash(~/.claude/skills/herdr-delegate/scripts/find-parent-workspace.sh:*)",
+      "Bash(~/.claude/skills/herdr-delegate/scripts/find-agent-pane.sh:*)",
+      "Bash(~/.claude/skills/herdr-delegate/scripts/rename-existing-claude.sh:*)",
+      "Bash(~/.claude/skills/herdr-delegate/scripts/read-pane.sh:*)"
     ]
   },
   "hooks": {
