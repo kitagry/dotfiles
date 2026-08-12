@@ -564,6 +564,12 @@ require("kitagry.lazy").setup({
               opts.hidden = not opts.hidden -- hiddenをトグル
               builtin.find_files(opts)
             end)
+            map("i", "<C-i>", function(prompt_bufnr)
+              local current_picker = action_state.get_current_picker(prompt_bufnr)
+              local opts = current_picker:find("opts") or {}
+              opts.no_ignore = not opts.no_ignore -- .gitignore尊重をトグル (サブリポも対象化)
+              builtin.find_files(opts)
+            end)
             return true
           end,
         })
