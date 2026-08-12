@@ -1,6 +1,7 @@
 {
   "env": {
-    "CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION": "false"
+    "CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION": "false",
+    "FORCE_HYPERLINK": "1"
   },
   "permissions": {
     "allow": [
