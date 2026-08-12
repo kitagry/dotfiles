@@ -20,6 +20,10 @@
       "env": {
         "BIGQUERY_PROJECT": "astute-strategy-90909"
       }
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@latest"]
     }
   }
 }
