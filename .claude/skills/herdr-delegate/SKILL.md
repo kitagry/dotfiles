@@ -1,7 +1,7 @@
 ---
 name: herdr-delegate
 description: 現在の git repo で新規 worktree + herdr workspace を作成し、そこで別の Claude Code セッションを起動して指示を投げるスキル。「別 worktree で並列に作業させて」「delegate to worktree」「別の Claude に〜させて」「新しい workspace で〜」などのリクエスト時、または /delegate-workspace で起動する。
-allowed-tools: Bash(~/.claude/skills/herdr-delegate/scripts/resolve-base.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/find-parent-workspace.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/ensure-parent-workspace.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/create-worktree.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/create-workspace-for-new-repo.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/start-claude-agent.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/send-instruction.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/confirm-trust-dialog.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/find-agent-pane.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/rename-existing-claude.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/read-pane.sh:*), Bash(ghq get:*), Skill
+allowed-tools: Bash(~/.claude/skills/herdr-delegate/scripts/resolve-base.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/fetch-base.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/find-parent-workspace.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/ensure-parent-workspace.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/create-worktree.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/create-workspace-for-new-repo.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/start-claude-agent.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/send-instruction.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/confirm-trust-dialog.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/find-agent-pane.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/rename-existing-claude.sh:*), Bash(~/.claude/skills/herdr-delegate/scripts/read-pane.sh:*), Bash(ghq get:*), Skill
 ---
 
 # Delegate work to a new herdr workspace
@@ -22,23 +22,49 @@ allowed-tools: Bash(~/.claude/skills/herdr-delegate/scripts/resolve-base.sh:*), 
 ユーザーの依頼から抽出:
 
 - `BRANCH`: 新しく作るブランチ名。kebab-case 推奨(例: `feature/family-relations-parallel`)。未指定なら会話文脈から推測して確認する
-- `INSTRUCTION`: 新 Claude に投げる指示文。**単一の完結した指示にする**(小分けの往復は元 session ではなく新 session でやってもらう)
+- `INSTRUCTION`: 新 Claude に投げる指示文。**単一の完結した指示にする**(小分けの往復は元 session ではなく新 session でやってもらう)。書き方は下記「INSTRUCTION の書き方」参照
 - `BASE` (optional): 分岐元。未指定なら下記フローで自動検出
+
+### INSTRUCTION の書き方
+
+delegate 先の Claude は **`~/.claude/CLAUDE.shared.md` の「worktree Claude 内の 4 エージェント開発フロー」を読んでいる前提だが、指示文で明示しないと自分でコードを書き始める**(subagent を呼ばない)ことが多い。以下を **INSTRUCTION に必ず含める**:
+
+1. **タスクのゴール** — 何を実装して欲しいか (1-3 文で完結に)
+2. **4 エージェントフローに乗せる旨** — 例: 「複数ファイルにまたがる実装なので、`explore` → `implement` → `review` → `qa` のサブエージェントに委譲して進めて。あなた自身はオーケストレーターとして立ち回り、コードは書かない」
+   - 1 ファイルの typo 修正など軽微なタスクの場合は「軽微な変更なので 4 エージェントフローは使わず直接やって」と明示する(そうしないと delegated Claude が過剰にサブエージェントを呼ぶ)
+3. **PR の作成方針** — 「実装完了したら `create-pr` skill で PR 作成 → `/loop` でレビュー監視 → `pr-fix` で自動対応」まで一貫してやってもらうか、draft 止まりにするか (デジスマなら draft 止まり + `#m3pay-gitlab` レビュー依頼)
+4. **スコープ外の扱い** — 「スコープ外の問題を見つけたら別 issue にして」を明示
+
+**悪い例**: `"family-relations の親子関係を追加して"` — これだと delegated Claude が直接ファイルを触り始める
+
+**良い例**:
+
+```
+family-relations の親子関係を patient-management-api-go に追加してほしい。
+
+- 複数ファイル (handler / usecase / repository) にまたがるので、explore → implement → review → qa の 4 エージェントフローに乗せて進めて。あなた自身はオーケストレーターとしてサブエージェントに委譲し、直接コードは書かないこと。
+- 実装完了したら create-pr で PR を作成 → /loop でレビュー監視 → pr-fix で対応、まで自動で回して。
+- スコープ外の問題を見つけたら別 issue を作って main ブランチ側に拾ってもらって。
+```
 
 ## 手順
 
-### 1. base branch 決定
+### 1. base branch 決定 + fetch
 
 ```bash
 BASE=$(~/.claude/skills/herdr-delegate/scripts/resolve-base.sh)
+~/.claude/skills/herdr-delegate/scripts/fetch-base.sh "$(git rev-parse --show-toplevel)" "$BASE"
 ```
 
-解決順序 (`resolve-base.sh` 内): (1) `gh pr view --json baseRefName`、(2) `git symbolic-ref --short refs/remotes/origin/HEAD`、(3) fallback `main`。
+- `resolve-base.sh` の解決順序: (1) `gh pr view --json baseRefName`、(2) `git symbolic-ref --short refs/remotes/origin/HEAD`、(3) fallback `main`。
+- `fetch-base.sh` は `git fetch origin <base> --quiet` を実行して remote-tracking ref を最新化する。`create-worktree.sh` が `origin/<base>` を fork 元に使うので、これを飛ばすと **worktree Claude が PR を merge して origin が進んでいるのに古い base から派生してしまう**(体感で「PR merge 後に delegate したら差分がおかしい」というやつ)。best-effort なので fetch 失敗しても続行する。**この step は絶対に飛ばさない**。
+- 別リポに delegate するケース (下記「新規 repo」フロー) は `ensure-parent-workspace.sh` が内部で fetch + pull まで済ませるので、この step 1 の fetch は不要。ただし repo_root の指定を間違えない限り重複実行しても害はない。
 
 ### 2. parent workspace の検出 (無ければ作成)
 
-linked worktree (`~/.herdr/worktrees/...`) から呼ばれた場合、`herdr worktree create` は
-`linked_worktree_source` エラーで拒否される。**必ず parent (non-linked) workspace を明示指定する**。
+linked worktree (`~/go/src/<host>/<org>/<repo>-wt/...` や `~/.herdr/worktrees/...`) から
+呼ばれた場合、`herdr worktree create` は `linked_worktree_source` エラーで拒否される。
+**必ず parent (non-linked) workspace を明示指定する**。
 
 ```bash
 PARENT_WS=$(~/.claude/skills/herdr-delegate/scripts/find-parent-workspace.sh)
@@ -168,6 +194,7 @@ eval "$(~/.claude/skills/herdr-delegate/scripts/create-workspace-for-new-repo.sh
 
 ## やってはいけないこと
 
+- **`fetch-base.sh` を飛ばして `create-worktree.sh` に進まない** — `create-worktree.sh` は `--base "origin/$base"` で remote-tracking ref を fork 元にする。`git fetch` を挟まないと、他 session で merge された PR 分だけ origin/$base が遅れて、新 worktree が古い base から派生する。過去に「delegate 直後の diff がおかしい」トラブルの原因になった (2026-08-13)。best-effort とはいえ **必ず step 1 の `fetch-base.sh` を通す**
 - **`herdr worktree create` を引数なしで実行しない** — ランダム名の worktree が生成されて掃除が面倒。必ず `create-worktree.sh` 経由で branch/base を明示する
 - **linked worktree 内から parent workspace を省略しない** — `find-parent-workspace.sh` は自動検出するが、失敗したらユーザーに「先に該当 repo の workspace を開いてください」と確認する。決め打ちで別の workspace を使わない
 - **`remove-worktree.sh` を確認なしで実行しない** — `--force` 付きなので未 push の commit が消える
@@ -176,3 +203,4 @@ eval "$(~/.claude/skills/herdr-delegate/scripts/create-workspace-for-new-repo.sh
 - **`send-instruction.sh` の代わりに `herdr agent send-keys` で直接文字を打って delegate を完了扱いにしない** — `send-keys` は literal key を打つだけで送信確定や状態確認をしない。`send-instruction.sh` (`herdr agent prompt --wait --until working`) は実際に `working` へ遷移したことを確認してから成功扱いにする設計。確認せずに離れると、user が新 workspace を開いた時に空プロンプトのまま止まっている事故になる
 - **`herdr agent start` の成功判定を `$?` だけに頼らない** — `agent_pane_busy` (worktree 作成直後の pane 初期化中) のようなエラーでも exit code 0 で返ってくることがある。JSON 出力の `.error` を jq で見て判定する(`start-claude-agent.sh` 参照)
 - **`INSTRUCTION` に対話フローを含めない** — 「まず X して次に Y」ではなく「X と Y を一気にやって」の形で 1 メッセージにまとめる。段階的な指示なら、そもそもこのスキルではなく元 session で TDD ワークフローを回した方が良い
+- **`INSTRUCTION` に「4 エージェントフローで進めて」と明記しないまま複雑タスクを投げない** — delegated Claude は shared CLAUDE.md でフローを知っているが、明示しないと自分で書き始める。「引数 > INSTRUCTION の書き方」の 4 項目を必ず含める
