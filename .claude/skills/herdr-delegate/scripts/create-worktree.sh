@@ -25,10 +25,36 @@ parent_ws="$1"
 branch="$2"
 base="$3"
 
+# If the parent workspace lives under `ghq root`, place the worktree at
+# `<ghq root>/<host>/<org>/<repo>-wt/<branch>` so it stays alongside the source
+# repo (ghq/fzf can see it, and rules with `paths: "**/<org>/**"` still match).
+# Fall back to herdr's default (~/.herdr/worktrees/<repo>/<branch>) otherwise.
+path_arg=()
+ghq_root=$(ghq root 2>/dev/null || true)
+if [ -n "$ghq_root" ]; then
+  repo_root=$(herdr workspace list --json 2>/dev/null \
+    | jq -r --arg ws "$parent_ws" '
+        .result.workspaces[]
+        | select(.workspace_id == $ws)
+        | .worktree.repo_root // empty
+      ')
+  if [ -n "$repo_root" ] && [ "${repo_root#$ghq_root/}" != "$repo_root" ]; then
+    rel="${repo_root#$ghq_root/}"
+    host="${rel%%/*}"
+    rest="${rel#*/}"
+    org="${rest%%/*}"
+    repo="${rest##*/}"
+    if [ -n "$host" ] && [ -n "$org" ] && [ -n "$repo" ] && [ "$rest" = "$org/$repo" ]; then
+      path_arg=(--path "$ghq_root/$host/$org/${repo}-wt/$branch")
+    fi
+  fi
+fi
+
 json=$(herdr worktree create \
   --workspace "$parent_ws" \
   --branch "$branch" \
   --base "origin/$base" \
+  "${path_arg[@]}" \
   --json)
 
 ws_id=$(printf '%s' "$json" | jq -r '.result.workspace.workspace_id')
