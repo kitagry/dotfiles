@@ -12,4 +12,12 @@
   ];
 
   programs.home-manager.enable = true;
+
+  # Disable GNOME's automatic suspend on AC power so the machine stays
+  # reachable as an always-on server (e.g. Claude Code from a phone).
+  dconf.settings = {
+    "org/gnome/settings-daemon/plugins/power" = {
+      sleep-inactive-ac-type = "nothing";
+    };
+  };
 }
