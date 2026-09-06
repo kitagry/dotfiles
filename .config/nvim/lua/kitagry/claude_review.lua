@@ -3,6 +3,8 @@ local M = {}
 local state = {
   comments = {},
   base_ref = nil,
+  -- 開いている diff の range。空文字なら working tree (未コミット) のみ
+  diff_range = "",
 }
 
 local NS = vim.api and vim.api.nvim_create_namespace and vim.api.nvim_create_namespace("claude_review") or 0
@@ -46,9 +48,26 @@ function M.list_comments()
   return out
 end
 
+-- コメントの状態のみ消す。diff_range は開いている diffview 側の状態なので保持
+-- (submit 後も同じ diff で続けてコメントできるようにするため)
 function M.clear()
   state.comments = {}
   state.base_ref = nil
+end
+
+-- diffview / git diff に渡す rev を決める。
+-- branch: merge-base 起点の 2-dot。コミット済み + 未コミットの両方がファイル一覧に出る
+-- working: 引数なし。未コミットのみ
+function M.diff_spec(opts)
+  opts = opts or {}
+  local rev = opts.rev
+  if not rev or rev == "" then
+    if opts.mode ~= "working" then
+      rev = opts.merge_base
+    end
+  end
+  rev = rev or ""
+  return { diffview_args = rev, git_diff_range = rev }
 end
 
 local function quote(text)
@@ -110,6 +129,13 @@ local function detect_base_ref()
   return state.base_ref
 end
 
+local function detect_merge_base()
+  local base = detect_base_ref()
+  local sha = shell("git merge-base " .. vim.fn.shellescape(base) .. " HEAD")
+  if not sha or sha == "" then return nil end
+  return sha
+end
+
 local function diffview_cur_file_path()
   local ok, lib = pcall(require, "diffview.lib")
   if not ok then return nil end
@@ -135,10 +161,11 @@ local function buf_path_relative()
 end
 
 local function diff_excerpt_for(path, lnum)
-  local base = detect_base_ref()
+  -- start() で開いたのと同じ range を使う。空なら未コミット差分
+  local range = state.diff_range or ""
   local cmd = string.format(
-    "git diff %s...HEAD -- %s",
-    vim.fn.shellescape(base),
+    "git diff %s-- %s",
+    range ~= "" and (vim.fn.shellescape(range) .. " ") or "",
     vim.fn.shellescape(path)
   )
   local out = shell(cmd)
@@ -262,9 +289,15 @@ end
 
 function M.start(opts)
   opts = opts or {}
-  local base = opts.base or detect_base_ref()
-  state.base_ref = base
-  local ok = pcall(vim.cmd, "DiffviewOpen " .. base .. "...HEAD")
+  local mode = opts.mode or "branch"
+  local merge_base = mode == "branch" and detect_merge_base() or nil
+  if mode == "branch" and not merge_base and not opts.base then
+    vim.notify("merge-base を取得できないため未コミット差分を開きます", vim.log.levels.WARN)
+  end
+  local spec = M.diff_spec({ mode = mode, merge_base = merge_base, rev = opts.base })
+  state.diff_range = spec.git_diff_range
+
+  local ok = pcall(vim.cmd, trim("DiffviewOpen " .. spec.diffview_args))
   if not ok then
     vim.notify("diffview.nvim が見つかりません", vim.log.levels.ERROR)
     return
@@ -372,7 +405,11 @@ end
 function M.setup()
   vim.api.nvim_create_user_command("ClaudeReview", function(o)
     M.start({ base = o.args ~= "" and o.args or nil })
-  end, { nargs = "?", desc = "Open diffview against PR base" })
+  end, { nargs = "?", desc = "Open diffview from merge-base (committed + uncommitted)" })
+
+  vim.api.nvim_create_user_command("ClaudeReviewWorking", function()
+    M.start({ mode = "working" })
+  end, { desc = "Open diffview for uncommitted changes only" })
 
   vim.api.nvim_create_user_command("ClaudeReviewComment", M.comment_here, { desc = "Add review comment on current line" })
   vim.api.nvim_create_user_command("ClaudeReviewDelete", M.delete_here, { desc = "Delete review comment on current line" })

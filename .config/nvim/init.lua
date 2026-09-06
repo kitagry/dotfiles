@@ -1085,7 +1085,8 @@ require("kitagry.lazy").setup({
     setting = true,
     config = function()
       require("kitagry.claude_review").setup()
-      vim.keymap.set("n", "<leader>rv", "<cmd>ClaudeReview<cr>", { desc = "Claude review: open diffview" })
+      vim.keymap.set("n", "<leader>rv", "<cmd>ClaudeReview<cr>", { desc = "Claude review: open diffview (branch)" })
+      vim.keymap.set("n", "<leader>rw", "<cmd>ClaudeReviewWorking<cr>", { desc = "Claude review: open diffview (uncommitted)" })
       vim.keymap.set("n", "<leader>rc", "<cmd>ClaudeReviewComment<cr>", { desc = "Claude review: add comment" })
       vim.keymap.set("n", "<leader>rd", "<cmd>ClaudeReviewDelete<cr>", { desc = "Claude review: delete comment" })
       vim.keymap.set("n", "<leader>rl", "<cmd>ClaudeReviewList<cr>", { desc = "Claude review: list comments" })
