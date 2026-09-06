@@ -5,17 +5,15 @@ deno = "latest"
 fzf = 'latest'
 gh = 'latest'
 "aqua:neovim/neovim" = "latest"
-node = 'latest'
+node = 'system'
 rust = 'latest'
 eza = "latest"
 lazygit = "latest"
 ripgrep = "latest"
 direnv = "latest"
-poetry = "latest"
 yq = "latest"
 "npm:@google/gemini-cli" = "latest"
 fd = "latest"
-python = "3.13"
 duckdb = "latest"
 uv = "latest"
 gcloud = "latest"
@@ -32,6 +30,8 @@ pinact = "latest"
 helm = "latest"
 "npm:@googleworkspace/cli" = "latest"
 herdr = "latest"
+codex = "latest"
+antigravity-cli = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["terraform"]
