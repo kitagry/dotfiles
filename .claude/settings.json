@@ -90,7 +90,7 @@
       "Bash(~/.claude/skills/herdr-delegate/scripts/read-pane.sh:*)"
     ]
   },
-  "model": "claude-opus-4-7",
+  "model": "claude-opus-5",
   "hooks": {
     "Notification": [
       {
@@ -150,6 +150,6 @@
   "skipWorkflowUsageWarning": true,
   "preferredNotifChannel": "notifications_disabled",
   "autoCompactEnabled": true,
-  "voiceEnabled": true,
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "voiceEnabled": true
 }
