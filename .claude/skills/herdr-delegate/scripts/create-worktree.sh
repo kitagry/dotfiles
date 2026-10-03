@@ -14,6 +14,11 @@
 #
 # Never pass --focus: this must stay a silent background creation so the caller's
 # workspace keeps focus.
+#
+# NOTE (2026-10-03): this environment's herdr has no `--json` flag on either
+# `workspace list` or `worktree create` -- both already emit JSON on stdout, and
+# passing `--json` makes them exit 2 with a usage error. Under `set -euo pipefail`
+# that killed this script with an empty message. Do not re-add `--json`.
 set -euo pipefail
 
 if [ $# -lt 3 ]; then
@@ -32,12 +37,30 @@ base="$3"
 path_arg=()
 ghq_root=$(ghq root 2>/dev/null || true)
 if [ -n "$ghq_root" ]; then
-  repo_root=$(herdr workspace list --json 2>/dev/null \
+  ws_json=$(herdr workspace list 2>/dev/null || true)
+  repo_root=$(printf '%s' "$ws_json" \
     | jq -r --arg ws "$parent_ws" '
         .result.workspaces[]
         | select(.workspace_id == $ws)
         | .worktree.repo_root // empty
-      ')
+      ' 2>/dev/null || true)
+
+  # Some herdr versions omit worktree info from `workspace list`. Recover by
+  # using the current repo root, but only when the parent workspace's label
+  # matches its basename -- otherwise we could point at an unrelated repo.
+  if [ -z "$repo_root" ]; then
+    cur_root=$(git rev-parse --show-toplevel 2>/dev/null || true)
+    ws_label=$(printf '%s' "$ws_json" \
+      | jq -r --arg ws "$parent_ws" '
+          .result.workspaces[]
+          | select(.workspace_id == $ws)
+          | .label // empty
+        ' 2>/dev/null || true)
+    if [ -n "$cur_root" ] && [ -n "$ws_label" ] && [ "$(basename "$cur_root")" = "$ws_label" ]; then
+      repo_root="$cur_root"
+    fi
+  fi
+
   if [ -n "$repo_root" ] && [ "${repo_root#$ghq_root/}" != "$repo_root" ]; then
     rel="${repo_root#$ghq_root/}"
     host="${rel%%/*}"
@@ -55,7 +78,7 @@ json=$(herdr worktree create \
   --branch "$branch" \
   --base "origin/$base" \
   "${path_arg[@]}" \
-  --json)
+  --no-focus)
 
 ws_id=$(printf '%s' "$json" | jq -r '.result.workspace.workspace_id')
 wt_path=$(printf '%s' "$json" | jq -r '.result.worktree.path')
