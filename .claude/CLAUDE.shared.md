@@ -20,6 +20,9 @@ GitHubのPR/Issue/レビューコメント等を読み取る際は、`gh api` �
 
 settings.json で許可済みは個別ツール名のみ（**ワイルドカードは効かない** ので注意）。許可されていない読み取り系MCPを使いたい場合は明示的に追加すること。理由: `gh api` を許可するとPOST等の書き込みも通ってしまうため、settings.jsonではMCPの読み取り系のみを個別許可している。
 
+### Stacked PRs
+依存する PR を積む・大きな変更を分割する時は GitHub の Stacked PRs と `gh stack` 拡張 (導入済み) を使う。手で base branch を付け替えたり手動 rebase で連鎖を直したりしない。手順と制約は `stacked-prs` skill を参照。
+
 ### PR / MR 作成時は自分を assignee に追加
 PR / MR を作成したら、必ず自分を assignee に追加すること。draft でも ready-for-review でも同じ。理由: 自分の担当 PR/MR がダッシュボード (GitHub Pulls / GitLab To-do) や `gh pr list --assignee @me` に出るようになり、レビュー返し・CI 失敗通知・QA 依頼のキャッチアップが早くなる。draft 期間中に忘れがちなので `gh pr create` / `create_merge_request` の直後にセットで叩く。
 - GitHub: `gh pr create ...` の直後に `gh pr edit <URL or number> --add-assignee "@me"`
