@@ -9,6 +9,7 @@ if status is-interactive
     end
 
     bind -M insert \cg _ghq_cd
+    bind -M insert \cs _claude_resume_bind
     bind -M insert \t _fzf_tab_complete
     bind -M insert \cl accept-autosuggestion
 
