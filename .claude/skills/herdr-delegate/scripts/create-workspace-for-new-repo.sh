@@ -22,7 +22,8 @@ fi
 cwd="$1"
 label="$2"
 
-json=$(herdr workspace create --cwd "$cwd" --label "$label" --no-focus --json)
+# herdr prints JSON by default; the old --json flag was removed and now errors.
+json=$(herdr workspace create --cwd "$cwd" --label "$label" --no-focus)
 
 ws_id=$(printf '%s' "$json" | jq -r '.result.workspace.workspace_id')
 pane_id=$(printf '%s' "$json" | jq -r '.result.root_pane.pane_id')
