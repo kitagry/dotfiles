@@ -18,6 +18,12 @@
 # shell still initializing, returning an `agent_pane_busy` error. Its exit code is
 # not reliable for this case (observed exit 0 with an `.error` field present), so
 # this checks the JSON body directly and retries a few times instead of trusting $?.
+#
+# rename-existing-claude.sh can miss the current holder of "claude" (`herdr agent
+# list` does not always report it with `.name`). The `agent_name_taken` error names the
+# holder's pane instead: if it is the target pane, an earlier attempt already
+# started the agent there (treat as success); otherwise rename that pane's agent
+# out of the way and retry.
 set -uo pipefail
 
 if [ $# -lt 1 ]; then
@@ -38,6 +44,17 @@ while [ "$attempt" -lt "$max_attempts" ]; do
   start_json=$(herdr agent start claude --kind claude --pane "$pane_id" 2>&1)
   if ! printf '%s' "$start_json" | jq -e '.error' > /dev/null 2>&1; then
     break
+  fi
+  if [ "$(printf '%s' "$start_json" | jq -r '.error.code' 2>/dev/null)" = "agent_name_taken" ]; then
+    holder=$(printf '%s' "$start_json" | jq -r '.error.message' | grep -o 'pane_id=[A-Za-z0-9:]*' | head -1 | cut -d= -f2)
+    if [ "$holder" = "$pane_id" ]; then
+      start_json='{}'
+      break
+    fi
+    if [ -n "$holder" ]; then
+      herdr agent rename "$holder" "claude-caller-$(date +%s)" > /dev/null 2>&1
+      continue
+    fi
   fi
   sleep 1
 done

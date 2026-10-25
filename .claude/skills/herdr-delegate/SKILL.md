@@ -94,7 +94,7 @@ script の挙動:
    - working tree が **clean** の場合のみ `git switch <default>` + `git pull --ff-only`
      (default branch は `symbolic-ref refs/remotes/origin/HEAD` → fallback で `ls-remote --symref` → 最終手段 `main`)
    - **dirty** なら switch/pull は skip し、warn を stderr に流す (ユーザーが元 workspace で作業中の可能性があるため、勝手に branch を切り替えない安全弁)
-3. **workspace 作成** — `herdr workspace create --cwd $REPO_ROOT --label $(basename ...) --no-focus --json`
+3. **workspace 作成** — `herdr workspace create --cwd $REPO_ROOT --label $(basename ...) --no-focus` (出力は既定で JSON。`--json` は廃止済みで付けるとエラー)
 4. **新 workspace_id を stdout に返す**
 
 `ensure-parent-workspace.sh` が exit 1 するのは `$REPO_ROOT` が git repo でない / herdr が使えないなどの根本的な問題のとき。中断してユーザーに状況を報告する。
@@ -121,7 +121,9 @@ eval "$(~/.claude/skills/herdr-delegate/scripts/create-worktree.sh "$PARENT_WS" 
 
 - **agent name の衝突回避**: `herdr agent start` の name は session-wide global unique。呼び出し元 (自分自身) が
   既に `claude` を名乗っている場合 `agent_name_taken` になるので、先に `rename-existing-claude.sh` で
-  一時的に別名へ逃がしてから "claude" を空ける
+  一時的に別名へ逃がしてから "claude" を空ける。ただし `herdr agent list` が保持者を `.name` 付きで返さない
+  ことがあり、これは空振りしうる。そこで `agent_name_taken` のエラー文にある `pane_id=` を見て、対象 pane 自身なら
+  (前の試行で起動済みなので) 成功扱い、別 pane ならその agent を改名して再試行する
 - **`herdr agent start claude --kind claude --pane "$PANE_ID"`** で起動。`--workspace`/`--cwd` オプションは
   現行 CLI に存在しない(旧仕様の名残りで書くと `unknown option` エラー)。`--kind claude` の時点で
   「pane に打ち込むコマンド = canonical executable (`claude`)」が決まっているので、**それ以上フラグを足さない**。
@@ -179,9 +181,9 @@ eval "$(~/.claude/skills/herdr-delegate/scripts/create-workspace-for-new-repo.sh
 ```
 
 新規 repo は Claude Code にとって未信頼フォルダなので、起動直後に
-`1. Yes, I trust this folder` / `2. No, exit` の trust ダイアログが出る。このダイアログは通常のプロンプト
+`No, exit` / `Yes, I trust this folder` の trust ダイアログが出る (現行の Claude Code は **既定の選択が `No, exit`**)。このダイアログは通常のプロンプト
 ではないので、確認せずに `send-instruction.sh` を呼ぶと指示がダイアログに向かって空振りする。
-`confirm-trust-dialog.sh` はダイアログが出ていれば既定の `1. Yes` を確定して idle まで再待機し、
+`confirm-trust-dialog.sh` はダイアログが出ていれば `down` でカーソルを `Yes, I trust this folder` に移し、選択されたことを画面で確かめてから `enter` で確定して idle まで再待機し (素の Enter だと `No, exit` で Claude が終了する。キー名は小文字の `down`/`enter`)、
 出ていなければ何もせず exit 0 する(既存 repo への worktree はこのダイアログが出ない = 親 repo の
 信頼を引き継ぐので、通常フローでは呼ばなくてよい)。
 

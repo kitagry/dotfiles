@@ -4,7 +4,7 @@
 #   - `git fetch origin` (always)
 #   - if working tree is clean: `git switch <default>` + `git pull --ff-only`
 #   - if dirty: skip switch/pull and emit a warn to stderr
-# Then `herdr workspace create --cwd <repo_root> --no-focus --json` and returns the new id.
+# Then `herdr workspace create --cwd <repo_root> --no-focus` (JSON is the default output) and returns the new id.
 #
 # Usage: ensure-parent-workspace.sh <repo_root> [label]
 #
@@ -68,7 +68,7 @@ else
 fi
 
 # 6. Create the herdr workspace at the (now up-to-date) repo root.
-create_json=$(herdr workspace create --cwd "$repo_root" --label "$label" --no-focus --json)
+create_json=$(herdr workspace create --cwd "$repo_root" --label "$label" --no-focus)
 new_ws_id=$(printf '%s' "$create_json" | jq -r '.result.workspace.workspace_id // empty')
 
 if [ -z "$new_ws_id" ]; then
