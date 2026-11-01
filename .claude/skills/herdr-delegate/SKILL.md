@@ -30,7 +30,7 @@ allowed-tools: Bash(~/.claude/skills/herdr-delegate/scripts/resolve-base.sh:*), 
 delegate 先の Claude には以下を **INSTRUCTION に必ず含める**:
 
 1. **タスクのゴール** — 何を実装して欲しいか (1-3 文で完結に)
-2. **PR の作成方針** — 「実装完了したら `create-pr` skill で PR 作成 → `/loop` でレビュー監視 → `pr-fix` で自動対応」まで一貫してやってもらうか、draft 止まりにするか
+2. **PR の作成方針** — 「実装完了したら PR 作成 → `/loop` でレビュー監視 → `pr-fix` で自動対応」まで一貫してやってもらうか、draft 止まりにするか
 3. **スコープ外の扱い** — 「スコープ外の問題を見つけたら別 issue にして」を明示
 
 **悪い例**: `"family-relations の親子関係を追加して"` — ゴールしか無く、PR 方針やスコープ外の扱いが伝わらない
@@ -40,7 +40,7 @@ delegate 先の Claude には以下を **INSTRUCTION に必ず含める**:
 ```
 family-relations の親子関係を patient-management-api-go に追加してほしい。
 
-- 実装完了したら create-pr で PR を作成 → /loop でレビュー監視 → pr-fix で対応、まで自動で回して。
+- 実装完了したら PR を作成 → /loop でレビュー監視 → pr-fix で対応、まで自動で回して。
 - スコープ外の問題を見つけたら別 issue を作って main ブランチ側に拾ってもらって。
 ```
 

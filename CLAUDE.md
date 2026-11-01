@@ -1,111 +1,15 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+個人の dotfiles。リポジトリ内のファイルを `install.sh` で $HOME に symlink する。
 
-## Repository Overview
+## 変更後の反映
+- 新しいファイルを追加したら `./install.sh` で symlink を張り直す（既存ファイルの編集は不要）
+- macOS は `./install_mac.sh`
 
-This is a personal dotfiles repository containing configuration files for a development environment. The repository manages shell configurations, editor settings, and development tools through symlinks and installation scripts.
+## mise config の分割ルール
+mise は `~/.config/mise/conf.d/*.toml` を自動でマージするので、用途別にファイルを分ける:
+- `dotfiles/.config/mise/config.toml` → 全マシン共通のツールのみ（dotfiles で symlink 管理）
+- `~/.config/mise/conf.d/work.toml` → 仕事用（dotfiles 管理外）。社内ツール (`bee`, `mcp-obsidian` など)
+- `~/.config/mise/conf.d/private.toml` → 個人用（dotfiles 管理外）
 
-## Key Commands
-
-### Installation and Setup
-- `./install.sh` - Primary installation script that uses mise for tool management and creates symlinks
-- `./install_mac.sh` - macOS-specific installation using Homebrew
-- `./download_file.sh` - Downloads additional completion files
-
-### Tool Management
-- `mise install <tool>@latest` - Install development tools (go, ghq, deno, fzf, gh, neovim, node, rust)
-- `mise use -g <tool>@latest` - Set global version of a tool
-- `mise list` - List installed tools and versions
-
-#### mise config の分割ルール
-
-mise は `~/.config/mise/conf.d/*.toml` を自動でマージするので、用途別にファイルを分けて管理する:
-
-- `dotfiles/.config/mise/config.toml` → **共通ツールのみ**。dotfiles で symlink 管理されるため、全環境共通で必要なものだけ書く
-- `~/.config/mise/conf.d/work.toml` → 仕事用 (dotfiles 管理外)。社内ツール (`bee`, `mcp-obsidian`, `mysqldef`, `pyrefly`, `teams.cli` など)
-- `~/.config/mise/conf.d/private.toml` → 個人用 (dotfiles 管理外)
-
-新しいツールを追加する時は「全マシンで使うか？」を判断:
-- Yes → `dotfiles/.config/mise/config.toml`
-- No (仕事 or 個人固有) → 該当する `conf.d/*.toml`
-
-`mise config` で実際に読まれているファイルと tools を確認できる。
-
-### Shell Management
-- `sheldon source` - Generate shell plugin configuration
-- `sheldon add <plugin>` - Add new zsh plugin
-- `sheldon edit` - Edit plugin configuration
-
-## Architecture and Structure
-
-### Core Components
-
-**Configuration Management**: The repository uses a symlink-based approach where dotfiles are linked from the repo to home directory locations. Three main categories:
-- Direct dotfiles (`.zshrc`, `.vimrc`, etc.) linked to `$HOME`
-- Directory structures (`.config`, `.vim`, `.zsh`) with recursive file linking
-- Selective exclusions for git and system files
-
-**Tool Chain**: 
-- **mise**: Primary tool version manager replacing asdf/homebrew for development tools
-- **sheldon**: Zsh plugin manager written in Rust for fast shell startup
-- **Neovim**: Primary editor with Lua-based configuration using custom lazy loading
-
-**Shell Environment**:
-- Zsh with extensive plugin system via sheldon
-- Pure prompt theme with async capabilities
-- Auto-suggestions and syntax highlighting
-- Custom completion system with git enhancements
-
-### Configuration Hierarchy
-
-```
-.
-├── install.sh              # Main setup script
-├── install_mac.sh           # macOS variant
-├── download_file.sh         # Completion downloads
-├── .zshrc                   # Shell configuration
-├── .vimrc                   # Vim configuration (legacy)
-├── .config/
-│   ├── nvim/               # Neovim Lua configuration
-│   │   ├── init.lua        # Main config entry point
-│   │   └── lua/            # Lua modules
-│   ├── sheldon/            # Shell plugin management
-│   │   └── plugins.toml    # Plugin definitions
-│   ├── alacritty/          # Terminal emulator config
-│   ├── git/                # Git configuration
-│   └── zeno/               # Zsh abbreviation engine
-├── .vim/                   # Vim plugin directory
-└── .zsh/                   # Zsh completions and functions
-```
-
-### Key Patterns
-
-**Installation Flow**: 
-1. Install mise if not present
-2. Install development tools through mise
-3. Download external completion files
-4. Create symlinks for dotfiles and directory structures
-5. Handle special cases for multi-level directories
-
-**Editor Configuration**: 
-- Neovim uses a custom lazy loading system (`kitagry.lazy`)
-- Configuration is modularized through Lua requires
-- Local configuration override via `init.local.vim`
-- UTF-8 encoding with Japanese language support
-
-**Shell Initialization**:
-- mise activation for tool management
-- sheldon for plugin loading and management
-- XDG Base Directory specification compliance
-- Local override support via `.zshrc.local`
-
-## Development Workflow
-
-When modifying configurations:
-1. Edit files in the repository directory
-2. Run `./install.sh` to update symlinks (if needed)
-3. Restart shell or source configurations to test changes
-4. For Neovim changes, restart editor or use `:source %`
-
-The repository is designed for cross-platform use but optimized for Unix-like systems with special handling for macOS via Homebrew integration.
+新しいツールは「全マシンで使うか？」で置き場所を決める。実際に読まれている設定は `mise config` で確認できる。

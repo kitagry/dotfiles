@@ -1,6 +1,6 @@
 ---
 name: tdd-workflow
-description: TDD（テスト駆動開発）で実装します。赤-緑-リファクタリングのサイクルに従って開発を進めます。
+description: TDD（テスト駆動開発）で実装します。赤-緑-リファクタリングのサイクルに従って開発を進めます。機能追加・バグ修正などコードの実装を始める時に使う。
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write, TodoWrite
 ---
 
@@ -11,6 +11,7 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write, TodoWrite
 ## 進め方
 
 1. **計画**: TodoWrite でタスクを作りユーザーの確認を得てから着手する。最後に「ドキュメント更新の要否」を確認する Todo を必ず入れる
+   - 変更予定の関数・型を参照する既存テスト（呼び出し元のテスト、変更パッケージを import するパッケージのテスト）を特定し、「回帰確認対象」として Todo に列挙する
 2. **赤** (`/tdd:red`): 小さな動作 1 つを検証するテストを書き、想定通りの理由で落ちることを確認する
 3. **緑** (`/tdd:green`): テストを通す最小限の実装をする。過度な設計・抽象化はしない
 4. **リファクタ** (`/tdd:refactor`): テストを保ったまま重複削除・命名改善・既存コードとの凝集を行う
@@ -22,9 +23,12 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write, TodoWrite
 
 ## テスト実行
 
+テストコマンドはプロジェクトの CLAUDE.md を見る。書かれていなければ調べ、「ドキュメント更新」で追記する。
+
 Bash で直接実行する。出力でコンテキストを圧迫しないよう:
-- 対象のテストだけを絞る（例: `go test ./pkg/foo -run TestBar`, `uv run pytest tests/test_user.py::test_create`）
-- 全テストは各フェーズの最後に 1 回。`-v` は失敗調査時だけ
+- 赤: 新しいテストだけ回す（例: `go test ./pkg/foo -run TestBar`, `uv run pytest tests/test_user.py::test_create`）
+- 緑・リファクタ: 新しいテスト + 計画で列挙した「回帰確認対象」を回す
+- 全テストはコミット前に 1 回。`-v` は失敗調査時だけ
 - 長くなりそうなら `| tail -n 50` 等で必要な部分だけ見る
 
 ## 実装時の注意
