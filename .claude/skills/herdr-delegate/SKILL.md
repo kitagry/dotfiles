@@ -27,22 +27,19 @@ allowed-tools: Bash(~/.claude/skills/herdr-delegate/scripts/resolve-base.sh:*), 
 
 ### INSTRUCTION の書き方
 
-delegate 先の Claude は **`~/.claude/CLAUDE.shared.md` の「worktree Claude 内の 4 エージェント開発フロー」を読んでいる前提だが、指示文で明示しないと自分でコードを書き始める**(subagent を呼ばない)ことが多い。以下を **INSTRUCTION に必ず含める**:
+delegate 先の Claude には以下を **INSTRUCTION に必ず含める**:
 
 1. **タスクのゴール** — 何を実装して欲しいか (1-3 文で完結に)
-2. **4 エージェントフローに乗せる旨** — 例: 「複数ファイルにまたがる実装なので、`explore` → `implement` → `review` → `qa` のサブエージェントに委譲して進めて。あなた自身はオーケストレーターとして立ち回り、コードは書かない」
-   - 1 ファイルの typo 修正など軽微なタスクの場合は「軽微な変更なので 4 エージェントフローは使わず直接やって」と明示する(そうしないと delegated Claude が過剰にサブエージェントを呼ぶ)
-3. **PR の作成方針** — 「実装完了したら `create-pr` skill で PR 作成 → `/loop` でレビュー監視 → `pr-fix` で自動対応」まで一貫してやってもらうか、draft 止まりにするか
-4. **スコープ外の扱い** — 「スコープ外の問題を見つけたら別 issue にして」を明示
+2. **PR の作成方針** — 「実装完了したら `create-pr` skill で PR 作成 → `/loop` でレビュー監視 → `pr-fix` で自動対応」まで一貫してやってもらうか、draft 止まりにするか
+3. **スコープ外の扱い** — 「スコープ外の問題を見つけたら別 issue にして」を明示
 
-**悪い例**: `"family-relations の親子関係を追加して"` — これだと delegated Claude が直接ファイルを触り始める
+**悪い例**: `"family-relations の親子関係を追加して"` — ゴールしか無く、PR 方針やスコープ外の扱いが伝わらない
 
 **良い例**:
 
 ```
 family-relations の親子関係を patient-management-api-go に追加してほしい。
 
-- 複数ファイル (handler / usecase / repository) にまたがるので、explore → implement → review → qa の 4 エージェントフローに乗せて進めて。あなた自身はオーケストレーターとしてサブエージェントに委譲し、直接コードは書かないこと。
 - 実装完了したら create-pr で PR を作成 → /loop でレビュー監視 → pr-fix で対応、まで自動で回して。
 - スコープ外の問題を見つけたら別 issue を作って main ブランチ側に拾ってもらって。
 ```
@@ -205,4 +202,3 @@ eval "$(~/.claude/skills/herdr-delegate/scripts/create-workspace-for-new-repo.sh
 - **`send-instruction.sh` の代わりに `herdr agent send-keys` で直接文字を打って delegate を完了扱いにしない** — `send-keys` は literal key を打つだけで送信確定や状態確認をしない。`send-instruction.sh` (`herdr agent prompt --wait --until working`) は実際に `working` へ遷移したことを確認してから成功扱いにする設計。確認せずに離れると、user が新 workspace を開いた時に空プロンプトのまま止まっている事故になる
 - **`herdr agent start` の成功判定を `$?` だけに頼らない** — `agent_pane_busy` (worktree 作成直後の pane 初期化中) のようなエラーでも exit code 0 で返ってくることがある。JSON 出力の `.error` を jq で見て判定する(`start-claude-agent.sh` 参照)
 - **`INSTRUCTION` に対話フローを含めない** — 「まず X して次に Y」ではなく「X と Y を一気にやって」の形で 1 メッセージにまとめる。段階的な指示なら、そもそもこのスキルではなく元 session で TDD ワークフローを回した方が良い
-- **`INSTRUCTION` に「4 エージェントフローで進めて」と明記しないまま複雑タスクを投げない** — delegated Claude は shared CLAUDE.md でフローを知っているが、明示しないと自分で書き始める。「引数 > INSTRUCTION の書き方」の 4 項目を必ず含める
