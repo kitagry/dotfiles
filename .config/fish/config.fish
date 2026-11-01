@@ -1,3 +1,7 @@
+# The following lines were added by Docker Desktop to add commands to your PATH.
+test -d $HOME/.docker/bin; and fish_add_path --append $HOME/.docker/bin
+# End of Docker Desktop section.
+
 set -gx SHELL (which fish)
 
 if status is-interactive
