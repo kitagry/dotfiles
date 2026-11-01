@@ -5,7 +5,6 @@ deno = "latest"
 fzf = 'latest'
 gh = 'latest'
 "aqua:neovim/neovim" = "latest"
-node = 'system'
 rust = 'latest'
 eza = "latest"
 lazygit = "latest"
@@ -39,3 +38,5 @@ aws = { version = "latest", symlink_bins = "true" }
 [settings]
 idiomatic_version_file_enable_tools = ["terraform"]
 experimental = true
+# node is provided by home-manager
+disable_tools = ["node"]
