@@ -90,7 +90,7 @@
       "Bash(~/.claude/skills/herdr-delegate/scripts/read-pane.sh:*)"
     ]
   },
-  "model": "claude-fable-5-1",
+  "model": "claude-opus-5-5",
   "hooks": {
     "Notification": [
       {
