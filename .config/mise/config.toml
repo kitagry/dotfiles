@@ -33,6 +33,8 @@ helm = "latest"
 herdr = "latest"
 codex = "latest"
 antigravity-cli = "latest"
+"aqua:slackapi/slack-cli" = "latest"
+aws = { version = "latest", symlink_bins = "true" }
 
 [settings]
 idiomatic_version_file_enable_tools = ["terraform"]
