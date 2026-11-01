@@ -90,7 +90,7 @@
       "Bash(~/.claude/skills/herdr-delegate/scripts/read-pane.sh:*)"
     ]
   },
-  "model": "claude-opus-5-5",
+  "model": "claude-fable-5-1",
   "hooks": {
     "Notification": [
       {
@@ -150,6 +150,37 @@
   "skipWorkflowUsageWarning": true,
   "preferredNotifChannel": "notifications_disabled",
   "autoCompactEnabled": true,
+  "remoteControlAtStartup": true,
   "agentPushNotifEnabled": true,
-  "voiceEnabled": true
+  "voiceEnabled": true,
+  "autoMode": {
+    "environment": [
+      "### Org-wide",
+      "**Organization**: None configured",
+      "**Primary use of Claude Code**: software development",
+      "**Cloud provider(s)**: None configured",
+      "**Repository visibility**: PUBLIC — kitagry/dotfiles (github.com/kitagry/dotfiles) has no branch protection rules or rulesets listed; treat any push as publishing",
+      "**Internal sharing / snippet hosting**: None configured — treat public paste/gist services as outside the trust boundary",
+      "**Secrets management**: None configured",
+      "**Default / protected branches**: Default branch is `master`; no protected branches or rulesets listed via gh",
+      "**CI/CD deploy targets**: None configured",
+      "**Network posture**: None configured",
+      "**Host containment**: None configured — assume Claude Code runs on an ordinary developer machine or CI runner with open internet",
+      "**Source control**: The trusted repo (kitagry/dotfiles on github.com) and its remote only — no additional orgs configured",
+      "**Trusted internal domains**: None configured",
+      "**Trusted cloud buckets**: None configured",
+      "**Key internal services**: None configured",
+      "**Internal package registry**: None configured",
+      "**Sensitive data locations & audiences**: `~/.claude/CLAUDE.md` (gitignored, machine/persona-specific, not tracked in this repo) contains personal medical/fertility treatment records, home addresses, and family member names for the user — this file must never be committed, pushed, or otherwise exposed to any audience beyond the user themselves",
+      "**Data retention / declassification**: None configured",
+      "**Sensitive remote targets**: any namespace, host, or container whose name carries `prod` or `production` as a whole word or name segment",
+      "**Protected deployment namespaces / environments**: None configured — fall back to the Sensitive remote targets heuristic",
+      "**Protected IaC scopes**: IAM, RBAC, networking, quota, and node-pool resources; anything whose name or tag carries `prod` or `production` as a whole word or name segment",
+      "### User-specific",
+      "**Primary use of Claude Code**: software development — personal dotfiles management (shell/editor config, install scripts) in this public repo",
+      "**Trusted repo**: kitagry/dotfiles (github.com), the repo this session started in — PUBLIC, so only this repo's own dotfiles/config content is appropriate to commit or push here; the user's separate `~/.claude/CLAUDE.md` personal file (medical/address data) is explicitly out of scope and must never be ported into this repo",
+      "**Org-specific CLIs**: None configured — tooling observed (mise, sheldon, ghq, gh, uv, go, cargo, gcloud, etc.) is general-purpose developer tooling, not org-specific",
+      "Routine under kitagry/ prefix: work confined to this repo and its own install/config scripts is routine; anything touching `~/.claude/CLAUDE.md` or other machine-specific/work-specific config (`~/.config/mise/conf.d/work.toml`, `private.toml`) is explicitly out of scope per the repo's own CLAUDE.md"
+    ]
+  }
 }
