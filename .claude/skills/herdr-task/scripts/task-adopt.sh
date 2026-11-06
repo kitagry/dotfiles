@@ -43,6 +43,10 @@ if [ -f "$dir/.adopted" ] && cut -f2 "$dir/.adopted" | grep -qxF -- "$path"; the
   echo "ERROR: $path is already adopted by $task" >&2
   exit 1
 fi
+if label_taken "$dir" "$ws_id" "$label"; then
+  echo "ERROR: label '$label' is already used in $task" >&2
+  exit 1
+fi
 
 # Outside the trusted tasks root, an untrusted path would stop Claude at the
 # trust dialog; say so now rather than when the agent is started.

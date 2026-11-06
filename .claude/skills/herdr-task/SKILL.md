@@ -34,6 +34,18 @@ allowed-tools: Bash(~/.claude/skills/herdr-task/scripts/task-create.sh:*), Bash(
 
 `~/.claude.json` をスクリプトで書き換えて trust しない。起動中の Claude セッションも同じファイルを書き換えているので、上書きし合う。
 
+## タスクの粒度 (オーケストレーターが判断する)
+
+タスク = ユーザーが頭を切り替える単位。issue や依頼を受けたら、ユーザーに聞かずに次で振り分ける:
+
+- **独立したタスク** — repo をまたぐ、設計判断がいる、PR が複数になる、のどれかに当たる大きめの作業。1つの作業 = 1つのタスク
+- **テーマのまとめタスク** — 小さい issue や、同じ変更を複数の repo に入れる作業。テーマ (例: `ci-maintenance`、`deps-bump`) ごとに1つのタスクを長く使い、issue ごとに tab を足していく
+  - `herdr workspace list` の label と各タスクの TASK.md の Goal を見て、合うテーマがあればそこに足す。無ければ新しく作る
+  - tab の label は `<repo>#<issue番号>`、branch は issue に合わせた名前 (例: `fix/671-goreleaser-tags`) を `--label` / `--branch` で渡す
+  - PR が merge された tab は `task-remove-repo.sh` で1つずつ片付ける。タスク自体は残す
+
+まとめタスクの TASK.md は、`## Goal` にテーマを書き、`## Repos` を issue の一覧として使う (コーディネーターが行末に PR と状態を追記する)。片付けた tab は `## Done` に移る。
+
 ## 引数
 
 ユーザーの依頼から抽出する:
@@ -57,12 +69,13 @@ eval "$(~/.claude/skills/herdr-task/scripts/task-create.sh "$TASK")"
 ### 2. repo を足す (repo ごとに繰り返す)
 
 ```bash
-eval "$(~/.claude/skills/herdr-task/scripts/task-add-repo.sh "$TASK" "$REPO" [BASE])"
+eval "$(~/.claude/skills/herdr-task/scripts/task-add-repo.sh "$TASK" "$REPO" [--base BASE] [--branch BRANCH] [--label LABEL])"
 # => TAB_ID / PANE_ID / WT_PATH / BRANCH
 ```
 
-- `git fetch origin <base>` → `git worktree add --no-track -b <branch> <task_dir>/<repo> origin/<base>` → tab を作成し、TASK.md の `## Repos` に1行追記する
-- 同じ repo の2本目以降は `<repo>-2` / `<task>-2` のように連番になる
+- `git fetch origin <base>` → `git worktree add --no-track -b <branch> <task_dir>/<dir> origin/<base>` → tab を作成し、TASK.md の `## Repos` に1行追記する
+- `--label` を省略すると `<repo>`、2本目以降は `<repo>-2` のように連番。`--branch` を省略すると `<task>`、`<task>-2`
+- `--label` を指定すると tab 名はその label、ディレクトリ名は記号を `-` に置き換えたもの (`bqls#671` → `bqls-671/`)。指定した label / branch が既にあれば連番にせず exit 1 する
 - `REPO` に linked worktree のパスを渡しても、その main repo から worktree を作る
 - **元の repo が trust されていなければ exit 1 する**。`~/tasks` 配下に置くと trust ダイアログが出ないので、ダイアログが担っていた「知らない repo の `.claude/settings.json` の hooks や `.mcp.json` を確認なしに読み込まない」チェックをここで代わりに行っている。止まったら、ユーザーにその repo の中身を確認してもらい、`cd <repo> && claude` で trust してもらう
 - branch は upstream なしで作られる。初回 push は `git push -u origin HEAD`
@@ -134,7 +147,17 @@ repo 単体で完結する形にする:
 # <name> <branch> dirty=<N> unpushed=<N>   (どれかが 0 でなければ exit 1)
 ```
 
-PR が全部 merge されたら、ユーザーに確認した上で:
+tab を1つだけ片付ける (まとめタスクで issue の PR が merge されたときなど)。ユーザーに確認した上で:
+
+```bash
+~/.claude/skills/herdr-task/scripts/task-remove-repo.sh "$TASK" "$LABEL"          # dirty / unpushed があれば拒否
+~/.claude/skills/herdr-task/scripts/task-remove-repo.sh "$TASK" "$LABEL" --force  # 未コミットの変更を捨てて削除
+```
+
+- tab を閉じる → worktree を削除 (branch は残す) → TASK.md の行を `## Done` に移す → sidebar の `$repos` を更新
+- adopt した tab なら、tab を閉じて `.adopted` から外すだけ。ディレクトリには触らない
+
+タスク全体を閉じる (PR が全部 merge されたら)。ユーザーに確認した上で:
 
 ```bash
 ~/.claude/skills/herdr-task/scripts/task-close.sh "$TASK"          # dirty / unpushed があれば拒否
@@ -143,7 +166,7 @@ PR が全部 merge されたら、ユーザーに確認した上で:
 
 - workspace を close → worktree を削除 → 残ったディレクトリ (TASK.md など) を `~/tasks/_archive/<task>` に移す。adopt したディレクトリはそのまま残る
 - local branch は消さない (未 merge の commit を後から救出できるように)
-- `task-close.sh` は allowed-tools に入れていない。毎回パーミッション確認が出る。**ユーザーの確認なしに実行しない**
+- `task-remove-repo.sh` と `task-close.sh` は allowed-tools に入れていない。毎回パーミッション確認が出る。**ユーザーの確認なしに実行しない**
 
 ## やってはいけないこと
 
@@ -152,5 +175,6 @@ PR が全部 merge されたら、ユーザーに確認した上で:
 - **`start-claude-agent.sh` に `--mcp-config` / `--settings` を足さない** — pane の fish の `claude` wrapper が注入済みで、二重に渡すと Remote Control が効かなくなる
 - **`herdr agent send-keys` で指示を打って完了扱いにしない** — 送信確定も状態確認もしない。`send-instruction.sh` を使う
 - **`--focus` を付けない** — 呼び出し元の画面を奪わない
-- **`task-close.sh` を確認なしで実行しない**
+- **`task-remove-repo.sh` / `task-close.sh` を確認なしで実行しない**
+- **小さい issue ごとに独立したタスクを作らない** — テーマのまとめタスクに tab として足す
 - **trust ダイアログをキー操作で通過させない / `~/.claude.json` を書き換えて trust しない** — trust の判断はユーザーがする

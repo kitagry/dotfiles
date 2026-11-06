@@ -73,3 +73,36 @@ report_repos() {
   herdr workspace report-metadata "$ws_id" --source herdr-task --token "repos=$repos" > /dev/null \
     || echo "WARN: failed to report \$repos for $ws_id" >&2
 }
+
+# Worktree dir name for a tab label: "bqls#671" -> "bqls-671".
+label_dir() {
+  printf '%s' "$1" | sed 's/[^A-Za-z0-9._-]/-/g'
+}
+
+# Succeeds if <label> is already a tab of the task or its dir exists.
+label_taken() {
+  local dir="$1" ws_id="$2" label="$3"
+  [ -e "$dir/$(label_dir "$label")" ] && return 0
+  herdr tab list --workspace "$ws_id" \
+    | jq -e --arg l "$label" '.result.tabs | any(.label == $l)' > /dev/null
+}
+
+# Moves the "- `<label>`: ..." line from "## Repos" to the end of "## Done"
+# (created at the end of the file if missing).
+move_repo_line_to_done() {
+  local file="$1" label="$2"
+  awk -v prefix="- \`$label\`:" '
+    index($0, prefix) == 1 && !moved { line = $0; moved = 1; next }
+    { lines[++n] = $0 }
+    /^## Done/ { has_done = 1; done_at = n }
+    END {
+      if (!moved) { for (i = 1; i <= n; i++) print lines[i]; exit }
+      if (!has_done) { lines[++n] = ""; lines[++n] = "## Done"; done_at = n }
+      # End of the Done section: next heading after it, else end of file.
+      end_at = n
+      for (i = done_at + 1; i <= n; i++) if (lines[i] ~ /^## /) { end_at = i - 1; break }
+      while (end_at > done_at && lines[end_at] == "") end_at--
+      for (i = 1; i <= n; i++) { print lines[i]; if (i == end_at) print line }
+    }
+  ' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
+}
