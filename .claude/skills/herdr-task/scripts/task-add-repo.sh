@@ -2,25 +2,41 @@
 # Adds a git worktree of <repo> to the task and opens it as a new tab in the
 # task's herdr workspace.
 #
-# Usage: task-add-repo.sh <task> <repo> [base]
-#   <repo>  path to the repo (a linked worktree path is fine; its main repo is used)
-#   [base]  branch to fork from, without "origin/". Default: the repo's origin/HEAD
+# Usage: task-add-repo.sh <task> <repo> [--base B] [--branch BR] [--label L]
+#   <repo>    path to the repo (a linked worktree path is fine; its main repo is used)
+#   --base    branch to fork from, without "origin/". Default: the repo's origin/HEAD
+#   --branch  branch to create. Default: <task>, then <task>-2, -3, ...
+#   --label   tab label, e.g. "bqls#671". The worktree dir is the label with
+#             characters other than [A-Za-z0-9._-] replaced by "-".
+#             Default: <repo_name>, then <repo_name>-2, -3, ...
 #
-# Layout: the first worktree of a repo is <task_dir>/<repo_name> on branch <task>;
-# further ones are <repo_name>-2, -3, ... on branch <task>-2, -3, ...
+# An explicit --branch / --label that already exists is an error rather than
+# getting a number appended: in a theme task the label names a specific issue.
 #
 # On success, prints to stdout (eval-able):
 #   TAB_ID='...'  PANE_ID='...'  WT_PATH='...'  BRANCH='...'
 set -euo pipefail
 
-if [ $# -lt 2 ]; then
-  echo "usage: $0 <task> <repo> [base]" >&2
+usage() {
+  echo "usage: $0 <task> <repo> [--base B] [--branch BR] [--label L]" >&2
   exit 2
-fi
+}
+[ $# -ge 2 ] || usage
 
 task="$1"
 repo="$2"
-base="${3:-}"
+shift 2
+base=""
+want_branch=""
+want_label=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --base) base="${2:?}"; shift 2 ;;
+    --branch) want_branch="${2:?}"; shift 2 ;;
+    --label) want_label="${2:?}"; shift 2 ;;
+    *) usage ;;
+  esac
+done
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 validate_task_name "$task"
 
@@ -65,21 +81,44 @@ if ! git -C "$repo_root" rev-parse --verify --quiet "$start_point" > /dev/null; 
   start_point="$base"
 fi
 
+branch_exists() {
+  git -C "$repo_root" rev-parse --verify --quiet "refs/heads/$1" > /dev/null
+}
+
+if [ -n "$want_label" ]; then
+  label="$want_label"
+  if label_taken "$dir" "$ws_id" "$label"; then
+    echo "ERROR: label '$label' is already used in $task" >&2
+    exit 1
+  fi
+fi
+if [ -n "$want_branch" ]; then
+  branch="$want_branch"
+  if branch_exists "$branch"; then
+    echo "ERROR: branch '$branch' already exists in $repo_root" >&2
+    exit 1
+  fi
+fi
+
 n=1
-name="$repo_name"
-branch="$task"
-while [ -e "$dir/$name" ] || git -C "$repo_root" rev-parse --verify --quiet "refs/heads/$branch" > /dev/null; do
+while [ -z "$want_label" ] || [ -z "$want_branch" ]; do
+  suffix=""
+  [ "$n" -gt 1 ] && suffix="-$n"
+  [ -n "$want_label" ] || label="$repo_name$suffix"
+  [ -n "$want_branch" ] || branch="$task$suffix"
+  if { [ -n "$want_label" ] || ! label_taken "$dir" "$ws_id" "$label"; } \
+    && { [ -n "$want_branch" ] || ! branch_exists "$branch"; }; then
+    break
+  fi
   n=$((n + 1))
-  name="$repo_name-$n"
-  branch="$task-$n"
 done
-wt_path="$dir/$name"
+wt_path="$dir/$(label_dir "$label")"
 
 # --no-track: otherwise the branch tracks origin/<base> and a bare `git push`
 # targets the wrong remote branch.
 git -C "$repo_root" worktree add --quiet --no-track -b "$branch" "$wt_path" "$start_point" >&2
 
-json=$(herdr tab create --workspace "$ws_id" --cwd "$wt_path" --label "$name" \
+json=$(herdr tab create --workspace "$ws_id" --cwd "$wt_path" --label "$label" \
   --env "HERDR_TASK=$task" --env "HERDR_TASK_DIR=$dir" --no-focus)
 tab_id=$(printf '%s' "$json" | jq -r '.result.tab.tab_id')
 pane_id=$(printf '%s' "$json" | jq -r '.result.root_pane.pane_id')
@@ -91,7 +130,7 @@ if [ -z "$tab_id" ] || [ "$tab_id" = "null" ] || [ -z "$pane_id" ] || [ "$pane_i
 fi
 
 if [ -f "$dir/TASK.md" ]; then
-  append_repo_line "$dir/TASK.md" "- \`$name\`: $repo_root (branch: \`$branch\`, base: \`$base\`)"
+  append_repo_line "$dir/TASK.md" "- \`$label\`: $repo_root (branch: \`$branch\`, base: \`$base\`)"
 fi
 
 report_repos "$ws_id"

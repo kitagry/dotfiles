@@ -59,6 +59,9 @@ cat > "$dir/TASK.md" <<EOF
 ## Merge order
 
 ## Notes
+
+## Done
+<!-- task-remove-repo.sh moves finished tabs here -->
 EOF
 
 json=$(herdr workspace create --cwd "$dir" --label "$task" \
