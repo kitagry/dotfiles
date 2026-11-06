@@ -2,13 +2,15 @@
 # Reports upward from inside a task: a repo tab's Claude reports to the task's
 # coordinator, and the coordinator (tab "task") reports to the master Claude.
 #
+# The master is not typed into: it is the session the human talks to, and a
+# message landing there would interrupt them mid-typing. Coordinator reports
+# go to <tasks_root>/.inbox instead (one line each), which the master reads on
+# its periodic check.
+#
 # Usage: task-report.sh <message>
 #   Run from a pane of a task (HERDR_TASK and HERDR_PANE_ID are set there).
 #   The message is prefixed with "[<tab label>]" (or "[<task>]" from the
 #   coordinator) so the receiver knows who is talking.
-#
-# The master's pane is read from <tasks_root>/.master; the master writes it
-# with `task-report.sh --register-master` from its own pane.
 #
 # Delivery does not wait for a reply. If the receiver is mid-turn the message
 # is queued; if it is blocked on a prompt, nothing is sent (typing would answer
@@ -16,20 +18,13 @@
 set -euo pipefail
 
 if [ $# -lt 1 ]; then
-  echo "usage: $0 <message> | --register-master" >&2
+  echo "usage: $0 <message>" >&2
   exit 2
 fi
 
 script_dir=$(dirname "${BASH_SOURCE[0]}")
 source "$script_dir/lib.sh"
-master_file="$(tasks_root)/.master"
-
-if [ "$1" = "--register-master" ]; then
-  : "${HERDR_PANE_ID:?run this inside the herdr pane of the master}"
-  printf '%s\n' "$HERDR_PANE_ID" > "$master_file"
-  echo "master pane: $HERDR_PANE_ID" >&2
-  exit 0
-fi
+inbox="$(tasks_root)/.inbox"
 
 message="$1"
 : "${HERDR_TASK:?not inside a task pane (HERDR_TASK is unset)}"
@@ -38,12 +33,9 @@ task="$HERDR_TASK"
 
 coordinator=$(task_pane "$task")
 if [ "$HERDR_PANE_ID" = "$coordinator" ]; then
-  if [ ! -s "$master_file" ]; then
-    echo "ERROR: no master registered ($master_file); the master runs: task-report.sh --register-master" >&2
-    exit 1
-  fi
-  target=$(cat "$master_file")
-  from="$task"
+  # Newlines would break the one-line-per-report format.
+  printf '%s\t%s\t%s\n' "$(date '+%F %T')" "$task" "$(printf '%s' "$message" | tr '\n' ' ')" >> "$inbox"
+  exit 0
 else
   target="$coordinator"
   from=$(herdr pane list --workspace "$HERDR_WORKSPACE_ID" \
