@@ -48,6 +48,7 @@ fi
 mkdir -p "$dir"
 cat > "$dir/TASK.md" <<EOF
 # $task
+created: $(date +%F)
 
 ## Goal
 
