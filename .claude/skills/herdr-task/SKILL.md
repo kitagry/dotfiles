@@ -31,7 +31,7 @@ allowed-tools: Bash(~/.claude/skills/herdr-task/scripts/task-create.sh:*), Bash(
 
 ```
 人間 ⇄ master Claude (dotfiles などで開いているオーケストレーター)
-          │ ↓ task-ask.sh / task-reply.sh / task-list.sh     ↑ task-report.sh ("[<task>] ...")
+          │ ↓ task-ask.sh / task-reply.sh / task-list.sh     ↑ task-report.sh (~/tasks/.inbox に追記)
           ▼
        tab "task" の Claude (コーディネーター。task-create.sh が起動する)
           │ ↓ send-instruction.sh / read-pane.sh             ↑ task-report.sh ("[<tab label>] ...")
@@ -42,7 +42,8 @@ allowed-tools: Bash(~/.claude/skills/herdr-task/scripts/task-create.sh:*), Bash(
 - 人間は基本的に master と話す。master はタスクの状況を `task-list.sh` / `task-reply.sh` で見て、指示や質問は `task-ask.sh` でコーディネーターに渡す
 - 人間が tab "task" を直接見て話しかけることもある。master からのメッセージには `[master]` が付くので、コーディネーターはどちらからか区別できる
 - master は repo の tab の Claude に直接指示しない。コーディネーターを通す (TASK.md の決定事項とずれないように)
-- **節目は下から上へ報告する** (`task-report.sh "<メッセージ>"`)。tab の中で実行すると、repo の tab からはコーディネーターへ、tab "task" からは master へ届く。master の pane は `~/tasks/.master` に登録しておく (master が自分の pane で `task-report.sh --register-master` を1回実行)
+- **節目は下から上へ報告する** (`task-report.sh "<メッセージ>"`)。tab の中で実行すると、repo の tab からはコーディネーターの pane に直接届く。tab "task" からは master の pane には送らず、`~/tasks/.inbox` に1行 (`<日時>\t<task>\t<メッセージ>`) 追記する。master は人間が話しているセッションなので、そこに打ち込むと人間の入力を邪魔するため
+- master は定期チェックで `~/tasks/.inbox` を読み、人間に報告したら空にする
 - **聞かれるまで待たない**。コーディネーターは `/loop` (`task-loop.sh`) で自分の tab を定期チェックし、master も定期実行 (CronCreate、15 分ごと程度) で `task-list.sh` / `task-reply.sh` を見回って、要対応や節目の変化だけを人間に報告する
 
 ## 初回セットアップ (マシンごとに1回)
@@ -130,7 +131,7 @@ eval "$(~/.claude/skills/herdr-task/scripts/task-adopt.sh "$TASK" "$PATH_TO_DIR"
 ```
 
 - `task-loop.sh` は `/loop <interval> <定期チェックの指示>` をそのまま送る (`[master]` を付けるとスラッシュコマンドとして解釈されないので task-ask.sh は使わない)。全 tab の PR が merge されたらコーディネーター自身が loop を止める
-- master 側の定期チェックがまだ無ければ、CronCreate で仕込む (前回の返答を scratchpad に保存して差分だけ見る。報告は「確認したいこと」/ blocked / merge などの節目だけ)
+- master 側の定期チェックがまだ無ければ、CronCreate で仕込む (`~/tasks/.inbox` を読んで空にする + 前回の返答を scratchpad に保存して差分だけ見る。報告は「確認したいこと」/ blocked / merge などの節目だけ)
 
 repo の tab の Claude は、コーディネーターに起動・指示させるのが基本。master や自分で起動するときは:
 
@@ -154,7 +155,7 @@ repo の tab の Claude は、コーディネーターに起動・指示させ�
 - [master] が付いたメッセージは master Claude 経由の人間の指示。付いていなければ人間がこの tab で直接話している。
 - 人間に確認したいことは、返答の最後に「確認したいこと」として書いて (master が人間に聞く)。
 - 返答の最後には、毎回タスク全体の状況を数行で要約して。
-- 節目 (tab の PR が merge された、全 tab が終わった、人間の判断が要る、詰まった) では task-report.sh で master に報告して。各 tab の Claude にも、同じ節目で task-report.sh であなたに報告するよう指示に含めて。
+- 節目 (tab の PR が merge された、全 tab が終わった、人間の判断が要る、詰まった) では task-report.sh で master に報告して (master の受信箱に入り、master の定期チェックで人間に伝わる)。各 tab の Claude にも、同じ節目で task-report.sh であなたに報告するよう指示に含めて。
 - スコープ外の問題を見つけたら別 issue にして。
 ```
 
