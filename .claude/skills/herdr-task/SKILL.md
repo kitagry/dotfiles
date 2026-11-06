@@ -12,12 +12,15 @@ allowed-tools: Bash(~/.claude/skills/herdr-task/scripts/task-create.sh:*), Bash(
 
 ```
 ~/tasks/<task>/              ← workspace "<task>" / tab "task" (コーディネーター Claude)
-  TASK.md                    ← ゴール・repo 一覧・repo をまたぐ決定事項・merge 順
+  TASK.md                    ← 2行目に created: YYYY-MM-DD。ゴール・repo 一覧・repo をまたぐ決定事項・merge 順
   bqls/                      ← tab "bqls"      (branch: <task>)
   bqls.nvim/                 ← tab "bqls.nvim" (branch: <task>)
   bqls-2/                    ← tab "bqls-2"    (同じ repo の2本目, branch: <task>-2)
+~/tasks/_archive/YYYY-MM/YYYY-MM-DD-<task>/TASK.md
+                             ← 閉じたタスク。TASK.md だけ残す (created: の下に closed: が入る)
 ```
 
+- active なタスクは日付なしの `~/tasks/<task>/` に置く (タスク名を workspace の label や `HERDR_TASK_DIR` にそのまま使うため)。日付で分けるのは溜まっていく archive だけ
 - 全 tab の shell に `HERDR_TASK` / `HERDR_TASK_DIR` が入る
 - worktree は `herdr worktree create` ではなく `git worktree add` で作る(herdr の worktree 機能は 1 workspace = 1 checkout 前提で、tab に並べられないため)。そのため herdr の `remove_worktree` キーバインドは使えず、片付けは `task-close.sh` で行う
 - **trust**: Claude Code は trust 済みディレクトリの配下ではダイアログを出さない。`~/tasks` を一度 trust しておけば、task ディレクトリも worktree もダイアログなしで起動できる (下記「初回セットアップ」)
@@ -211,7 +214,8 @@ tab を1つだけ片付ける (まとめタスクで issue の PR が merge さ�
 ~/.claude/skills/herdr-task/scripts/task-close.sh "$TASK" --force  # 未コミットの変更を捨てて削除
 ```
 
-- workspace を close → worktree を削除 → 残ったディレクトリ (TASK.md など) を `~/tasks/_archive/<task>` に移す。adopt したディレクトリはそのまま残る
+- workspace を close → worktree を削除 → TASK.md に `closed: YYYY-MM-DD` を書き足して `~/tasks/_archive/YYYY-MM/YYYY-MM-DD-<task>/` に移す。adopt したディレクトリはそのまま残る
+- TASK.md 以外に残っていたファイル (コーディネーターのメモなど) は消さずに archive の `rest/` に移す
 - local branch は消さない (未 merge の commit を後から救出できるように)
 - `task-remove-repo.sh` と `task-close.sh` は allowed-tools に入れていない。毎回パーミッション確認が出る。**ユーザーの確認なしに実行しない**
 

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# Closes a task: removes its worktrees, closes the herdr workspace, and moves
-# the remaining task directory (TASK.md and notes) to <tasks_root>/_archive/.
+# Closes a task: closes the herdr workspace, removes its worktrees, and keeps
+# only TASK.md (stamped with "closed: <date>") under
+# <tasks_root>/_archive/YYYY-MM/YYYY-MM-DD-<task>/ so finished tasks can be
+# looked back on without the checkouts taking up space.
 # Local branches are kept so unmerged work can still be recovered. Paths opened
 # with task-adopt.sh are left untouched.
 #
@@ -53,11 +55,28 @@ if [ -f "$dir/.adopted" ]; then
   cut -f2 "$dir/.adopted" | sed 's/^/kept (adopted): /' >&2
 fi
 
-archive="$(tasks_root)/_archive"
-mkdir -p "$archive"
-dest="$archive/$task"
+dest="$(tasks_root)/_archive/$(date +%Y-%m)/$(date +%F)-$task"
 if [ -e "$dest" ]; then
-  dest="$archive/$task-$(date +%Y%m%d%H%M%S)"
+  dest="$dest-$(date +%H%M%S)"
 fi
-mv "$dir" "$dest"
+mkdir -p "$dest"
+
+if [ -f "$dir/TASK.md" ]; then
+  # After "created:" (line 2), or right under the title for tasks made
+  # before "created:" existed.
+  awk -v line="closed: $(date +%F)" '
+    NR == 2 && /^created:/ { print; print line; next }
+    NR == 2 { print line }
+    { print }
+  ' "$dir/TASK.md" > "$dest/TASK.md"
+  rm "$dir/TASK.md"
+fi
+rm -f "$dir/.adopted"
+
+# Anything else left (notes the coordinator wrote, ...) is moved along rather
+# than deleted: it wasn't created by these scripts, so it may matter.
+if ! rmdir "$dir" 2> /dev/null; then
+  echo "WARN: kept other files of $task in $dest/rest" >&2
+  mv "$dir" "$dest/rest"
+fi
 echo "archived: $dest" >&2
