@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Creates a task directory (~/tasks/<task>) with a TASK.md skeleton and a herdr
-# workspace labeled <task> whose first tab ("task") sits at the task directory.
+# workspace labeled <task> whose first tab ("task") sits at the task directory
+# and runs the coordinator Claude (agent name <task>-task).
 # Repos are added later as tabs with task-add-repo.sh.
 #
 # Usage: task-create.sh <task>
@@ -78,6 +79,12 @@ if [ -z "$ws_id" ] || [ "$ws_id" = "null" ] || [ -z "$pane_id" ] || [ "$pane_id"
 fi
 
 herdr tab rename "$tab_id" task > /dev/null
+
+# The task tab always has a coordinator: it is who the master Claude (and a
+# human looking at the tab) talks to. stdout is reserved for the eval-able vars.
+if ! "$(dirname "${BASH_SOURCE[0]}")/start-claude-agent.sh" "$pane_id" "$task-task" >&2; then
+  echo "WARN: coordinator did not start; run start-claude-agent.sh $pane_id $task-task" >&2
+fi
 
 printf "WS_ID=%q\n" "$ws_id"
 printf "PANE_ID=%q\n" "$pane_id"

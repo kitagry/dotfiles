@@ -1,7 +1,7 @@
 ---
 name: herdr-task
 description: タスク単位で herdr workspace を作り、関係する repo の git worktree を tab として並べ、コーディネーター Claude と各 repo の実装 Claude を起動して指示を投げるスキル。「タスクを始めて」「bqls と bqls.nvim をまたいで〜」「複数 repo で〜」「worktree で並列に作業させて」「delegate して」などのリクエスト時、または /herdr-task で起動する。repo が1つだけのタスクにも使う。
-allowed-tools: Bash(~/.claude/skills/herdr-task/scripts/task-create.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-add-repo.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-adopt.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-status.sh:*), Bash(~/.claude/skills/herdr-task/scripts/start-claude-agent.sh:*), Bash(~/.claude/skills/herdr-task/scripts/send-instruction.sh:*), Bash(~/.claude/skills/herdr-task/scripts/read-pane.sh:*), Bash(ghq get:*), Bash(ghq list:*)
+allowed-tools: Bash(~/.claude/skills/herdr-task/scripts/task-create.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-add-repo.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-adopt.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-status.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-ask.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-reply.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-list.sh:*), Bash(~/.claude/skills/herdr-task/scripts/start-claude-agent.sh:*), Bash(~/.claude/skills/herdr-task/scripts/send-instruction.sh:*), Bash(~/.claude/skills/herdr-task/scripts/read-pane.sh:*), Bash(ghq get:*), Bash(ghq list:*)
 ---
 
 # Task workspace on herdr
@@ -23,6 +23,22 @@ allowed-tools: Bash(~/.claude/skills/herdr-task/scripts/task-create.sh:*), Bash(
 - **trust**: Claude Code は trust 済みディレクトリの配下ではダイアログを出さない。`~/tasks` を一度 trust しておけば、task ディレクトリも worktree もダイアログなしで起動できる (下記「初回セットアップ」)
 - `~/tasks` は ghq 配下ではないので、path ベースのルール (`**/<org>/**` など) は worktree に効かない
 - スクリプトは全て `scripts/` にある。SKILL.md の手順では生の `herdr` / `git worktree` / jq を組み立てず、スクリプトを呼ぶ
+
+## 誰と誰が話すか
+
+```
+人間 ⇄ master Claude (dotfiles などで開いているオーケストレーター)
+          │ task-ask.sh / task-reply.sh / task-list.sh
+          ▼
+       tab "task" の Claude (コーディネーター。task-create.sh が起動する)
+          │ send-instruction.sh / read-pane.sh
+          ▼
+       各 repo の tab の Claude (実装担当)
+```
+
+- 人間は基本的に master と話す。master はタスクの状況を `task-list.sh` / `task-reply.sh` で見て、指示や質問は `task-ask.sh` でコーディネーターに渡す
+- 人間が tab "task" を直接見て話しかけることもある。master からのメッセージには `[master]` が付くので、コーディネーターはどちらからか区別できる
+- master は repo の tab の Claude に直接指示しない。コーディネーターを通す (TASK.md の決定事項とずれないように)
 
 ## 初回セットアップ (マシンごとに1回)
 
@@ -64,7 +80,8 @@ eval "$(~/.claude/skills/herdr-task/scripts/task-create.sh "$TASK")"
 # => WS_ID / PANE_ID (tab "task" の pane) / TASK_DIR
 ```
 
-同名のディレクトリか workspace が既にあれば exit 1 する。既存タスクに repo を足したいだけなら手順 2 から始める。
+- tab "task" ではコーディネーターの Claude (agent 名 `<task>-task`) まで起動される。起動に失敗しても WARN を出して続行するので、その場合は手順 4 の `start-claude-agent.sh` で起動し直す
+- 同名のディレクトリか workspace が既にあれば exit 1 する。既存タスクに repo を足したいだけなら手順 2 から始める
 
 ### 2. repo を足す (repo ごとに繰り返す)
 
@@ -100,7 +117,13 @@ eval "$(~/.claude/skills/herdr-task/scripts/task-adopt.sh "$TASK" "$PATH_TO_DIR"
 
 ### 4. Claude を起動して指示を送る
 
-コーディネーター (tab "task") と各 repo の tab で、それぞれ起動 → 送信する:
+コーディネーターには `task-ask.sh` で最初の指示 (下記) を送る:
+
+```bash
+~/.claude/skills/herdr-task/scripts/task-ask.sh "$TASK" "$INSTRUCTION" --no-wait
+```
+
+repo の tab の Claude は、コーディネーターに起動・指示させるのが基本。master や自分で起動するときは:
 
 ```bash
 ~/.claude/skills/herdr-task/scripts/start-claude-agent.sh "$PANE_ID" "$TASK-<tab label>"
@@ -110,16 +133,18 @@ eval "$(~/.claude/skills/herdr-task/scripts/task-adopt.sh "$TASK" "$PATH_TO_DIR"
 - agent 名は session 全体で一意である必要があるので `<task>-<tab label>` にする (例: `bqls-dry-run-command-task`、`bqls-dry-run-command-bqls`)
 - `start-claude-agent.sh` は idle になるまで待つ。trust ダイアログが出たら自動では答えず exit 1 する (trust するかどうかはユーザーが判断することなので)
 - `send-instruction.sh` は起動直後に入力が取りこぼされるケースを、画面に指示文が出ていないことを確かめた上で再送する。二重送信はしない
-- **repo の tab に何を投げるかはコーディネーターに任せてよい**。その場合は tab "task" にだけ指示を送り、repo の tab は起動もコーディネーターがやる (このスキルを使えば良い)
 
 #### コーディネーターへの指示
 
 ```
 タスク <TASK> のコーディネーターをお願いします。TASK.md を読んでください。
 
-- repo をまたぐ決定事項 (インターフェイス、merge 順) を TASK.md に書き、各 repo の tab の Claude に herdr-task スキルの send-instruction.sh で指示を出して。
-- 各 repo の進み具合は read-pane.sh で確認して。
-- 別の repo が必要になったら task-add-repo.sh で足して。
+- 各 repo の tab の Claude を herdr-task スキルの start-claude-agent.sh で起動し、send-instruction.sh で指示を出して。進み具合は read-pane.sh で確認して。
+- repo をまたぐ決定事項 (インターフェイス、merge 順) と各 tab の状況 (PR、状態) は TASK.md に書いて。
+- 別の repo や issue が必要になったら task-add-repo.sh で足して。
+- [master] が付いたメッセージは master Claude 経由の人間の指示。付いていなければ人間がこの tab で直接話している。
+- 人間に確認したいことは、返答の最後に「確認したいこと」として書いて (master が人間に聞く)。
+- 返答の最後には、毎回タスク全体の状況を数行で要約して。
 - スコープ外の問題を見つけたら別 issue にして。
 ```
 
@@ -141,6 +166,20 @@ repo 単体で完結する形にする:
 - focus は元の workspace のまま。見るときは workspace picker (`prefix+w`) で `$TASK` を選ぶ
 
 ## 状態確認と片付け
+
+master がタスクの様子を見るとき:
+
+```bash
+~/.claude/skills/herdr-task/scripts/task-list.sh                 # 全タスク: <task> <ws> coordinator=<状態> <repo tabs>
+~/.claude/skills/herdr-task/scripts/task-reply.sh "$TASK"        # コーディネーターの状態と最新の返答
+~/.claude/skills/herdr-task/scripts/task-ask.sh "$TASK" "<質問>"  # 質問して返答を待つ (既定 600 秒)
+```
+
+- `task-ask.sh` の返答は Claude Code の会話ログ (`~/.claude/projects/*/<session>.jsonl`) から読む。画面の読み取りではないので、長い返答も欠けない
+- 終了コード: 0 返答あり / 3 タイムアウト (指示は届いているので後で `task-reply.sh`) / 4 tab "task" で権限確認や質問が出て止まっている (人間に tab を見てもらう)
+- コーディネーターが作業中なら `task-ask.sh` は拒否する。待たずに積むなら `--no-wait`
+
+worktree の状態を見るとき:
 
 ```bash
 ~/.claude/skills/herdr-task/scripts/task-status.sh "$TASK"

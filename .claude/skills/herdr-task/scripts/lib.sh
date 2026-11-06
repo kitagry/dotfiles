@@ -106,3 +106,45 @@ move_repo_line_to_done() {
     }
   ' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
 }
+
+# Prints the root pane id of the task's "task" tab (empty if none).
+task_pane() {
+  local ws_id tab_id
+  ws_id=$(find_task_workspace "$1")
+  [ -n "$ws_id" ] || return 0
+  tab_id=$(herdr tab list --workspace "$ws_id" \
+    | jq -r '.result.tabs[] | select(.label == "task") | .tab_id' | head -1)
+  [ -n "$tab_id" ] || return 0
+  herdr pane list --workspace "$ws_id" \
+    | jq -r --arg t "$tab_id" '[.result.panes[] | select(.tab_id == $t)][0].pane_id // empty'
+}
+
+# Prints the agent JSON object running in <pane> (empty if none).
+pane_agent() {
+  herdr agent list | jq -c --arg p "$1" '.result.agents[] | select(.pane_id == $p)' | head -1
+}
+
+# Prints the Claude Code transcript (.jsonl) of the agent in <pane>, located
+# by the session id herdr tracks. Empty if unknown, or before the session's
+# first message (Claude Code creates the file lazily).
+pane_transcript() {
+  local sid f
+  sid=$(pane_agent "$1" | jq -r '.agent_session.value // empty')
+  [ -n "$sid" ] || return 0
+  for f in "$HOME"/.claude/projects/*/"$sid".jsonl; do
+    [ -f "$f" ] && printf '%s\n' "$f" && return 0
+  done
+  return 0
+}
+
+# Prints the text of the last assistant message in <transcript> that has
+# text, looking only at lines after <skip_lines>.
+last_assistant_text() {
+  local file="$1" skip="${2:-0}"
+  # -c keeps each message on one line so `tail -1` picks a whole message.
+  tail -n +"$((skip + 1))" "$file" \
+    | jq -c 'select(.type == "assistant")
+             | [.message.content[]? | select(.type == "text") | .text] | join("")
+             | select(. != "")' 2>/dev/null \
+    | tail -1 | jq -r .
+}
