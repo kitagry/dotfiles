@@ -94,6 +94,8 @@ if [ -f "$dir/TASK.md" ]; then
   append_repo_line "$dir/TASK.md" "- \`$name\`: $repo_root (branch: \`$branch\`, base: \`$base\`)"
 fi
 
+report_repos "$ws_id"
+
 printf "TAB_ID=%q\n" "$tab_id"
 printf "PANE_ID=%q\n" "$pane_id"
 printf "WT_PATH=%q\n" "$wt_path"

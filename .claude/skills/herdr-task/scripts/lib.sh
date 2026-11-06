@@ -61,3 +61,15 @@ append_repo_line() {
     END { if (in_repos) print line; while (blanks > 0) { print ""; blanks-- } }
   ' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
 }
+
+# Reports the task's repo tabs as the workspace's $repos sidebar token
+# ([ui.sidebar.spaces] rows in herdr's config.toml). Task workspaces sit in a
+# non-git dir, so the built-in branch/git_status rows are empty for them.
+# Display-only, so a failure is not fatal.
+report_repos() {
+  local ws_id="$1" repos
+  repos=$(herdr tab list --workspace "$ws_id" \
+    | jq -r '[.result.tabs[] | select(.label != "task") | .label] | join(" ")')
+  herdr workspace report-metadata "$ws_id" --source herdr-task --token "repos=$repos" > /dev/null \
+    || echo "WARN: failed to report \$repos for $ws_id" >&2
+}
