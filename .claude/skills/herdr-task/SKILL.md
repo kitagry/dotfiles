@@ -1,7 +1,7 @@
 ---
 name: herdr-task
 description: タスク単位で herdr workspace を作り、関係する repo の git worktree を tab として並べ、コーディネーター Claude と各 repo の実装 Claude を起動して指示を投げるスキル。「タスクを始めて」「bqls と bqls.nvim をまたいで〜」「複数 repo で〜」「worktree で並列に作業させて」「delegate して」などのリクエスト時、または /herdr-task で起動する。repo が1つだけのタスクにも使う。
-allowed-tools: Bash(~/.claude/skills/herdr-task/scripts/task-create.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-add-repo.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-adopt.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-status.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-ask.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-reply.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-list.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-loop.sh:*), Bash(~/.claude/skills/herdr-task/scripts/start-claude-agent.sh:*), Bash(~/.claude/skills/herdr-task/scripts/send-instruction.sh:*), Bash(~/.claude/skills/herdr-task/scripts/read-pane.sh:*), Bash(ghq get:*), Bash(ghq list:*)
+allowed-tools: Bash(~/.claude/skills/herdr-task/scripts/task-create.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-add-repo.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-adopt.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-status.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-ask.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-reply.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-list.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-loop.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-report.sh:*), Bash(~/.claude/skills/herdr-task/scripts/start-claude-agent.sh:*), Bash(~/.claude/skills/herdr-task/scripts/send-instruction.sh:*), Bash(~/.claude/skills/herdr-task/scripts/read-pane.sh:*), Bash(ghq get:*), Bash(ghq list:*)
 ---
 
 # Task workspace on herdr
@@ -28,10 +28,10 @@ allowed-tools: Bash(~/.claude/skills/herdr-task/scripts/task-create.sh:*), Bash(
 
 ```
 人間 ⇄ master Claude (dotfiles などで開いているオーケストレーター)
-          │ task-ask.sh / task-reply.sh / task-list.sh
+          │ ↓ task-ask.sh / task-reply.sh / task-list.sh     ↑ task-report.sh ("[<task>] ...")
           ▼
        tab "task" の Claude (コーディネーター。task-create.sh が起動する)
-          │ send-instruction.sh / read-pane.sh
+          │ ↓ send-instruction.sh / read-pane.sh             ↑ task-report.sh ("[<tab label>] ...")
           ▼
        各 repo の tab の Claude (実装担当)
 ```
@@ -39,6 +39,7 @@ allowed-tools: Bash(~/.claude/skills/herdr-task/scripts/task-create.sh:*), Bash(
 - 人間は基本的に master と話す。master はタスクの状況を `task-list.sh` / `task-reply.sh` で見て、指示や質問は `task-ask.sh` でコーディネーターに渡す
 - 人間が tab "task" を直接見て話しかけることもある。master からのメッセージには `[master]` が付くので、コーディネーターはどちらからか区別できる
 - master は repo の tab の Claude に直接指示しない。コーディネーターを通す (TASK.md の決定事項とずれないように)
+- **節目は下から上へ報告する** (`task-report.sh "<メッセージ>"`)。tab の中で実行すると、repo の tab からはコーディネーターへ、tab "task" からは master へ届く。master の pane は `~/tasks/.master` に登録しておく (master が自分の pane で `task-report.sh --register-master` を1回実行)
 - **聞かれるまで待たない**。コーディネーターは `/loop` (`task-loop.sh`) で自分の tab を定期チェックし、master も定期実行 (CronCreate、15 分ごと程度) で `task-list.sh` / `task-reply.sh` を見回って、要対応や節目の変化だけを人間に報告する
 
 ## 初回セットアップ (マシンごとに1回)
@@ -150,6 +151,7 @@ repo の tab の Claude は、コーディネーターに起動・指示させ�
 - [master] が付いたメッセージは master Claude 経由の人間の指示。付いていなければ人間がこの tab で直接話している。
 - 人間に確認したいことは、返答の最後に「確認したいこと」として書いて (master が人間に聞く)。
 - 返答の最後には、毎回タスク全体の状況を数行で要約して。
+- 節目 (tab の PR が merge された、全 tab が終わった、人間の判断が要る、詰まった) では task-report.sh で master に報告して。各 tab の Claude にも、同じ節目で task-report.sh であなたに報告するよう指示に含めて。
 - スコープ外の問題を見つけたら別 issue にして。
 ```
 
@@ -160,7 +162,8 @@ repo 単体で完結する形にする:
 1. **ゴール** — この repo で何を実装するか (1-3 文)
 2. **TASK.md の参照** — `$HERDR_TASK_DIR/TASK.md` の Decisions に従うこと
 3. **PR 方針** — 「PR 作成 → `/loop` でレビュー監視 → `pr-fix` で対応」まで回すか、draft 止まりか。他 repo の merge を待つ必要があれば draft にする
-4. **スコープ外** — 「スコープ外の問題を見つけたら別 issue にして」
+4. **報告** — 「PR を作った、merge された、レビューで人間の判断が要る、詰まった、のどれかになったら herdr-task スキルの task-report.sh でコーディネーターに報告して」
+5. **スコープ外** — 「スコープ外の問題を見つけたら別 issue にして」
 
 ### 5. 完了報告
 
