@@ -233,7 +233,7 @@ claude = [["state_icon", "workspace", "tab"], ["terminal_title_stripped"]]
 [ui.sidebar.spaces]
 # Blank rows between space entries. Set to 1 to restore the previous spacing.
 # row_gap = 0
-rows = [["state_icon", "workspace"], ["branch", "git_status"]]
+rows = [["state_icon", "workspace"], ["branch", "git_status"], ["$repos"]]
 
 # Accent color for highlights, borders, and navigation UI.
 # Accepts: hex (#89b4fa), named colors (cyan, blue, magenta), or rgb(r,g,b)
