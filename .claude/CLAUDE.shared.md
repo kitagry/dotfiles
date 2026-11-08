@@ -28,6 +28,12 @@ PR / MR を作成したら、必ず自分を assignee に追加すること。dr
 - GitHub: `gh pr create ...` の直後に `gh pr edit <URL or number> --add-assignee "@me"`
 - GitLab: `mcp__mcp-gitlab__create_merge_request` の args に `assignee_ids: [<自分のID>]` を入れる (作成後なら `mcp__mcp-gitlab__update_merge_request` で追加)。自分の ID は `mcp__mcp-gitlab__whoami` で取得
 
+### public repository では英語で書く
+GitHub の public repository に残すものは、基本すべて英語で書く。対象: コードコメント、docstring、commit message、PR / issue のタイトルと本文、レビューコメント、README や docs。理由: 世界中の利用者・コントリビュータが読むため。
+- private repository や社内の repo は、その repo の既存の慣習に合わせる
+- 人間 (自分) とのやり取りの言語はこのルールとは関係ない (会話は日本語のまま)
+- repo の公開状態が分からないときは `gh repo view <owner>/<repo> --json visibility` で確かめる
+
 ## Google Workspace操作ルール
 Google Drive / Sheets / Docs / Gmail / Calendar / Slides 等のGoogle Workspaceリソースを操作する際は、MCPではなく **`gws` コマンド (Google Workspace CLI)** を使うこと。
 - 使い方: `gws <service> <resource> [sub-resource] <method> [flags]`
