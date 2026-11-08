@@ -14,13 +14,6 @@
         "OBSIDIAN_BASE_URL": "https://127.0.0.1:27124"
       }
     },
-    "bigquery": {
-      "command": "toolbox",
-      "args": ["--prebuilt","bigquery","--stdio"],
-      "env": {
-        "BIGQUERY_PROJECT": "${BIGQUERY_PROJECT}"
-      }
-    },
     "chrome-devtools": {
       "command": "npx",
       "args": ["-y", "chrome-devtools-mcp@latest"]
