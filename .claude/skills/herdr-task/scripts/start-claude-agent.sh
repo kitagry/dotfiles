@@ -37,7 +37,8 @@ attempt=0
 start_json=""
 while [ "$attempt" -lt "$max_attempts" ]; do
   attempt=$((attempt + 1))
-  start_json=$(herdr agent start "$name" --kind claude --pane "$pane_id" "${agent_args[@]}" 2>&1)
+  # bash 3.2 (macOS /bin/bash) treats "${arr[@]}" of an empty array as unbound under set -u.
+  start_json=$(herdr agent start "$name" --kind claude --pane "$pane_id" ${agent_args[@]+"${agent_args[@]}"} 2>&1)
   if ! printf '%s' "$start_json" | jq -e '.error' > /dev/null 2>&1; then
     break
   fi

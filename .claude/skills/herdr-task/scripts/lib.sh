@@ -32,13 +32,13 @@ find_task_workspace() {
 # writing it races with running Claude sessions that rewrite the same file.
 is_trusted() {
   local p common
+  p=$(abs_path "$1") || return 1
   common=$(git -C "$1" rev-parse --path-format=absolute --git-common-dir 2>/dev/null || true)
   if [ -n "$common" ] && [ "$(basename "$common")" = ".git" ] \
-    && [ "$(dirname "$common")" != "$(realpath -m "$1")" ] \
+    && [ "$(dirname "$common")" != "$p" ] \
     && is_trusted "$(dirname "$common")"; then
     return 0
   fi
-  p=$(realpath -m "$1")
   while :; do
     if jq -e --arg p "$p" '.projects[$p].hasTrustDialogAccepted == true' "$HOME/.claude.json" > /dev/null 2>&1; then
       return 0
@@ -46,6 +46,20 @@ is_trusted() {
     [ "$p" = "/" ] && return 1
     p=$(dirname "$p")
   done
+}
+
+# Absolute, symlink-resolved path that may not exist yet. `realpath -m` does this
+# on GNU but macOS's realpath has no -m, so resolve the deepest existing parent.
+abs_path() {
+  local p="$1" rest=""
+  case "$p" in /*) ;; *) p="$PWD/$p" ;; esac
+  while [ ! -d "$p" ]; do
+    rest="/$(basename "$p")$rest"
+    p=$(dirname "$p")
+  done
+  # Without this a dir we cannot cd into would yield "$rest" alone, a wrong path.
+  p=$(cd "$p" && pwd -P) || return 1
+  printf '%s%s' "$p" "$rest"
 }
 
 # Appends <line> at the end of the "## Repos" section of TASK.md, so entries
