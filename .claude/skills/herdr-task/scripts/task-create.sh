@@ -70,7 +70,8 @@ EOF
 cat > "$dir/ACTIONS.md" <<EOF
 # $task 要対応 (コーディネーターが更新)
 
-返事は「1 OK」「2 A」のように番号で。済んだものは ✅ にする。
+各項目: - **<🔴/🟠/🟢/⏳/✅> <番号> <〜してよい? / A・B・C のどれ? / (作業) 〜してください>**
+その下に字下げして背景・選択肢・期限・URL。返事は「1 OK」「2 A」のように番号で。
 
 (現在なし)
 EOF
@@ -104,11 +105,19 @@ elif ! watch_json=$(herdr pane split "$pane_id" --direction right --ratio 0.65 \
   || ! watch_pane=$(printf '%s' "$watch_json" | jq -er '.result.pane.pane_id // empty' 2>/dev/null); then
   echo "WARN: failed to split the task tab for the ACTIONS.md pane: ${watch_json:-}" >&2
 else
+  # The label lets task_pane tell this pane from the coordinator's without
+  # relying on list order or on Claude currently running.
+  herdr pane rename "$watch_pane" "$ACTIONS_PANE_LABEL" > /dev/null \
+    || echo "WARN: failed to label the ACTIONS.md pane $watch_pane" >&2
   # herdr can exit 0 with an .error body (see start-claude-agent.sh), so the
   # exit code alone does not tell whether the command was sent.
-  run_json=$(herdr pane run "$watch_pane" "watch -t -n 15 cat ACTIONS.md" 2>&1) \
-    && ! printf '%s' "$run_json" | jq -e '.error' > /dev/null 2>&1 \
-    || echo "WARN: failed to start watch in pane $watch_pane: $run_json" >&2
+  if ! run_json=$(herdr pane run "$watch_pane" "watch -t -n 15 cat ACTIONS.md") \
+    || printf '%s' "$run_json" | jq -e '.error' > /dev/null 2>&1; then
+    echo "WARN: failed to start watch in pane $watch_pane: ${run_json:-}" >&2
+    # Same reason as skipping the split without `watch`: an idle shell pane
+    # next to the coordinator only looks like the ACTIONS.md view.
+    herdr pane close "$watch_pane" > /dev/null 2>&1 || true
+  fi
 fi
 
 # The task tab always has a coordinator: it is who the master Claude (and a

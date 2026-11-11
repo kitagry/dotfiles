@@ -121,9 +121,13 @@ move_repo_line_to_done() {
   ' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
 }
 
+# Label task-create.sh gives the ACTIONS.md watch pane of the "task" tab.
+ACTIONS_PANE_LABEL=ACTIONS
+
 # Prints the coordinator pane id of the task's "task" tab (empty if none).
-# The tab also holds the ACTIONS.md watch pane, so the pane running an agent
-# wins over list order; the first pane is the fallback before Claude starts.
+# The tab also holds the ACTIONS.md watch pane, which is never the
+# coordinator. Among the rest, the pane running an agent wins over list order;
+# the first pane is the fallback before Claude starts or after it exits.
 task_pane() {
   local ws_id tab_id
   ws_id=$(find_task_workspace "$1")
@@ -132,7 +136,8 @@ task_pane() {
     | jq -r '.result.tabs[] | select(.label == "task") | .tab_id' | head -1)
   [ -n "$tab_id" ] || return 0
   herdr pane list --workspace "$ws_id" \
-    | jq -r --arg t "$tab_id" '[.result.panes[] | select(.tab_id == $t)]
+    | jq -r --arg t "$tab_id" --arg skip "$ACTIONS_PANE_LABEL" '
+        [.result.panes[] | select(.tab_id == $t and .label != $skip)]
         | ((map(select(.agent != null)) + .)[0].pane_id) // empty'
 }
 
