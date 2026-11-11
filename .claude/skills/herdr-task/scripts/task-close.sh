@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Closes a task: closes the herdr workspace, removes its worktrees, and keeps
-# only TASK.md (stamped with "closed: <date>") under
+# only TASK.md (stamped with "closed: <date>") and ACTIONS.md under
 # <tasks_root>/_archive/YYYY-MM/YYYY-MM-DD-<task>/ so finished tasks can be
 # looked back on without the checkouts taking up space.
 # Local branches are kept so unmerged work can still be recovered. Paths opened
@@ -70,6 +70,9 @@ if [ -f "$dir/TASK.md" ]; then
     { print }
   ' "$dir/TASK.md" > "$dest/TASK.md"
   rm "$dir/TASK.md"
+fi
+if [ -f "$dir/ACTIONS.md" ]; then
+  mv "$dir/ACTIONS.md" "$dest/ACTIONS.md"
 fi
 rm -f "$dir/.adopted"
 

@@ -121,7 +121,9 @@ move_repo_line_to_done() {
   ' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
 }
 
-# Prints the root pane id of the task's "task" tab (empty if none).
+# Prints the coordinator pane id of the task's "task" tab (empty if none).
+# The tab also holds the ACTIONS.md watch pane, so the pane running an agent
+# wins over list order; the first pane is the fallback before Claude starts.
 task_pane() {
   local ws_id tab_id
   ws_id=$(find_task_workspace "$1")
@@ -130,7 +132,8 @@ task_pane() {
     | jq -r '.result.tabs[] | select(.label == "task") | .tab_id' | head -1)
   [ -n "$tab_id" ] || return 0
   herdr pane list --workspace "$ws_id" \
-    | jq -r --arg t "$tab_id" '[.result.panes[] | select(.tab_id == $t)][0].pane_id // empty'
+    | jq -r --arg t "$tab_id" '[.result.panes[] | select(.tab_id == $t)]
+        | ((map(select(.agent != null)) + .)[0].pane_id) // empty'
 }
 
 # Prints the agent JSON object running in <pane> (empty if none).

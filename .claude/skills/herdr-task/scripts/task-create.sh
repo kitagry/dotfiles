@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-# Creates a task directory (~/tasks/<task>) with a TASK.md skeleton and a herdr
-# workspace labeled <task> whose first tab ("task") sits at the task directory
-# and runs the coordinator Claude (agent name <task>-task).
+# Creates a task directory (~/tasks/<task>) with TASK.md and ACTIONS.md
+# skeletons and a herdr workspace labeled <task> whose first tab ("task") sits
+# at the task directory and runs the coordinator Claude (agent name <task>-task)
+# in its left pane. The right pane watches ACTIONS.md, the list of things
+# waiting on a human, since humans cannot keep up with the chat.
 # Repos are added later as tabs with task-add-repo.sh.
 #
 # Usage: task-create.sh <task>
@@ -65,6 +67,13 @@ created: $(date +%F)
 ## Done
 <!-- task-remove-repo.sh moves finished tabs here -->
 EOF
+cat > "$dir/ACTIONS.md" <<EOF
+# $task 要対応 (コーディネーターが更新)
+
+返事は「1 OK」「2 A」のように番号で。済んだものは ✅ にする。
+
+(現在なし)
+EOF
 
 json=$(herdr workspace create --cwd "$dir" --label "$task" \
   --env "HERDR_TASK=$task" --env "HERDR_TASK_DIR=$dir" --no-focus)
@@ -80,6 +89,27 @@ if [ -z "$ws_id" ] || [ "$ws_id" = "null" ] || [ -z "$pane_id" ] || [ "$pane_id"
 fi
 
 herdr tab rename "$tab_id" task > /dev/null
+
+# Split before starting the coordinator so Claude starts at its final width.
+# --ratio is the share of the original (left) pane. The relative path keeps the
+# command free of shell quoting, as the pane's shell is fish, not bash.
+# Display-only, so a failure is not fatal. macOS ships no `watch`; skip the
+# split rather than leave a pane showing "command not found".
+# stderr is not captured: herdr may log there even on success, which would
+# break the jq parse.
+if ! command -v watch > /dev/null; then
+  echo "WARN: watch is not installed; no ACTIONS.md pane (brew install watch)" >&2
+elif ! watch_json=$(herdr pane split "$pane_id" --direction right --ratio 0.65 \
+  --cwd "$dir" --no-focus) \
+  || ! watch_pane=$(printf '%s' "$watch_json" | jq -er '.result.pane.pane_id // empty' 2>/dev/null); then
+  echo "WARN: failed to split the task tab for the ACTIONS.md pane: ${watch_json:-}" >&2
+else
+  # herdr can exit 0 with an .error body (see start-claude-agent.sh), so the
+  # exit code alone does not tell whether the command was sent.
+  run_json=$(herdr pane run "$watch_pane" "watch -t -n 15 cat ACTIONS.md" 2>&1) \
+    && ! printf '%s' "$run_json" | jq -e '.error' > /dev/null 2>&1 \
+    || echo "WARN: failed to start watch in pane $watch_pane: $run_json" >&2
+fi
 
 # The task tab always has a coordinator: it is who the master Claude (and a
 # human looking at the tab) talks to. stdout is reserved for the eval-able vars.
