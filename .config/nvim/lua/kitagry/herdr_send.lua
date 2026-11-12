@@ -1,6 +1,6 @@
 -- Send the current line/selection to the herdr agent pane running in the
 -- same workspace, formatted like reviewr's Send: `path:start-end — note`.
--- Prototype: https://github.com/ogulcancelik/herdr (herdr agent send).
+-- Prototype: https://github.com/ogulcancelik/herdr (herdr agent prompt).
 
 local M = {}
 
@@ -98,13 +98,30 @@ local function resolve_target_pane()
   return M.select_target(agents, workspace_id, pane_id)
 end
 
-local function do_send(target, text)
-  local result = vim.system({ herdr_bin(), "agent", "send", target, text }, { text = true }):wait()
+-- Submit text to the agent pane. Returns true, nil on success / false, err_msg on failure.
+local function prompt_agent(target, text)
+  local result = vim.system({ herdr_bin(), "agent", "prompt", target, text }, { text = true }):wait()
   if result.code ~= 0 then
-    vim.notify("herdr agent send に失敗しました: " .. trim(result.stderr or ""), vim.log.levels.ERROR)
+    return false, "herdr agent prompt に失敗しました: " .. trim(result.stderr or "")
+  end
+  return true
+end
+
+local function do_send(target, text)
+  local ok, err = prompt_agent(target, text)
+  if not ok then
+    vim.notify(err, vim.log.levels.ERROR)
     return
   end
   vim.notify("herdr agent へ送信しました (" .. target .. ")", vim.log.levels.INFO)
+end
+
+-- 同じ workspace の agent pane に text を送る。他モジュール (claude_review 等) 用の公開API。
+-- 成功: true, nil / 失敗: false, err_msg
+function M.send(text)
+  local target, err = resolve_target_pane()
+  if not target then return false, err end
+  return prompt_agent(target, text)
 end
 
 -- Same shape as claude_review.lua's open_comment_float: scratch markdown

@@ -1065,7 +1065,9 @@ require("kitagry.lazy").setup({
   },
   { "sindrets/diffview.nvim",
     config = function()
-      require("diffview").setup()
+      require("diffview").setup({
+        use_icons = false,
+      })
     end
   },
   { "lambdalisue/vim-suda" },
@@ -1088,9 +1090,11 @@ require("kitagry.lazy").setup({
       vim.keymap.set("n", "<leader>rv", "<cmd>ClaudeReview<cr>", { desc = "Claude review: open diffview (branch)" })
       vim.keymap.set("n", "<leader>rw", "<cmd>ClaudeReviewWorking<cr>", { desc = "Claude review: open diffview (uncommitted)" })
       vim.keymap.set("n", "<leader>rc", "<cmd>ClaudeReviewComment<cr>", { desc = "Claude review: add comment" })
+      -- visual mode: ':' が自動で '<,'> を前置してコマンド側に range を渡す
+      vim.keymap.set("x", "<leader>rc", ":ClaudeReviewComment<cr>", { desc = "Claude review: add comment on range" })
       vim.keymap.set("n", "<leader>rd", "<cmd>ClaudeReviewDelete<cr>", { desc = "Claude review: delete comment" })
       vim.keymap.set("n", "<leader>rl", "<cmd>ClaudeReviewList<cr>", { desc = "Claude review: list comments" })
-      vim.keymap.set("n", "<leader>rs", "<cmd>ClaudeReviewSubmit<cr>", { desc = "Claude review: submit to Aibo" })
+      vim.keymap.set("n", "<leader>rs", "<cmd>ClaudeReviewSubmit<cr>", { desc = "Claude review: submit to herdr" })
       vim.keymap.set("n", "<leader>rx", "<cmd>ClaudeReviewDiscard<cr>", { desc = "Claude review: discard" })
     end,
   },

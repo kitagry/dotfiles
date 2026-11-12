@@ -13,23 +13,35 @@ local NS = vim.api and vim.api.nvim_create_namespace and vim.api.nvim_create_nam
 -- Pure state
 -- ---------------------------------------------------------------------------
 
-function M.add_comment(path, lnum, text)
+function M.add_comment(path, start_lnum, end_lnum, text)
   if not text or text == "" then return end
   state.comments[path] = state.comments[path] or {}
-  state.comments[path][lnum] = text
+  state.comments[path][start_lnum] = { end_lnum = end_lnum or start_lnum, text = text }
 end
 
-function M.get_comment(path, lnum)
-  return state.comments[path] and state.comments[path][lnum] or nil
+function M.get_comment(path, start_lnum)
+  return state.comments[path] and state.comments[path][start_lnum] or nil
 end
 
-function M.delete_comment(path, lnum)
+function M.delete_comment(path, start_lnum)
   if state.comments[path] then
-    state.comments[path][lnum] = nil
+    state.comments[path][start_lnum] = nil
     if next(state.comments[path]) == nil then
       state.comments[path] = nil
     end
   end
+end
+
+-- 行 lnum を含むコメントの開始行を返す (無ければ nil)
+function M.find_comment_at(path, lnum)
+  local per_file = state.comments[path]
+  if not per_file then return nil end
+  for start_lnum, c in pairs(per_file) do
+    if lnum >= start_lnum and lnum <= (c.end_lnum or start_lnum) then
+      return start_lnum
+    end
+  end
+  return nil
 end
 
 function M.list_comments()
@@ -42,7 +54,8 @@ function M.list_comments()
     for ln in pairs(state.comments[p]) do lnums[#lnums + 1] = ln end
     table.sort(lnums)
     for _, ln in ipairs(lnums) do
-      out[#out + 1] = { path = p, lnum = ln, text = state.comments[p][ln] }
+      local c = state.comments[p][ln]
+      out[#out + 1] = { path = p, lnum = ln, end_lnum = c.end_lnum, text = c.text }
     end
   end
   return out
@@ -78,6 +91,11 @@ local function quote(text)
   return table.concat(lines, "\n")
 end
 
+local function format_range(start_lnum, end_lnum)
+  if start_lnum == end_lnum then return tostring(start_lnum) end
+  return start_lnum .. "-" .. end_lnum
+end
+
 function M.format_for_claude(opts)
   opts = opts or {}
   local comments = M.list_comments()
@@ -85,8 +103,8 @@ function M.format_for_claude(opts)
   local diff_excerpt = opts.diff_excerpt or function() return "" end
   local parts = { "以下のレビューに沿って修正してください。", "" }
   for _, c in ipairs(comments) do
-    parts[#parts + 1] = string.format("### %s:%d", c.path, c.lnum)
-    local excerpt = diff_excerpt(c.path, c.lnum) or ""
+    parts[#parts + 1] = string.format("### %s:%s", c.path, format_range(c.lnum, c.end_lnum))
+    local excerpt = diff_excerpt(c.path, c.lnum, c.end_lnum) or ""
     if excerpt ~= "" then
       parts[#parts + 1] = "```"
       parts[#parts + 1] = excerpt
@@ -160,7 +178,8 @@ local function buf_path_relative()
   return file
 end
 
-local function diff_excerpt_for(path, lnum)
+local function diff_excerpt_for(path, start_lnum, end_lnum)
+  end_lnum = end_lnum or start_lnum
   -- start() で開いたのと同じ range を使う。空なら未コミット差分
   local range = state.diff_range or ""
   local cmd = string.format(
@@ -171,7 +190,7 @@ local function diff_excerpt_for(path, lnum)
   local out = shell(cmd)
   if not out or out == "" then return "" end
 
-  -- 当該行を含む @@ hunk を抜き出す
+  -- 当該範囲と重なる @@ hunk を抜き出す
   local hunks = {}
   for hunk in (out .. "\n@@"):gmatch("(@@[^@]+@@[^@]*)\n@@") do
     hunks[#hunks + 1] = hunk
@@ -181,7 +200,8 @@ local function diff_excerpt_for(path, lnum)
     if new_start then
       new_start = tonumber(new_start)
       new_count = tonumber(new_count) or 1
-      if lnum >= new_start and lnum < new_start + new_count then
+      local hunk_end = new_start + new_count - 1
+      if start_lnum <= hunk_end and end_lnum >= new_start then
         return h
       end
     end
@@ -217,14 +237,18 @@ local function render_buf(bufnr, path)
   local per_file = state.comments[path]
   if not per_file then return end
   local line_count = vim.api.nvim_buf_line_count(bufnr)
-  for lnum, text in pairs(per_file) do
-    if lnum >= 1 and lnum <= line_count then
-      vim.api.nvim_buf_set_extmark(bufnr, NS, lnum - 1, 0, {
-        sign_text = "R",
-        sign_hl_group = "DiagnosticWarn",
-        virt_text = { { " 💬 " .. preview_text(text), "Comment" } },
-        virt_text_pos = "eol",
-      })
+  for start_lnum, c in pairs(per_file) do
+    local end_lnum = c.end_lnum or start_lnum
+    for ln = start_lnum, end_lnum do
+      if ln >= 1 and ln <= line_count then
+        local is_last = ln == end_lnum
+        vim.api.nvim_buf_set_extmark(bufnr, NS, ln - 1, 0, {
+          sign_text = "R",
+          sign_hl_group = "DiagnosticWarn",
+          virt_text = is_last and { { " 💬 " .. preview_text(c.text), "Comment" } } or nil,
+          virt_text_pos = is_last and "eol" or nil,
+        })
+      end
     end
   end
 end
@@ -245,7 +269,7 @@ end
 -- Comment input floating window
 -- ---------------------------------------------------------------------------
 
-local function open_comment_float(path, lnum, initial, on_save)
+local function open_comment_float(path, start_lnum, end_lnum, initial, on_save)
   local buf = vim.api.nvim_create_buf(false, true)
   vim.bo[buf].bufhidden = "wipe"
   vim.bo[buf].filetype = "markdown"
@@ -261,7 +285,7 @@ local function open_comment_float(path, lnum, initial, on_save)
     width = width,
     height = height,
     border = "rounded",
-    title = string.format(" %s:%d  (<CR>:save  q/<Esc>:cancel) ", path, lnum),
+    title = string.format(" %s:%s  (<CR>:save  q/<Esc>:cancel) ", path, format_range(start_lnum, end_lnum)),
     title_pos = "left",
   })
   vim.cmd("startinsert")
@@ -305,7 +329,7 @@ function M.start(opts)
   refresh_all()
 end
 
-function M.comment_here()
+function M.comment_here(range_start, range_end)
   local ft = vim.bo.filetype
   if ft == "DiffviewFiles" or ft == "DiffviewFileHistory" or ft == "DiffviewFilePanel" then
     vim.notify("差分ウィンドウ側にカーソルを移してから実行してください", vim.log.levels.WARN)
@@ -316,13 +340,28 @@ function M.comment_here()
     vim.notify("ファイルバッファ上で実行してください", vim.log.levels.WARN)
     return
   end
-  local lnum = vim.api.nvim_win_get_cursor(0)[1]
-  local existing = M.get_comment(path, lnum) or ""
-  open_comment_float(path, lnum, existing, function(text)
+  local start_lnum = range_start or vim.api.nvim_win_get_cursor(0)[1]
+  local end_lnum = range_end or start_lnum
+  if end_lnum < start_lnum then start_lnum, end_lnum = end_lnum, start_lnum end
+
+  -- 既存コメントが範囲に重なるなら開始行を揃えて編集
+  local existing_start
+  for ln = start_lnum, end_lnum do
+    existing_start = M.find_comment_at(path, ln)
+    if existing_start then break end
+  end
+  local existing = existing_start and M.get_comment(path, existing_start) or nil
+  local initial = existing and existing.text or ""
+  if existing_start then
+    start_lnum = existing_start
+    end_lnum = existing.end_lnum
+  end
+
+  open_comment_float(path, start_lnum, end_lnum, initial, function(text)
     if text == "" then
-      M.delete_comment(path, lnum)
+      M.delete_comment(path, start_lnum)
     else
-      M.add_comment(path, lnum, text)
+      M.add_comment(path, start_lnum, end_lnum, text)
     end
     refresh_path(path)
   end)
@@ -332,7 +371,9 @@ function M.delete_here()
   local path = buf_path_relative()
   if not path then return end
   local lnum = vim.api.nvim_win_get_cursor(0)[1]
-  M.delete_comment(path, lnum)
+  local start_lnum = M.find_comment_at(path, lnum)
+  if not start_lnum then return end
+  M.delete_comment(path, start_lnum)
   refresh_path(path)
 end
 
@@ -343,17 +384,12 @@ function M.list_in_quickfix()
     items[#items + 1] = {
       filename = root ~= "" and (root .. "/" .. c.path) or c.path,
       lnum = c.lnum,
+      end_lnum = c.end_lnum,
       text = c.text:gsub("\n", " / "),
     }
   end
   vim.fn.setqflist({}, " ", { title = "Claude Review", items = items })
   vim.cmd("copen")
-end
-
-local function find_aibo_console()
-  local ok, console = pcall(require, "aibo.internal.console_window")
-  if not ok then return nil end
-  return console.find_info_globally({ cmd = "claude" })
 end
 
 function M.submit()
@@ -362,24 +398,17 @@ function M.submit()
     vim.notify("レビューコメントがありません", vim.log.levels.WARN)
     return
   end
-  local info = find_aibo_console()
-  if not info then
-    vim.notify("Aibo claude console が見つかりません (<leader>ac で起動)", vim.log.levels.ERROR)
-    return
-  end
-  if info.winid == -1 then
-    vim.notify("Aibo claude console は開いていますが非表示です。タブで開いてから再実行してください", vim.log.levels.WARN)
-    return
-  end
 
-  local prompt = require("aibo.internal.prompt_window")
-  prompt.open(info.winid, { startinsert = false })
-  local prompt_info = prompt.get_info_by_console_winid(info.winid)
-  if not prompt_info then
-    vim.notify("Aibo prompt window を開けませんでした", vim.log.levels.ERROR)
+  local ok, herdr = pcall(require, "kitagry.herdr_send")
+  if not ok then
+    vim.notify("kitagry.herdr_send を読み込めませんでした", vim.log.levels.ERROR)
     return
   end
-  prompt.write(prompt_info.bufnr, vim.split(payload, "\n", { plain = true }), { replace = true })
+  local sent, err = herdr.send(payload)
+  if not sent then
+    vim.notify(err or "herdr agent への送信に失敗しました", vim.log.levels.ERROR)
+    return
+  end
 
   -- 状態クリア + 描画リフレッシュ
   local affected_paths = {}
@@ -387,7 +416,7 @@ function M.submit()
   M.clear()
   for _, p in ipairs(affected_paths) do refresh_path(p) end
 
-  vim.notify("Aibo prompt にレビューを書き込みました。確認して Ctrl+Enter で送信してください", vim.log.levels.INFO)
+  vim.notify("herdr agent へレビューを送信しました", vim.log.levels.INFO)
 end
 
 function M.discard()
@@ -411,10 +440,16 @@ function M.setup()
     M.start({ mode = "working" })
   end, { desc = "Open diffview for uncommitted changes only" })
 
-  vim.api.nvim_create_user_command("ClaudeReviewComment", M.comment_here, { desc = "Add review comment on current line" })
+  vim.api.nvim_create_user_command("ClaudeReviewComment", function(o)
+    if o.range == 0 then
+      M.comment_here()
+    else
+      M.comment_here(o.line1, o.line2)
+    end
+  end, { desc = "Add review comment on current line or range", range = true })
   vim.api.nvim_create_user_command("ClaudeReviewDelete", M.delete_here, { desc = "Delete review comment on current line" })
   vim.api.nvim_create_user_command("ClaudeReviewList", M.list_in_quickfix, { desc = "List all review comments" })
-  vim.api.nvim_create_user_command("ClaudeReviewSubmit", M.submit, { desc = "Send review comments to Aibo claude" })
+  vim.api.nvim_create_user_command("ClaudeReviewSubmit", M.submit, { desc = "Send review comments to herdr agent" })
   vim.api.nvim_create_user_command("ClaudeReviewDiscard", M.discard, { desc = "Discard review comments without sending" })
 
   local group = vim.api.nvim_create_augroup("kitagry.claude_review", { clear = true })
