@@ -83,18 +83,46 @@
       "Bash(herdr agent list:*)",
       "Bash(herdr pane send-keys:*)",
       "Bash(herdr pane send-text:*)",
-      "Bash(herdr pane run:*)"
-    ]
+      "Bash(herdr pane run:*)",
+      "Bash(~/.claude/scripts/claude_timing.py:*)"
+    ],
+    "defaultMode": "auto"
   },
   "model": "claude-opus-5-5",
+  "cleanupPeriodDays": 365,
   "hooks": {
-    "Notification": [
+    "PermissionRequest": [
       {
-        "matcher": "idle_prompt",
+        "matcher": "*",
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"[$(date)] idle_prompt hook triggered\" >> /tmp/claude-hooks.log; ~/.zsh/claude-notify.sh '入力を待っています'"
+            "command": "bash \"$HOME/.claude/hooks/timing-log.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/timing-log.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/timing-log.sh\"",
+            "timeout": 5
           }
         ]
       }
@@ -110,16 +138,6 @@
           }
         ]
       }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo \"[$(date)] Stop hook triggered\" >> /tmp/claude-hooks.log && ~/.zsh/claude-notify.sh 'タスクが完了しました'"
-          }
-        ]
-      }
     ]
   },
   "statusLine": {
@@ -128,12 +146,12 @@
     "padding": 0
   },
   "enabledPlugins": {
-    "example-skills@anthropic-agent-skills": true,
-    "figma@claude-plugins-official": true,
+    "example-skills@anthropic-agent-skills": false,
+    "figma@claude-plugins-official": false,
     "gopls-lsp@claude-plugins-official": true,
     "lua-lsp@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
-    "rust-analyzer-lsp@claude-plugins-official": true,
+    "rust-analyzer-lsp@claude-plugins-official": false,
     "typescript-lsp@claude-plugins-official": true
   },
   "language": "Japanese",
@@ -147,7 +165,7 @@
   "preferredNotifChannel": "notifications_disabled",
   "autoCompactEnabled": true,
   "remoteControlAtStartup": true,
-  "agentPushNotifEnabled": true,
+  "agentPushNotifEnabled": false,
   "voiceEnabled": true,
   "autoMode": {
     "environment": [
@@ -178,5 +196,8 @@
       "**Org-specific CLIs**: None configured — tooling observed (mise, sheldon, ghq, gh, uv, go, cargo, gcloud, etc.) is general-purpose developer tooling, not org-specific",
       "Routine under kitagry/ prefix: work confined to this repo and its own install/config scripts is routine; anything touching `~/.claude/CLAUDE.md` or other machine-specific/work-specific config (`~/.config/mise/conf.d/work.toml`, `private.toml`) is explicitly out of scope per the repo's own CLAUDE.md"
     ]
+  },
+  "skillOverrides": {
+    "test-writing": "off"
   }
 }
