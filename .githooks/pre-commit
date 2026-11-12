@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+# Block commits that add lines (or files) matching deny patterns, so work-specific
+# information doesn't leak into this public repo.
+#
+# The pattern list lives OUTSIDE this repo (a public list of work terms would itself
+# be a leak). One extended regex per line, matched case-insensitively; blank lines and
+# lines starting with # are ignored. Override the path with DOTFILES_DENY_PATTERNS.
+# Bypass on purpose with: git commit --no-verify
+set -u
+
+patterns="${DOTFILES_DENY_PATTERNS:-$HOME/.config/git/dotfiles-deny-patterns}"
+if [ ! -r "$patterns" ]; then
+  echo "pre-commit: warn: deny pattern file not found ($patterns); skipping leak check" >&2
+  exit 0
+fi
+
+tmp=$(mktemp -d) || exit 1
+trap 'rm -rf "$tmp"' EXIT
+rules="$tmp/rules"
+grep -v -E '^[[:space:]]*(#|$)' "$patterns" > "$rules"
+[ -s "$rules" ] || exit 0
+
+# A broken regex makes grep exit 2, which `grep -q` would read as "no match" and let
+# everything through, so fail closed instead.
+grep -E -f "$rules" /dev/null 2>"$tmp/err"
+if [ $? -eq 2 ]; then
+  echo "pre-commit: invalid pattern in $patterns: $(cat "$tmp/err")" >&2
+  exit 1
+fi
+
+# T is included because a symlink turned into a regular file carries new content.
+filter=ACMRT
+names=()
+while IFS= read -r -d '' path; do
+  names+=("$path")
+done < <(git diff --cached --name-only -z --diff-filter="$filter")
+[ "${#names[@]}" -eq 0 ] && exit 0
+
+found=0
+report() {
+  found=1
+  printf '  %s\n' "$1" >&2
+}
+
+for path in "${names[@]}"; do
+  if printf '%s\n' "$path" | grep -q -i -E -f "$rules"; then
+    report "$path: file name matches a deny pattern"
+  fi
+done
+
+# Added lines only (removing a leaked line must stay possible). File names are taken
+# from the -z list above, matched to the patch by the order of `diff --git` headers,
+# because the `+++` header is quoted or re-prefixed depending on core.quotePath,
+# diff.mnemonicPrefix and diff.noprefix. Only lines after `@@` are content, so an added
+# line that itself starts with `++ ` can't be mistaken for a header.
+git diff --cached -U0 --no-color --no-ext-diff --no-textconv --submodule=short \
+  --diff-filter="$filter" |
+  LC_ALL=C awk -v meta="$tmp/meta" -v content="$tmp/content" '
+    /^diff --git / { idx++; inhunk = 0; next }
+    # D is filtered out, so a deletion here is the first half of a type change, which
+    # the patch splits into delete + add but --name-only lists once.
+    !inhunk && /^deleted file mode / { idx--; next }
+    /^@@ / {
+      s = $0
+      sub(/^@@ -[0-9,]+ \+/, "", s)
+      sub(/[^0-9].*/, "", s)
+      lineno = s + 0
+      inhunk = 1
+      next
+    }
+    inhunk && /^\+/ {
+      print idx "\t" lineno > meta
+      print substr($0, 2) > content
+      lineno++
+    }
+    END { print idx + 0 > (meta ".count") }
+  '
+
+if [ "$(cat "$tmp/meta.count")" -ne "${#names[@]}" ]; then
+  echo "pre-commit: could not match the staged patch to file names; refusing to commit" >&2
+  exit 1
+fi
+
+if [ -s "$tmp/content" ]; then
+  while IFS= read -r hitline; do
+    n="${hitline%%:*}"
+    text="${hitline#*:}"
+    m=$(sed -n "${n}p" "$tmp/meta")
+    idx="${m%%	*}"
+    lineno="${m#*	}"
+    hit=$(printf '%s\n' "$text" | grep -a -o -i -E -f "$rules" | head -1)
+    report "${names[$((idx - 1))]}:$lineno: matches '$hit'"
+  done < <(grep -a -n -i -E -f "$rules" "$tmp/content")
+fi
+
+if [ "$found" -ne 0 ]; then
+  {
+    echo "pre-commit: staged changes match deny patterns in $patterns (listed above)."
+    echo "Remove them, or commit with --no-verify if this is intended."
+  } >&2
+  exit 1
+fi
+exit 0

@@ -17,6 +17,7 @@ do
     [[ "$f" == ".git" ]] && continue
     [[ "$f" == ".gitignore" ]] && continue
     [[ "$f" == ".DS_Store" ]] && continue
+    [[ "$f" == ".githooks" ]] && continue
     [[ "${DIRECTORIES[@]}" =~ "$f" ]] && continue
 
     ln -snfv "${DOT_DIRECTORY}/$f" "$HOME/$f"
@@ -57,6 +58,13 @@ for child_directory in "${DIRECTORIES[@]}"; do
     done
   done < <(find "$root" -type l -print0)
 done
+
+# Repo-local hooks (leak check before commit). Set per repo, not globally, so it
+# doesn't override hooks (husky etc.) in other repositories.
+# Guarded because set -e would otherwise abort the rest of install in a non-git copy.
+if git -C "${DOT_DIRECTORY}" rev-parse --git-dir > /dev/null 2>&1; then
+  git -C "${DOT_DIRECTORY}" config core.hooksPath .githooks
+fi
 
 if type "fish" > /dev/null 2>&1; then
   fish -c '
