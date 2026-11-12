@@ -6,6 +6,7 @@ YOU MUST: モックは外部依存のみ使用
 1. **必ずTodo生成後にチェックを受ける** - 実装前にTodoを出力
 2. **TDDで実装** - `tdd-workflow` スキルと `/tdd:*` コマンド参照
 3. **コメントはWHYのみ** - 可読性に響く場合のみWHATも記述
+4. **コミット / PR 作成前に必ず `/code-review high --fix` を実行する** - TDD かどうか、コード変更の大小に関わらず必須。指摘を直したらテストを回し直してからコミットする。ドキュメントだけの変更は対象外
 
 ## コード知識
 プロジェクトの知識は `CLAUDE.local.md` に記録。定期的に見直して古い情報を削除。
@@ -36,17 +37,7 @@ GitHub の public repository に残すものは、基本すべて英語で書く
 
 ## Google Workspace操作ルール
 Google Drive / Sheets / Docs / Gmail / Calendar / Slides 等のGoogle Workspaceリソースを操作する際は、MCPではなく **`gws` コマンド (Google Workspace CLI)** を使うこと。
-- 使い方: `gws <service> <resource> [sub-resource] <method> [flags]`
-- 例:
-  - `gws drive files list --params '{"pageSize": 10}'`
-  - `gws drive files get --params '{"fileId": "abc123"}'`
-  - `gws sheets spreadsheets get --params '{"spreadsheetId": "..."}'`
-  - `gws docs documents get --params '{"documentId": "..."}'`
-  - `gws gmail users messages list --params '{"userId": "me"}'`
-- スキーマ確認: `gws schema <service.resource.method> [--resolve-refs]`
-- ヘルプ: `gws --help` / `gws <service> --help`
-
-サービス一覧: `drive`, `sheets`, `gmail`, `calendar`, `docs`, `slides`, `tasks`, `people`, `chat`, `classroom`, `forms`, `keep`, `meet`, `admin-reports`, `events`, `workflow`, `script`。
+- 使い方: `gws <service> <resource> [sub-resource] <method> [flags]`。スキーマ確認は `gws schema <service.resource.method> [--resolve-refs]`、サービス一覧・ヘルプは `gws --help` / `gws <service> --help`
 
 書き込み系 (POST/PATCH/PUT/DELETE 相当の method) を実行する場合はユーザー確認を取ること。
 

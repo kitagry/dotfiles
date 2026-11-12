@@ -34,3 +34,11 @@ paths: "**/*.py"
 ```bash
 ls uv.lock poetry.lock 2>/dev/null
 ```
+
+## DataFrame の比較は `pd.testing.assert_frame_equal` を使う
+
+- `assert df1.equals(df2)` や `assert (df1 == df2).all().all()` は書かない — 失敗時に差分が出ず原因調査に時間がかかる
+- pandas: `pd.testing.assert_frame_equal(actual, expected)` / Series は `assert_series_equal`
+- 型・index・カラム順まで厳密に比較される。緩めたい時は `check_dtype=False` 等の引数で明示的に落とす
+- polars を使うプロジェクトでは `polars.testing.assert_frame_equal` に読み替える
+- 使わない方が良い明確な理由 (対象が DataFrame でない・ライブラリ非依存にしたい等) がある場合のみ他の手段でよい

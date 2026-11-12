@@ -18,6 +18,19 @@ paths: "**/*.go"
 - 決定的な順序が欲しい場合は `slices.Sorted(maps.Keys(m))` (comparable key のみ)
 - Go 1.23 未満 (`go.mod` 判定) のみ手書きループ
 
+## テストの構造体比較は `go-cmp` を使う
+
+- `reflect.DeepEqual` や `==` での比較は書かない — 失敗時に差分が出ず原因調査に時間がかかる
+- `github.com/google/go-cmp/cmp` を使い、`cmp.Diff(want, got)` の結果を `t.Errorf` に流す:
+  ```go
+  if diff := cmp.Diff(want, got); diff != "" {
+      t.Errorf("mismatch (-want +got):\n%s", diff)
+  }
+  ```
+- 非公開フィールドを含む型は `cmpopts.IgnoreUnexported(pkg.Type{})` / `cmp.AllowUnexported(...)` で明示的に扱う
+- proto は `google.golang.org/protobuf/testing/protocmp` の `protocmp.Transform()` を options に渡す
+- 使わない方が良い明確な理由 (プリミティブ 1 個の比較・go-cmp の依存を持ち込めないリポ等) がある場合のみ他の手段でよい
+
 ## JSON は `encoding/json/v2` を使う (Go 1.27+)
 
 Go 1.27 (2026-08) で `encoding/json/v2` と `encoding/json/jsontext` が正式化された (GOEXPERIMENT 不要)。v1 (`encoding/json`) も内部的に v2 実装 + `DefaultOptionsV1()` で動くようになった。公式ドキュメントも「新規の json 利用はすべて v2 を使うべき」としている。
