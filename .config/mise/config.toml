@@ -34,9 +34,13 @@ codex = "latest"
 antigravity-cli = "latest"
 "aqua:slackapi/slack-cli" = "latest"
 aws = { version = "latest", symlink_bins = "true" }
+sentry-cli = "latest"
+"aqua:awslabs/eks-node-viewer" = "latest"
+make = "latest"
+node = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["terraform"]
 experimental = true
 # node is provided by home-manager
-disable_tools = ["node"]
+# disable_tools = ["node"]
