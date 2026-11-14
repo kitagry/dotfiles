@@ -72,5 +72,5 @@ gh stack merge --squash                 # stack 全体をまとめてマージ (
 ## 運用メモ
 
 - PR を作ったら自分を assignee に付けるルールは stack でも同じ。`gh stack submit` の後に各 PR へ `gh pr edit <num> --add-assignee "@me"`
-- herdr-delegate で worktree を切る運用と併用する場合、stack のブランチは同じ clone の worktree 群で共有されるので、同じ stack を複数セッションから同時に rebase しない
+- herdr-task で worktree を切る運用と併用する場合、stack のブランチは同じ clone の worktree 群で共有されるので、同じ stack を複数セッションから同時に rebase しない
 - GitHub 公式の agent 向け skill (`gh skill install github/gh-stack`) もあるが、`gh skill` は preview。この skill で足りなければ検討する

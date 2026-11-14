@@ -50,22 +50,24 @@ Google Drive / Sheets / Docs / Gmail / Calendar / Slides 等のGoogle Workspace�
 
 書き込み系 (POST/PATCH/PUT/DELETE 相当の method) を実行する場合はユーザー確認を取ること。
 
-## Claude Code の運用スタイル (main / worktree の役割分担)
+## Claude Code の運用スタイル (master / コーディネーター / 実装担当)
 
-複数の Claude Code セッションを **「main ブランチのオーケストレーター」と「worktree の実行担当」に役割分担**して動かす。
+複数の Claude Code セッションを **`herdr-task` skill** で役割分担して動かす。構成・報告経路・スクリプトの詳細は skill を参照。
 
-- **main ブランチの Claude (オーケストレーター役)**
-  - `/loop` で issue tracker を定期読み込みさせる
-  - **ループのたびに `git pull` (fast-forward) で最新の main を取り込む**。worktree 側で merge された PR を反映しないと、以降の delegate が古い base から派生してしまうため
-  - 新規 issue や直接指示に対しては **`herdr-delegate` skill** で worktree + workspace を作って別セッションを起動し、そこに指示を委譲する
-  - main 側で直接編集していいのは dotfiles・設定ファイル・軽微な CLAUDE.md 追記など、独立して即完結する小さいメンテのみ
+- **master の Claude (人間と話すオーケストレーター)**
+  - 新規 issue や直接指示は `herdr-task` でタスク (herdr workspace + 各 repo の worktree tab) を作り、タスクのコーディネーター経由で実装担当に渡す。repo の tab の Claude に直接指示しない
+  - 定期チェックでタスクの状況と `~/tasks/.inbox` の報告を拾い、人間に伝える
+  - master 側で直接編集していいのは dotfiles・設定ファイル・軽微な CLAUDE.md 追記など、独立して即完結する小さいメンテのみ
 
-- **worktree の Claude (実行担当役)**
-  - 渡された指示を実装し、PR 作成 → レビュー対応 → デプロイ検証まで一貫して担当する
-  - 作業中にスコープ外の問題を見つけたら、含めるかユーザーに確認する。含めない場合は **自分で新 issue を作って main 側に拾ってもらう**
+- **タスクのコーディネーター (tab "task")**
+  - TASK.md の決定事項を保ち、実装担当に指示を渡し、人間の判断が要るものを ACTIONS.md にまとめる
+
+- **各 repo の tab の Claude (実装担当)**
+  - 渡された指示を実装し、PR 作成 → レビュー対応 → デプロイ検証まで一貫して担当する。節目は `task-report.sh` でコーディネーターに報告する
+  - 作業中にスコープ外の問題を見つけたら、含めるかユーザーに確認する。含めない場合は **自分で新 issue を作って報告する**
   - レビュー監視・自動修正・QA 検証にはプロジェクトごとに用意された skill (レビュー対応 skill、QA 動作確認 skill 等) を利用する
 
-**判断ルール**: `main` セッションで具体的なコード変更を要求されたときは、直接編集を始める前に **「worktree に切り出すか」を必ず確認する**。「delegate して」「worktree で作業して」等の言い回しが出たらこの体制が前提。
+**判断ルール**: master セッションで具体的なコード変更を要求されたときは、直接編集を始める前に **「タスクに切り出すか」を必ず確認する**。「delegate して」「worktree で作業して」等の言い回しが出たらこの体制が前提。
 
 ## セッション開始時
 公式チュートリアルやベストプラクティスを一つ紹介して。
