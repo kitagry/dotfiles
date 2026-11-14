@@ -37,6 +37,27 @@ for child_directory in "${DIRECTORIES[@]}"; do
   done
 done
 
+# Clean up after files deleted from the repo. Only dangling symlinks that point
+# into this repo are removed, and only directories emptied by that removal are
+# deleted, so anything under $HOME that this script did not create is kept.
+for child_directory in "${DIRECTORIES[@]}"; do
+  root="${HOME}/${child_directory}"
+  [[ -d "$root" ]] || continue
+
+  while IFS= read -r -d '' link; do
+    [[ -e "$link" ]] && continue
+    [[ "$(readlink "$link")" == "${DOT_DIRECTORY}/"* ]] || continue
+    rm -v "$link"
+
+    dir=$(dirname "$link")
+    # rmdir -v reports even failed attempts, so echo only after a real removal.
+    while [[ "$dir" != "$root" ]] && rmdir "$dir" 2>/dev/null; do
+      echo "removed directory '$dir'"
+      dir=$(dirname "$dir")
+    done
+  done < <(find "$root" -type l -print0)
+done
+
 if type "fish" > /dev/null 2>&1; then
   fish -c '
     if not functions -q fisher
