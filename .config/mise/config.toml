@@ -38,6 +38,7 @@ sentry-cli = "latest"
 "aqua:awslabs/eks-node-viewer" = "latest"
 make = "latest"
 node = "latest"
+"go:github.com/github/github-mcp-server/cmd/github-mcp-server" = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["terraform"]
