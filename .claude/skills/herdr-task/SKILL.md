@@ -224,6 +224,7 @@ tab を1つだけ片付ける (まとめタスクで issue の PR が merge さ�
 ~/.claude/skills/herdr-task/scripts/task-remove-repo.sh "$TASK" "$LABEL" --force  # 未コミットの変更を捨てて削除
 ```
 
+- `$LABEL` は tab の label でもディレクトリ名 (`task-status.sh` の出力) でもよい。該当する tab が無ければ何も消さずにエラーで止まる
 - tab を閉じる → worktree を削除 (branch は残す) → TASK.md の行を `## Done` に移す → sidebar の `$repos` を更新
 - adopt した tab なら、tab を閉じて `.adopted` から外すだけ。ディレクトリには触らない
 
