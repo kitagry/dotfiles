@@ -93,6 +93,39 @@ label_dir() {
   printf '%s' "$1" | sed 's/[^A-Za-z0-9._-]/-/g'
 }
 
+# Prints the label of the tab of <ws_id> that <name> refers to. <name> is a tab
+# label or its worktree dir name (what task-status.sh prints), so
+# "example#123" and "example-123" both resolve to "example#123". Fails with
+# no output if no tab matches.
+resolve_tab_label() {
+  local ws_id="$1" name="$2" l found=""
+  while IFS= read -r l; do
+    if [ "$l" = "$name" ]; then
+      printf '%s' "$l"
+      return 0
+    fi
+    if [ -z "$found" ] && [ "$(label_dir "$l")" = "$name" ]; then
+      found="$l"
+    fi
+  done < <(herdr tab list --workspace "$ws_id" | jq -r '.result.tabs[].label')
+  [ -n "$found" ] || return 1
+  printf '%s' "$found"
+}
+
+# Prints the label of the "- `<label>`: ..." line of TASK.md that <name> (a
+# label or its worktree dir name) refers to. Used when the task has no open
+# workspace, so there are no tabs to resolve against. Falls back to <name>.
+resolve_task_line_label() {
+  local file="$1" name="$2" l
+  while IFS= read -r l; do
+    if [ "$l" = "$name" ] || [ "$(label_dir "$l")" = "$name" ]; then
+      printf '%s' "$l"
+      return 0
+    fi
+  done < <(sed -n 's/^- `\([^`]*\)`:.*/\1/p' "$file" 2>/dev/null)
+  printf '%s' "$name"
+}
+
 # Succeeds if <label> is already a tab of the task or its dir exists.
 label_taken() {
   local dir="$1" ws_id="$2" label="$3"

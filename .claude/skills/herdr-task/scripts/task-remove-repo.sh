@@ -3,7 +3,9 @@
 # closes the tab, removes its worktree (the branch is kept), moves its TASK.md
 # line to "## Done", and refreshes the sidebar's $repos.
 #
-# Usage: task-remove-repo.sh <task> <label> [--force]
+# Usage: task-remove-repo.sh <task> <label|dir> [--force]
+#   <label|dir> is the tab label or its worktree dir name as task-status.sh
+#   prints it ("example#123" or "example-123").
 #   Without --force, refuses if the worktree is dirty or has unpushed commits.
 #   --force discards uncommitted changes.
 #
@@ -15,12 +17,12 @@
 set -euo pipefail
 
 if [ $# -lt 2 ]; then
-  echo "usage: $0 <task> <label> [--force]" >&2
+  echo "usage: $0 <task> <label|dir> [--force]" >&2
   exit 2
 fi
 
 task="$1"
-label="$2"
+name="$2"
 force="${3:-}"
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 validate_task_name "$task"
@@ -31,6 +33,20 @@ if [ ! -d "$dir" ]; then
   exit 1
 fi
 ws_id=$(find_task_workspace "$task")
+
+# Resolve before anything is removed: a name matching no tab must not leave
+# a worktree deleted with its tab still open.
+label="$name"
+if [ -n "$ws_id" ]; then
+  if ! label=$(resolve_tab_label "$ws_id" "$name"); then
+    echo "ERROR: no tab '$name' in task $task; nothing removed" >&2
+    exit 1
+  fi
+elif [ -f "$dir/TASK.md" ]; then
+  # No workspace to resolve against: TASK.md's line names the label, so the
+  # line still moves to Done when the dir name was given.
+  label=$(resolve_task_line_label "$dir/TASK.md" "$name")
+fi
 
 adopted_path=""
 if [ -f "$dir/.adopted" ]; then
