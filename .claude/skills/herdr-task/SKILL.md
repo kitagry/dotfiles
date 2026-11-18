@@ -61,6 +61,56 @@ allowed-tools: Bash(~/.claude/skills/herdr-task/scripts/task-create.sh:*), Bash(
 - **要対応は ACTIONS.md に集める**。master は定期チェックで各タスクの `~/tasks/<task>/ACTIONS.md` を読み、未完了 (✅ 以外) のものを `~/tasks/ACTIONS.md` にタスクをまたいで 🔴/🟠/🟢/⏳ ごとにまとめる。項目の形式は各タスクと同じ (1 行目 `- **<状態マーク> <task>#<番号> <質問文>**`、その下に字下げした背景・選択肢・期限・URL)。番号はタスクごとに 1 から振られて重なるので `<task>#<番号>` にし、人間も「<task>#1 OK」のように返事する。close されたタスクの項目が残らないよう、`~/tasks/ACTIONS.md` は毎回作り直す (差分更新しない)。master の右 pane で `watch -t -n 15 cat ~/tasks/ACTIONS.md` を表示しておけば、人間はそこを見るだけで何に返事すればよいか分かる。人間の返事 (番号付き) は master が `task-ask.sh` で該当タスクに渡す
 - **聞かれるまで待たない**。コーディネーターは `/loop` (`task-loop.sh`) で自分の tab を定期チェックし、master も定期実行 (CronCreate、15 分ごと程度) で `task-list.sh` / `task-reply.sh` を見回って、要対応や節目の変化だけを人間に報告する
 
+## 変化があったときだけコーディネーターを起こす (共通の見張り)
+
+PR のレビューや CI のように「外で変わるもの」を待つとき、コーディネーターが `sleep` や `/loop` で張り付く代わりに、**チェックスクリプトを置くだけ**で共通の見張りが拾う。
+
+- launchd の LaunchAgent が 30 分ごとに `scripts/watch-tick.sh` を 1 回走らせて終了する (常駐ループではないので、ゾンビも孤児も出ず、再起動後も自動で動く)
+- `~/tasks/<task>/watch.d/*.sh` を全部走らせ、**標準出力が空でなければ** `task-ask.sh <task> "[watch] <出力>" --no-wait` でそのタスクのコーディネーターを起こす。1 タスクの複数チェックは 1 通にまとめる (複数が出力したときだけ `<チェック名>:` が付く)。コーディネーターが起動していない・プロンプトで止まっているときは `~/tasks/.inbox` に追記する
+- 登録は `watch.d/` にスクリプトを置くだけ。タスクを閉じるとディレクトリごと `_archive` に移るので、登録も自動で消える
+- 二重起動は `~/tasks/.watch.lock/` (mkdir ロック。クラッシュ後の古いロックは回収する)、各チェックは 60 秒 (`WATCH_TIMEOUT`) で打ち切る。終了コードが 0 でない・タイムアウトしたチェックの出力は転送せず `~/tasks/.watch.log` に書く (上限 `WATCH_LOG_MAX_LINES`、既定 500 行)
+- `~/tasks/.watch-last` に最後に完走した時刻が入る。止めたいときは `touch ~/tasks/.watch-disabled` (消せば再開)
+
+```bash
+~/.claude/skills/herdr-task/scripts/install-watch.sh      # LaunchAgent を登録 (再実行で更新。PATH が変わったときも)
+~/.claude/skills/herdr-task/scripts/uninstall-watch.sh    # 解除
+```
+
+### チェックスクリプトの書き方
+
+チェックは「**前回の状態と比べて、変わった分だけを出力する。変化が無ければ何も出さない**」スクリプト。空でない出力 = コーディネーターを起こす理由、なので、毎回同じ内容を出すと 30 分ごとに起こしてしまう。
+
+- 状態は `$WATCH_STATE_DIR` (= `~/tasks/<task>/watch.state/`) に置く。cwd はタスクのディレクトリで、`HERDR_TASK` / `HERDR_TASK_DIR` も入っている
+- 出力に使うのは「次に何をすべきか判断できる 1 行」(PR の URL・状態・失敗した check など)。複数行でも 1 行にまとめて送られる。出力はそのままコーディネーターのプロンプトに打ち込まれるので、PR タイトルやコメント本文のような第三者が書ける自由文は含めない (プロンプトインジェクションの経路になる)
+- 外部 API は**まとめて 1 回**で呼ぶ。PR が 10 本あるなら `gh pr view` を 10 回ではなく GraphQL の alias で 1 クエリにする。30 分ごとでもレート制限を食わない
+- API の取得に失敗 (空の応答) したときは何も出さず、**状態も上書きしない**。次回に差分として拾える
+- スクリプトは冪等に。途中で打ち切られても (60 秒 timeout) 次回やり直せば同じ結果になるよう、状態は最後に一度だけ書く
+
+```bash
+#!/usr/bin/env bash
+# watch.d/prs.sh: print only the PRs whose state changed since the last pass.
+set -uo pipefail
+STATE="$WATCH_STATE_DIR/prs.state"
+LIST="$HERDR_TASK_DIR/watch.d/prs.list"   # one "owner/repo#number" per line
+
+query=""; i=0
+while read -r line || [ -n "$line" ]; do
+  [ -z "$line" ] && continue
+  owner=${line%%/*}; repo=${line#*/}; repo=${repo%%#*}; num=${line##*#}
+  query+="p$i: repository(owner:\"$owner\", name:\"$repo\") { pullRequest(number:$num) { url state headRefOid } } "
+  i=$((i + 1))
+done < "$LIST"
+[ -z "$query" ] && exit 0
+
+now=$(gh api graphql -f query="query { $query }" \
+  | jq -r '.data | to_entries | sort_by(.key)[] | .value.pullRequest | select(. != null) | "\(.url) \(.state) \(.headRefOid[0:7])"')
+[ -z "$now" ] && exit 0                     # fetch failed: keep the old state
+
+touch "$STATE"
+diff <(sort "$STATE") <(printf '%s\n' "$now" | sort) | sed -n 's/^> //p'
+printf '%s\n' "$now" > "$STATE"
+```
+
 ## 初回セットアップ (マシンごとに1回)
 
 `~/tasks` が trust されていないと `task-create.sh` が止まって案内を出す。ユーザーに次を実行してもらい、`Yes, I trust this folder` を選んで終了してもらう:
