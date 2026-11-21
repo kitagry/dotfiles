@@ -11,20 +11,20 @@ allowed-tools: Bash(~/.claude/skills/herdr-task/scripts/task-create.sh:*), Bash(
 1 タスク = 1 herdr workspace。repo の worktree はその中の tab として並べる。
 
 ```
-~/tasks/<task>/              ← workspace "<task>" / tab "task" (左 pane: コーディネーター Claude / 右 pane: ACTIONS.md の watch)
+~/tasks/<task>/              ← workspace "<task>" / tab "task" (左 pane: コーディネーター Claude / 右 pane: ACTIONS.md の表示)
   TASK.md                    ← 2行目に created: YYYY-MM-DD。ゴール・repo 一覧・repo をまたぐ決定事項・merge 順
-  ACTIONS.md                 ← 人間の判断・作業が要るもの (コーディネーターが更新)。右 pane で `watch -t -n 15 cat ACTIONS.md`
+  ACTIONS.md                 ← 人間の判断・作業が要るもの (コーディネーターが更新)。右 pane で `scripts/actions-view.sh ACTIONS.md` (15 秒ごとに mdcat で描き直す。リンクはクリックできる)
   bqls/                      ← tab "bqls"      (branch: <task>)
   bqls.nvim/                 ← tab "bqls.nvim" (branch: <task>)
   bqls-2/                    ← tab "bqls-2"    (同じ repo の2本目, branch: <task>-2)
-~/tasks/ACTIONS.md           ← 全タスクの要対応を master がまとめたもの。master の右 pane で watch
+~/tasks/ACTIONS.md           ← 全タスクの要対応を master がまとめたもの。master の右 pane で actions-view.sh
 ~/tasks/_archive/YYYY-MM/YYYY-MM-DD-<task>/{TASK.md,ACTIONS.md}
                              ← 閉じたタスク。TASK.md と ACTIONS.md だけ残す (TASK.md の created: の下に closed: が入る)
 ```
 
 - active なタスクは日付なしの `~/tasks/<task>/` に置く (タスク名を workspace の label や `HERDR_TASK_DIR` にそのまま使うため)。日付で分けるのは溜まっていく archive だけ
 - 全 tab の shell に `HERDR_TASK` / `HERDR_TASK_DIR` が入る
-- **ACTIONS.md**: 人間はチャットを全部は追えないので、人間に返事や作業を求めるものは ACTIONS.md に番号付きで保ち、tab "task" の右 pane に常に表示しておく。形式は、1 項目 = 1 行目が `- **<状態マーク> <番号> <質問文>**` で、背景・選択肢・期限・URL はその下に字下げした箇条書き。1 行目だけで何を聞かれているか分かるように、質問文は「〜してよい?」「A・B・C のどれ?」「(作業) 〜してください」の形にする。状態マークは 🔴 急ぎ / 🟠 今週 / 🟢 時間があるとき / ⏳ 待ち / ✅ 済み。人間は「1 OK」「2 A」のように番号で返事する。番号は振り直さない (返事がずれるため)。`watch` はスクロールできないので、未完了のものを上に置き、✅ は下に移して古いものから消す
+- **ACTIONS.md**: 人間はチャットを全部は追えないので、人間に返事や作業を求めるものは ACTIONS.md に番号付きで保ち、tab "task" の右 pane に常に表示しておく。形式は、1 項目 = 1 行目が `- **<状態マーク> <番号> <質問文>**` で、背景・選択肢・期限・URL はその下に字下げした箇条書き。1 行目だけで何を聞かれているか分かるように、質問文は「〜してよい?」「A・B・C のどれ?」「(作業) 〜してください」の形にする。状態マークは 🔴 急ぎ / 🟠 今週 / 🟢 時間があるとき / ⏳ 待ち / ✅ 済み。人間は「1 OK」「2 A」のように番号で返事する。番号は振り直さない (返事がずれるため)。右 pane はスクロールできず、pane の高さを超えた分は下が切れるので、未完了のものを上に置き、✅ は下に移して古いものから消す
 
   ```markdown
   - **🔴 1 PR #239 を merge してよい?**
@@ -58,7 +58,7 @@ allowed-tools: Bash(~/.claude/skills/herdr-task/scripts/task-create.sh:*), Bash(
 - master は repo の tab の Claude に直接指示しない。コーディネーターを通す (TASK.md の決定事項とずれないように)
 - **節目は下から上へ報告する** (`task-report.sh "<メッセージ>"`)。tab の中で実行すると、repo の tab からはコーディネーターの pane に直接届く。tab "task" からは master の pane には送らず、`~/tasks/.inbox` に1行 (`<日時>\t<task>\t<メッセージ>`) 追記する。master は人間が話しているセッションなので、そこに打ち込むと人間の入力を邪魔するため
 - master は定期チェックで `~/tasks/.inbox` を読み、人間に報告したら空にする
-- **要対応は ACTIONS.md に集める**。master は定期チェックで各タスクの `~/tasks/<task>/ACTIONS.md` を読み、未完了 (✅ 以外) のものを `~/tasks/ACTIONS.md` にタスクをまたいで 🔴/🟠/🟢/⏳ ごとにまとめる。項目の形式は各タスクと同じ (1 行目 `- **<状態マーク> <task>#<番号> <質問文>**`、その下に字下げした背景・選択肢・期限・URL)。番号はタスクごとに 1 から振られて重なるので `<task>#<番号>` にし、人間も「<task>#1 OK」のように返事する。close されたタスクの項目が残らないよう、`~/tasks/ACTIONS.md` は毎回作り直す (差分更新しない)。master の右 pane で `watch -t -n 15 cat ~/tasks/ACTIONS.md` を表示しておけば、人間はそこを見るだけで何に返事すればよいか分かる。人間の返事 (番号付き) は master が `task-ask.sh` で該当タスクに渡す
+- **要対応は ACTIONS.md に集める**。master は定期チェックで各タスクの `~/tasks/<task>/ACTIONS.md` を読み、未完了 (✅ 以外) のものを `~/tasks/ACTIONS.md` にタスクをまたいで 🔴/🟠/🟢/⏳ ごとにまとめる。項目の形式は各タスクと同じ (1 行目 `- **<状態マーク> <task>#<番号> <質問文>**`、その下に字下げした背景・選択肢・期限・URL)。番号はタスクごとに 1 から振られて重なるので `<task>#<番号>` にし、人間も「<task>#1 OK」のように返事する。close されたタスクの項目が残らないよう、`~/tasks/ACTIONS.md` は毎回作り直す (差分更新しない)。master の右 pane で `~/.claude/skills/herdr-task/scripts/actions-view.sh ~/tasks/ACTIONS.md` を表示しておけば、人間はそこを見るだけで何に返事すればよいか分かる。人間の返事 (番号付き) は master が `task-ask.sh` で該当タスクに渡す
 - **聞かれるまで待たない**。コーディネーターは `/loop` (`task-loop.sh`) で自分の tab を定期チェックし、master も定期実行 (CronCreate、15 分ごと程度) で `task-list.sh` / `task-reply.sh` を見回って、要対応や節目の変化だけを人間に報告する
 
 ## 変化があったときだけコーディネーターを起こす (共通の見張り)
@@ -128,7 +128,7 @@ printf '%s\n' "$now" > "$STATE"
 
 `~/.claude.json` をスクリプトで書き換えて trust しない。起動中の Claude セッションも同じファイルを書き換えているので、上書きし合う。
 
-ACTIONS.md の右 pane には `watch` が要る (macOS には無いので `brew install watch`。無いと `task-create.sh` は WARN を出して分割しない)。master の右 pane はスクリプトでは作らないので、master の pane を右に分割して `touch ~/tasks/ACTIONS.md && watch -t -n 15 cat ~/tasks/ACTIONS.md` を一度動かしておく。
+ACTIONS.md の右 pane (`scripts/actions-view.sh`) は `mdcat` があれば使う (dotfiles の mise config に入っている)。`watch` を使わないのは、色以外のエスケープシーケンスを通さず、mdcat のリンク (OSC 8) がクリックできなくなるため。mdcat が無い・動かないマシンでは `cat` で表示する。master の右 pane はスクリプトでは作らないので、master の pane を右に分割して `~/.claude/skills/herdr-task/scripts/actions-view.sh ~/tasks/ACTIONS.md` を一度動かしておく (ファイルが無くてもできるまで待つ)。
 
 ## タスクの粒度 (オーケストレーターが判断する)
 
@@ -160,7 +160,7 @@ eval "$(~/.claude/skills/herdr-task/scripts/task-create.sh "$TASK")"
 # => WS_ID / PANE_ID (tab "task" の pane) / TASK_DIR
 ```
 
-- TASK.md と ACTIONS.md の雛形を作り、tab "task" を左右に分割する。右 (幅 35%、pane の label は `ACTIONS`) で `watch -t -n 15 cat ACTIONS.md` を動かし、focus は奪わない。分割や watch の起動に失敗しても (`watch` が無い場合も) WARN を出して続行する。`PANE_ID` はこれまでどおり左のコーディネーターの pane
+- TASK.md と ACTIONS.md の雛形を作り、tab "task" を左右に分割する。右 (幅 35%、pane の label は `ACTIONS`) で `actions-view.sh ACTIONS.md` を動かし、focus は奪わない。分割や actions-view.sh の起動に失敗しても WARN を出して続行する。`PANE_ID` はこれまでどおり左のコーディネーターの pane
 - tab "task" ではコーディネーターの Claude (agent 名 `<task>-task`) まで起動される。起動に失敗しても WARN を出して続行するので、その場合は手順 4 の `start-claude-agent.sh` で起動し直す
 - 同名のディレクトリか workspace が既にあれば exit 1 する。既存タスクに repo を足したいだけなら手順 2 から始める
 
@@ -229,7 +229,7 @@ repo の tab の Claude は、コーディネーターに起動・指示させ�
 - 別の repo や issue が必要になったら task-add-repo.sh で足して。
 - [master] が付いたメッセージは master Claude 経由の人間の指示。付いていなければ人間がこの tab で直接話している。
 - 人間に確認したいことは、返答の最後に「確認したいこと」として書いて (master が人間に聞く)。
-- 人間の判断・作業が要るものは $HERDR_TASK_DIR/ACTIONS.md に番号付きで保って (tab の右 pane に表示されていて、master も集約する)。形式: 各項目の 1 行目は「- **<状態マーク> <番号> <質問文>**」で、1 行目だけで何を聞かれているか分かるように質問文は「〜してよい?」「A・B・C のどれ?」「(作業) 〜してください」の形にする。背景・選択肢・期限・URL はその下に字下げした箇条書きで書く。状態マークは 🔴 急ぎ / 🟠 今週 / 🟢 時間があるとき / ⏳ 待ち / ✅ 済み。済んだものは ✅ にして下に移し、古い ✅ は消す (右 pane の watch はスクロールできない)。番号は振り直さない。
+- 人間の判断・作業が要るものは $HERDR_TASK_DIR/ACTIONS.md に番号付きで保って (tab の右 pane に表示されていて、master も集約する)。形式: 各項目の 1 行目は「- **<状態マーク> <番号> <質問文>**」で、1 行目だけで何を聞かれているか分かるように質問文は「〜してよい?」「A・B・C のどれ?」「(作業) 〜してください」の形にする。背景・選択肢・期限・URL はその下に字下げした箇条書きで書く。状態マークは 🔴 急ぎ / 🟠 今週 / 🟢 時間があるとき / ⏳ 待ち / ✅ 済み。済んだものは ✅ にして下に移し、古い ✅ は消す (右 pane はスクロールできない)。番号は振り直さない。
 - 返答の最後には、毎回タスク全体の状況を数行で要約して。
 - 節目 (tab の PR が merge された、全 tab が終わった、人間の判断が要る、詰まった) では task-report.sh で master に報告して (master の受信箱に入り、master の定期チェックで人間に伝わる)。各 tab の Claude にも、同じ節目で task-report.sh であなたに報告するよう指示に含めて。
 - スコープ外の問題を見つけたら別 issue にして。

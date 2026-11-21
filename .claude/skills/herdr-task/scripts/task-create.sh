@@ -2,8 +2,8 @@
 # Creates a task directory (~/tasks/<task>) with TASK.md and ACTIONS.md
 # skeletons and a herdr workspace labeled <task> whose first tab ("task") sits
 # at the task directory and runs the coordinator Claude (agent name <task>-task)
-# in its left pane. The right pane watches ACTIONS.md, the list of things
-# waiting on a human, since humans cannot keep up with the chat.
+# in its left pane. The right pane shows ACTIONS.md (actions-view.sh), the list
+# of things waiting on a human, since humans cannot keep up with the chat.
 # Repos are added later as tabs with task-add-repo.sh.
 #
 # Usage: task-create.sh <task>
@@ -92,31 +92,38 @@ fi
 herdr tab rename "$tab_id" task > /dev/null
 
 # Split before starting the coordinator so Claude starts at its final width.
-# --ratio is the share of the original (left) pane. The relative path keeps the
-# command free of shell quoting, as the pane's shell is fish, not bash.
-# Display-only, so a failure is not fatal. macOS ships no `watch`; skip the
-# split rather than leave a pane showing "command not found".
+# --ratio is the share of the original (left) pane. ACTIONS.md is relative to
+# the pane's --cwd. Display-only, so a failure is not fatal.
 # stderr is not captured: herdr may log there even on success, which would
 # break the jq parse.
-if ! command -v watch > /dev/null; then
-  echo "WARN: watch is not installed; no ACTIONS.md pane (brew install watch)" >&2
-elif ! watch_json=$(herdr pane split "$pane_id" --direction right --ratio 0.65 \
+view_script="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/actions-view.sh"
+# Single-quoted for the pane's fish shell, which does not read bash's %q;
+# inside fish single quotes only \ and ' need escaping.
+view_quoted=${view_script//\\/\\\\}
+view_quoted=${view_quoted//\'/\\\'}
+view_cmd="'$view_quoted' ACTIONS.md"
+# install.sh symlinks file by file, so a newly added script is missing under
+# ~/.claude until it is re-run. Skip the split rather than leave a pane showing
+# "Unknown command".
+if [ ! -x "$view_script" ]; then
+  echo "WARN: $view_script is missing or not executable; no ACTIONS.md pane (re-run install.sh)" >&2
+elif ! view_json=$(herdr pane split "$pane_id" --direction right --ratio 0.65 \
   --cwd "$dir" --no-focus) \
-  || ! watch_pane=$(printf '%s' "$watch_json" | jq -er '.result.pane.pane_id // empty' 2>/dev/null); then
-  echo "WARN: failed to split the task tab for the ACTIONS.md pane: ${watch_json:-}" >&2
+  || ! view_pane=$(printf '%s' "$view_json" | jq -er '.result.pane.pane_id // empty' 2>/dev/null); then
+  echo "WARN: failed to split the task tab for the ACTIONS.md pane: ${view_json:-}" >&2
 else
   # The label lets task_pane tell this pane from the coordinator's without
   # relying on list order or on Claude currently running.
-  herdr pane rename "$watch_pane" "$ACTIONS_PANE_LABEL" > /dev/null \
-    || echo "WARN: failed to label the ACTIONS.md pane $watch_pane" >&2
+  herdr pane rename "$view_pane" "$ACTIONS_PANE_LABEL" > /dev/null \
+    || echo "WARN: failed to label the ACTIONS.md pane $view_pane" >&2
   # herdr can exit 0 with an .error body (see start-claude-agent.sh), so the
   # exit code alone does not tell whether the command was sent.
-  if ! run_json=$(herdr pane run "$watch_pane" "watch -t -n 15 cat ACTIONS.md") \
+  if ! run_json=$(herdr pane run "$view_pane" "$view_cmd") \
     || printf '%s' "$run_json" | jq -e '.error' > /dev/null 2>&1; then
-    echo "WARN: failed to start watch in pane $watch_pane: ${run_json:-}" >&2
-    # Same reason as skipping the split without `watch`: an idle shell pane
-    # next to the coordinator only looks like the ACTIONS.md view.
-    herdr pane close "$watch_pane" > /dev/null 2>&1 || true
+    echo "WARN: failed to start actions-view.sh in pane $view_pane: ${run_json:-}" >&2
+    # An idle shell pane next to the coordinator only looks like the
+    # ACTIONS.md view.
+    herdr pane close "$view_pane" > /dev/null 2>&1 || true
   fi
 fi
 
