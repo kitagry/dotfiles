@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # One pass of the shared watcher: runs every <tasks_root>/<task>/watch.d/*.sh
 # and wakes the task's coordinator only when a check printed something.
-# launchd starts this every 30 minutes (see install-watch.sh); it runs once and
-# exits, so there is no resident loop to leak or orphan.
+# launchd (macOS) or a systemd user timer (Linux) starts this every 30 minutes
+# (see install-watch.sh); it runs once and exits, so there is no resident loop
+# to leak or orphan.
 #
 # Per task, the outputs of all its checks are folded into one message:
 #   task-ask.sh <task> "[watch] <output>" --no-wait

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Tests for watch-tick.sh, install-watch.sh and uninstall-watch.sh. Everything
 # runs in a scratch dir: HERDR_TASKS_ROOT points there, task-ask.sh is replaced
-# by a stub, and launchctl is a fake on PATH, so no real LaunchAgent is touched.
+# by a stub, and launchctl / systemctl are fakes on PATH, so no real LaunchAgent
+# or systemd unit is touched.
 # Run: bash tests/watch-tick.test.sh
 set -uo pipefail
 
@@ -10,6 +11,10 @@ tick="$here/../scripts/watch-tick.sh"
 install="$here/../scripts/install-watch.sh"
 uninstall="$here/../scripts/uninstall-watch.sh"
 fails=0
+# plutil only exists on macOS. Elsewhere a no-op fake stands in so the launchd
+# branch is still exercised (without the plist lint).
+have_plutil=0
+command -v plutil > /dev/null 2>&1 && have_plutil=1
 
 tmps=()
 trap 'rm -rf "${tmps[@]}"' EXIT
@@ -21,10 +26,13 @@ setup() {
   export WATCH_TASK_ASK="$tmp/task-ask-stub"
   export FAKE_ASK_LOG="$tmp/ask.log"
   export FAKE_LAUNCHCTL_LOG="$tmp/launchctl.log"
+  export FAKE_SYSTEMCTL_LOG="$tmp/systemctl.log"
   export LAUNCH_AGENTS_DIR="$tmp/LaunchAgents"
-  unset FAKE_ASK_EXIT WATCH_TIMEOUT
+  export XDG_CONFIG_HOME="$tmp/config"
+  unset FAKE_ASK_EXIT WATCH_TIMEOUT WATCH_SCHEDULER
   : > "$FAKE_ASK_LOG"
   : > "$FAKE_LAUNCHCTL_LOG"
+  : > "$FAKE_SYSTEMCTL_LOG"
   mkdir -p "$tmp/bin" "$HERDR_TASKS_ROOT" "$LAUNCH_AGENTS_DIR"
   # Stub: record "<task>|<message>|<flags>" and exit with FAKE_ASK_EXIT.
   cat > "$WATCH_TASK_ASK" <<'STUB'
@@ -36,7 +44,15 @@ STUB
 #!/usr/bin/env bash
 echo "$*" >> "$FAKE_LAUNCHCTL_LOG"
 FAKE
-  chmod +x "$WATCH_TASK_ASK" "$tmp/bin/launchctl"
+  cat > "$tmp/bin/systemctl" <<'FAKE'
+#!/usr/bin/env bash
+echo "$*" >> "$FAKE_SYSTEMCTL_LOG"
+FAKE
+  chmod +x "$WATCH_TASK_ASK" "$tmp/bin/launchctl" "$tmp/bin/systemctl"
+  if [ "$have_plutil" -eq 0 ]; then
+    printf '#!/usr/bin/env bash\nexit 0\n' > "$tmp/bin/plutil"
+    chmod +x "$tmp/bin/plutil"
+  fi
   export PATH="$tmp/bin:$PATH"
 }
 
@@ -164,6 +180,7 @@ WATCH_LOG_MAX_LINES=100 bash "$tick" > /dev/null 2>&1
 
 # 13. install-watch.sh writes a valid plist and loads it via launchctl.
 setup
+export WATCH_SCHEDULER=launchd
 bash "$install" > /dev/null 2>&1
 check "install: exit 0" $?
 plist="$LAUNCH_AGENTS_DIR/com.herdr-task.watch.plist"
@@ -176,11 +193,13 @@ check "install: idempotent" $?
 
 # 14. --no-load only writes the plist.
 setup
+export WATCH_SCHEDULER=launchd
 bash "$install" --no-load > /dev/null 2>&1
 [ -f "$LAUNCH_AGENTS_DIR/com.herdr-task.watch.plist" ] && [ ! -s "$FAKE_LAUNCHCTL_LOG" ]; check "install --no-load: no launchctl" $?
 
 # 15. uninstall-watch.sh unloads and removes the plist; a second run is fine.
 setup
+export WATCH_SCHEDULER=launchd
 bash "$install" --no-load > /dev/null 2>&1
 bash "$uninstall" > /dev/null 2>&1
 check "uninstall: exit 0" $?
@@ -188,5 +207,61 @@ check "uninstall: exit 0" $?
 grep -q 'bootout' "$FAKE_LAUNCHCTL_LOG"; check "uninstall: launchctl bootout" $?
 bash "$uninstall" > /dev/null 2>&1
 check "uninstall: idempotent" $?
+
+# 16. On systemd, install writes a oneshot service and a 30-minute timer under
+# $XDG_CONFIG_HOME/systemd/user and enables the timer.
+setup
+export WATCH_SCHEDULER=systemd
+unit_dir="$XDG_CONFIG_HOME/systemd/user"
+service="$unit_dir/herdr-task-watch.service"
+timer="$unit_dir/herdr-task-watch.timer"
+bash "$install" > /dev/null 2>&1
+check "systemd install: exit 0" $?
+[ -f "$service" ] && [ -f "$timer" ]; check "systemd install: units written" $?
+grep -qx 'Type=oneshot' "$service"; check "systemd install: oneshot service" $?
+grep -q '^ExecStart=.*watch-tick\.sh' "$service"; check "systemd install: runs watch-tick.sh" $?
+grep -qx 'OnCalendar=\*:0/30' "$timer"; check "systemd install: every 30 minutes" $?
+# Persistent= catches up on a slot missed during suspend, as launchd does on wake.
+grep -qx 'Persistent=true' "$timer"; check "systemd install: catches up after suspend" $?
+grep -q '^Environment="PATH=' "$service"; check "systemd install: PATH baked in" $?
+grep -q 'daemon-reload' "$FAKE_SYSTEMCTL_LOG" && grep -q -- '--user enable herdr-task-watch.timer' "$FAKE_SYSTEMCTL_LOG"; check "systemd install: timer enabled" $?
+grep -q -- '--user restart herdr-task-watch.timer' "$FAKE_SYSTEMCTL_LOG"; check "systemd install: timer (re)started" $?
+if command -v systemd-analyze > /dev/null 2>&1; then
+  systemd-analyze --user verify "$service" "$timer" > /dev/null 2>&1; check "systemd install: units verify" $?
+fi
+bash "$install" > /dev/null 2>&1
+check "systemd install: idempotent" $?
+
+# 17. HERDR_TASKS_ROOT is baked in, escaped for systemd ('%' is a specifier).
+setup
+export WATCH_SCHEDULER=systemd
+export HERDR_TASKS_ROOT="$tmp/tasks 100%"
+bash "$install" --no-load > /dev/null 2>&1
+grep -qF "Environment=\"HERDR_TASKS_ROOT=$tmp/tasks 100%%\"" "$XDG_CONFIG_HOME/systemd/user/herdr-task-watch.service"; check "systemd install: tasks root escaped" $?
+[ ! -s "$FAKE_SYSTEMCTL_LOG" ]; check "systemd install --no-load: no systemctl" $?
+
+# 17b. '$' has no special meaning in Environment=, so it must not be doubled there.
+setup
+export WATCH_SCHEDULER=systemd
+export HERDR_TASKS_ROOT="$tmp/ta\$ks"
+bash "$install" --no-load > /dev/null 2>&1
+grep -qF "Environment=\"HERDR_TASKS_ROOT=$tmp/ta\$ks\"" "$XDG_CONFIG_HOME/systemd/user/herdr-task-watch.service"; check "systemd install: '\$' kept literal in Environment=" $?
+
+# 18. On systemd, uninstall disables the timer and removes both units.
+setup
+export WATCH_SCHEDULER=systemd
+bash "$install" --no-load > /dev/null 2>&1
+bash "$uninstall" > /dev/null 2>&1
+check "systemd uninstall: exit 0" $?
+[ ! -e "$XDG_CONFIG_HOME/systemd/user/herdr-task-watch.service" ] && [ ! -e "$XDG_CONFIG_HOME/systemd/user/herdr-task-watch.timer" ]; check "systemd uninstall: units removed" $?
+grep -q -- '--user disable --now herdr-task-watch.timer' "$FAKE_SYSTEMCTL_LOG"; check "systemd uninstall: timer disabled" $?
+grep -q -- '--user reset-failed herdr-task-watch.service' "$FAKE_SYSTEMCTL_LOG"; check "systemd uninstall: failed state cleared" $?
+bash "$uninstall" > /dev/null 2>&1
+check "systemd uninstall: idempotent" $?
+
+# 19. An unknown scheduler is rejected.
+setup
+WATCH_SCHEDULER=cron bash "$install" --no-load > /dev/null 2>&1
+[ $? -ne 0 ]; check "install: unknown scheduler rejected" $?
 
 exit "$fails"
