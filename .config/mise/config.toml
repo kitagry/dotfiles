@@ -39,6 +39,13 @@ sentry-cli = "latest"
 make = "latest"
 node = "latest"
 "go:github.com/github/github-mcp-server/cmd/github-mcp-server" = "latest"
+# mdcat is in neither the mise nor the aqua registry. BIRSAx2/mdcat (the
+# maintained successor of the archived swsnr/mdcat) ships Linux binaries only,
+# and building it with cargo on Linux needs OpenSSL headers, so each OS gets
+# its own backend. On macOS the curl crate links the system libcurl, so cargo
+# needs nothing beyond rust.
+"github:BIRSAx2/mdcat" = { version = "latest", os = ["linux"] }
+"cargo:mdcat" = { version = "latest", os = ["macos"] }
 
 [settings]
 idiomatic_version_file_enable_tools = ["terraform"]
