@@ -65,16 +65,23 @@ allowed-tools: Bash(~/.claude/skills/herdr-task/scripts/task-create.sh:*), Bash(
 
 PR のレビューや CI のように「外で変わるもの」を待つとき、コーディネーターが `sleep` や `/loop` で張り付く代わりに、**チェックスクリプトを置くだけ**で共通の見張りが拾う。
 
-- launchd の LaunchAgent が 30 分ごとに `scripts/watch-tick.sh` を 1 回走らせて終了する (常駐ループではないので、ゾンビも孤児も出ず、再起動後も自動で動く)
+- 30 分ごとに `scripts/watch-tick.sh` を 1 回走らせて終了する。macOS は launchd の LaunchAgent、Linux は systemd の user timer (oneshot service + timer) が起動する (常駐ループではないので、ゾンビも孤児も出ず、再起動後も自動で動く)
 - `~/tasks/<task>/watch.d/*.sh` を全部走らせ、**標準出力が空でなければ** `task-ask.sh <task> "[watch] <出力>" --no-wait` でそのタスクのコーディネーターを起こす。1 タスクの複数チェックは 1 通にまとめる (複数が出力したときだけ `<チェック名>:` が付く)。コーディネーターが起動していない・プロンプトで止まっているときは `~/tasks/.inbox` に追記する
 - 登録は `watch.d/` にスクリプトを置くだけ。タスクを閉じるとディレクトリごと `_archive` に移るので、登録も自動で消える
 - 二重起動は `~/tasks/.watch.lock/` (mkdir ロック。クラッシュ後の古いロックは回収する)、各チェックは 60 秒 (`WATCH_TIMEOUT`) で打ち切る。終了コードが 0 でない・タイムアウトしたチェックの出力は転送せず `~/tasks/.watch.log` に書く (上限 `WATCH_LOG_MAX_LINES`、既定 500 行)
 - `~/tasks/.watch-last` に最後に完走した時刻が入る。止めたいときは `touch ~/tasks/.watch-disabled` (消せば再開)
 
 ```bash
-~/.claude/skills/herdr-task/scripts/install-watch.sh      # LaunchAgent を登録 (再実行で更新。PATH が変わったときも)
+~/.claude/skills/herdr-task/scripts/install-watch.sh      # 登録 (再実行で更新。PATH が変わったときも)
 ~/.claude/skills/herdr-task/scripts/uninstall-watch.sh    # 解除
 ```
+
+- OS で分岐する (`WATCH_SCHEDULER=launchd|systemd` で上書きできる)。どちらも実行したシェルの PATH を焼き込むので、`gh` / `jq` / `herdr` が見えるシェルから実行する
+- **macOS**: `~/Library/LaunchAgents/com.herdr-task.watch.plist` を書いて `launchctl bootstrap` する。ログは `~/tasks/.watch-launchd.log`
+- **Linux**: `~/.config/systemd/user/herdr-task-watch.{service,timer}` (`$XDG_CONFIG_HOME` を尊重) を書いて `systemctl --user enable` + `restart` する。home-manager では管理しない (skill を Mac と共用するため、スクリプトで書く)。timer は毎時 0 分と 30 分 (`OnCalendar=*:0/30`、`Persistent=true` なのでサスペンド中に逃した回は復帰時に走る)
+  - 状態: `systemctl --user list-timers herdr-task-watch.timer`、ログ: `journalctl --user -u herdr-task-watch.service`
+  - ログアウト中も動かしたいなら `loginctl enable-linger $USER` (しないと user manager はログイン中だけ動く)
+  - `--no-load` で unit を書くだけにして `systemd-analyze --user verify <service> <timer>` で検証できる
 
 ### チェックスクリプトの書き方
 

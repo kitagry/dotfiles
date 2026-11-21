@@ -6,6 +6,31 @@ tasks_root() {
   printf '%s' "${HERDR_TASKS_ROOT:-$HOME/tasks}"
 }
 
+# Which scheduler install-watch.sh / uninstall-watch.sh drive: launchd on
+# macOS, systemd elsewhere. WATCH_SCHEDULER overrides it so tests can exercise
+# either branch on any OS.
+watch_scheduler() {
+  local s="${WATCH_SCHEDULER:-}"
+  if [ -z "$s" ]; then
+    case "$(uname -s)" in
+      Darwin) s=launchd ;;
+      *) s=systemd ;;
+    esac
+  fi
+  case "$s" in
+    launchd|systemd) printf '%s' "$s" ;;
+    *) echo "ERROR: WATCH_SCHEDULER must be launchd or systemd (got: $s)" >&2; return 1 ;;
+  esac
+}
+
+# Job names shared by install-watch.sh and uninstall-watch.sh.
+WATCH_LAUNCHD_LABEL=com.herdr-task.watch
+WATCH_SYSTEMD_UNIT=herdr-task-watch
+
+systemd_user_unit_dir() {
+  printf '%s/systemd/user' "${XDG_CONFIG_HOME:-$HOME/.config}"
+}
+
 task_dir() {
   printf '%s/%s' "$(tasks_root)" "$1"
 }
