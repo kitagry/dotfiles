@@ -2,8 +2,9 @@
 # Creates a task directory (~/tasks/<task>) with TASK.md and ACTIONS.md
 # skeletons and a herdr workspace labeled <task> whose first tab ("task") sits
 # at the task directory and runs the coordinator Claude (agent name <task>-task)
-# in its left pane. The right pane shows ACTIONS.md (actions-view.sh), the list
-# of things waiting on a human, since humans cannot keep up with the chat.
+# in its left pane. The right pane shows ACTIONS.md (actions-view.sh, which runs
+# yourturn when installed), the list of things waiting on a human, since humans
+# cannot keep up with the chat.
 # Repos are added later as tabs with task-add-repo.sh.
 #
 # Usage: task-create.sh <task>

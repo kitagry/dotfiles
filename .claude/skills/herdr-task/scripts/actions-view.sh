@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
-# Shows a Markdown file (ACTIONS.md) in a pane and redraws it every <interval>
-# seconds, rendered with mdcat so Markdown links are clickable (OSC 8). This
-# replaces `watch -t -n 15 cat`: watch passes through only colour escapes, so
-# OSC 8 links would not survive it. Without mdcat (or if it fails to run) the
-# file is shown with cat.
+# Shows a Markdown file (ACTIONS.md) in a pane. With yourturn installed, it
+# runs yourturn (scrolling, opening items, replying with R). Otherwise it
+# redraws the file every <interval> seconds, rendered with mdcat so Markdown
+# links are clickable (OSC 8). This replaces `watch -t -n 15 cat`: watch passes
+# through only colour escapes, so OSC 8 links would not survive it. Without
+# mdcat (or if it fails to run) the file is shown with cat.
 #
-# Usage: actions-view.sh <file> [interval]   (interval defaults to 15)
+# Usage: actions-view.sh <file> [interval]   (interval defaults to 15; unused
+#        with yourturn)
 #
 # Test knobs: ACTIONS_VIEW_ONCE=1 draws one frame and exits;
-# ACTIONS_VIEW_COLUMNS/ROWS override the pane size; ACTIONS_VIEW_MDCAT
-# overrides the mdcat command.
+# ACTIONS_VIEW_COLUMNS/ROWS override the pane size; ACTIONS_VIEW_MDCAT and
+# ACTIONS_VIEW_YOURTURN override the mdcat and yourturn commands.
 set -uo pipefail
 
 if [ $# -lt 1 ]; then
@@ -25,6 +27,34 @@ if ! [[ "$interval" =~ ^[1-9][0-9]*$ ]]; then
   exit 2
 fi
 mdcat="${ACTIONS_VIEW_MDCAT:-mdcat}"
+yourturn="${ACTIONS_VIEW_YOURTURN:-yourturn}"
+
+# yourturn >= 0.2.0 ships contrib/herdr/yourturn-reply.sh next to its binary.
+yourturn_reply_script() {
+  local bin script
+  bin=$(command -v "$yourturn") || return 1
+  # Through a mise shim (or any symlink) the script sits next to the real
+  # binary, which only `mise which` knows for a shim.
+  script="$(dirname "$(readlink -f "$bin")")/contrib/herdr/yourturn-reply.sh"
+  if [ ! -x "$script" ]; then
+    bin=$(mise which "$yourturn" 2> /dev/null) || return 1
+    script="$(dirname "$bin")/contrib/herdr/yourturn-reply.sh"
+    [ -x "$script" ] || return 1
+  fi
+  printf '%s' "$script"
+}
+
+# The interval is for the fallback loop only: yourturn redraws on file change.
+if command -v "$yourturn" > /dev/null 2>&1; then
+  # Set through YOURTURN_REPLY_CMD rather than --reply-cmd: 0.1.0 refuses the
+  # unknown flag but ignores the variable, so no version check is needed, and
+  # a command the user already set is kept. Sh-quoted since yourturn runs it
+  # with sh -c.
+  if [ -z "${YOURTURN_REPLY_CMD:-}" ] && script=$(yourturn_reply_script); then
+    export YOURTURN_REPLY_CMD="'${script//\'/\'\\\'\'}'"
+  fi
+  exec "$yourturn" "$file"
+fi
 
 # Read the size on every frame so a resized pane is followed. stty reads the
 # terminal itself; $COLUMNS/$LINES would be stale in a child process.
