@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Tests for actions-view.sh with a fake `mdcat` on PATH. ACTIONS_VIEW_ONCE=1
+# Tests for actions-view.sh with a fake `mdcat` (and `yourturn`) on PATH. ACTIONS_VIEW_ONCE=1
 # draws a single frame, and ACTIONS_VIEW_COLUMNS/ROWS stand in for the pane
 # size, which `stty` cannot read without a terminal.
 # Run: bash tests/actions-view.test.sh
@@ -26,7 +26,9 @@ FAKE
   chmod +x "$tmp/bin/mdcat"
   export PATH="$tmp/bin:$PATH"
   export ACTIONS_VIEW_ONCE=1 ACTIONS_VIEW_COLUMNS=42 ACTIONS_VIEW_ROWS=10
-  unset ACTIONS_VIEW_MDCAT
+  # The mdcat loop is the fallback; a real yourturn on PATH must not take over.
+  export ACTIONS_VIEW_YOURTURN=no-such-yourturn
+  unset ACTIONS_VIEW_MDCAT YOURTURN_REPLY_CMD
   printf '# t1\n\n- [PR](https://example.com/pr/1)\n' > "$tmp/ACTIONS.md"
 }
 
@@ -106,5 +108,62 @@ kill -TERM "$pid"
 wait "$pid"
 check "signal: exit 0 on TERM during the interval" $?
 [ "$frames" -eq 2 ]; check "resize: redrawn at once (frames $frames)" $?
+
+# Fake yourturn in <dir>: prints its args, and with FAKE_YOURTURN_REPLY=1
+# (v0.2.0; v0.1.0 has no replies) runs $YOURTURN_REPLY_CMD the way yourturn
+# does (sh -c) so the quoting is tested too.
+fake_yourturn() { # <dir> [with reply script: 1]
+  mkdir -p "$1"
+  cat > "$1/yourturn" <<'FAKE'
+#!/usr/bin/env bash
+echo "yourturn $*"
+[ "${FAKE_YOURTURN_REPLY:-}" = 1 ] && [ -n "${YOURTURN_REPLY_CMD:-}" ] && sh -c "$YOURTURN_REPLY_CMD"
+exit 0
+FAKE
+  chmod +x "$1/yourturn"
+  if [ "${2:-}" = 1 ]; then
+    mkdir -p "$1/contrib/herdr"
+    printf '#!/bin/sh\necho reply-script-ran\n' > "$1/contrib/herdr/yourturn-reply.sh"
+    chmod +x "$1/contrib/herdr/yourturn-reply.sh"
+  fi
+}
+
+# 10. With yourturn >= 0.2.0 (reply script next to the binary), it replaces the loop
+#     and R replies go through contrib/herdr/yourturn-reply.sh.
+setup
+fake_yourturn "$tmp/yt dir's" 1
+out=$(FAKE_YOURTURN_REPLY=1 ACTIONS_VIEW_YOURTURN="$tmp/yt dir's/yourturn" bash "$script" "$tmp/ACTIONS.md" 2>&1)
+check "yourturn 0.2: exit 0" $?
+grep -qx "yourturn $tmp/ACTIONS.md" <<< "$out"; check "yourturn 0.2: only the file passed (no flag 0.1 would refuse)" $?
+grep -qx 'reply-script-ran' <<< "$out"; check "yourturn 0.2: reply command runs under sh -c (quoted path)" $?
+! grep -q 'mdcat' <<< "$out"; check "yourturn 0.2: mdcat loop not run" $?
+
+# 11. yourturn 0.1.0 ignores YOURTURN_REPLY_CMD: the viewer still starts (R is off).
+setup
+fake_yourturn "$tmp/yt" 1
+out=$(ACTIONS_VIEW_YOURTURN="$tmp/yt/yourturn" bash "$script" "$tmp/ACTIONS.md" 2>&1)
+grep -qx "yourturn $tmp/ACTIONS.md" <<< "$out"; check "yourturn 0.1: started with just the file" $?
+
+# 12. The reply script not shipped next to the binary: no reply command set.
+setup
+fake_yourturn "$tmp/yt"
+out=$(FAKE_YOURTURN_REPLY=1 ACTIONS_VIEW_YOURTURN="$tmp/yt/yourturn" bash "$script" "$tmp/ACTIONS.md" 2>&1)
+grep -qx "yourturn $tmp/ACTIONS.md" <<< "$out" && ! grep -q 'reply-script-ran' <<< "$out"
+check "no reply script: no reply command" $?
+
+# 13. Found on PATH through a symlink: the reply script is looked up next to the real binary.
+setup
+fake_yourturn "$tmp/yt" 1
+mkdir -p "$tmp/links"
+ln -s "$tmp/yt/yourturn" "$tmp/links/yourturn"
+out=$(PATH="$tmp/links:$PATH" FAKE_YOURTURN_REPLY=1 ACTIONS_VIEW_YOURTURN=yourturn bash "$script" "$tmp/ACTIONS.md" 2>&1)
+grep -qx 'reply-script-ran' <<< "$out"; check "symlinked yourturn: reply script found" $?
+
+# 14. A YOURTURN_REPLY_CMD the user set is kept.
+setup
+fake_yourturn "$tmp/yt" 1
+out=$(YOURTURN_REPLY_CMD='echo user-cmd-ran' FAKE_YOURTURN_REPLY=1 ACTIONS_VIEW_YOURTURN="$tmp/yt/yourturn" bash "$script" "$tmp/ACTIONS.md" 2>&1)
+grep -qx 'user-cmd-ran' <<< "$out" && ! grep -q 'reply-script-ran' <<< "$out"
+check "user's YOURTURN_REPLY_CMD kept" $?
 
 exit "$fails"

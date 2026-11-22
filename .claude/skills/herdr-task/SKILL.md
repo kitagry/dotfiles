@@ -13,11 +13,11 @@ allowed-tools: Bash(~/.claude/skills/herdr-task/scripts/task-create.sh:*), Bash(
 ```
 ~/tasks/<task>/              ← workspace "<task>" / tab "task" (左 pane: コーディネーター Claude / 右 pane: ACTIONS.md の表示)
   TASK.md                    ← 2行目に created: YYYY-MM-DD。ゴール・repo 一覧・repo をまたぐ決定事項・merge 順
-  ACTIONS.md                 ← 人間の判断・作業が要るもの (コーディネーターが更新)。右 pane で `scripts/actions-view.sh ACTIONS.md` (15 秒ごとに mdcat で描き直す。リンクはクリックできる)
+  ACTIONS.md                 ← 人間の判断・作業が要るもの (コーディネーターが更新)。右 pane で `scripts/actions-view.sh ACTIONS.md` (yourturn で表示し、`R` で返事できる。yourturn が無いマシンでは 15 秒ごとに mdcat で描き直す)
   bqls/                      ← tab "bqls"      (branch: <task>)
   bqls.nvim/                 ← tab "bqls.nvim" (branch: <task>)
   bqls-2/                    ← tab "bqls-2"    (同じ repo の2本目, branch: <task>-2)
-~/tasks/ACTIONS.md           ← 全タスクの要対応を master がまとめたもの。master の右 pane で actions-view.sh
+~/tasks/ACTIONS.md           ← 全タスクの要対応を master がまとめたもの。master の右 pane で actions-view.sh (yourturn)
 ~/tasks/_archive/YYYY-MM/YYYY-MM-DD-<task>/{TASK.md,ACTIONS.md}
                              ← 閉じたタスク。TASK.md と ACTIONS.md だけ残す (TASK.md の created: の下に closed: が入る)
 ```
@@ -58,7 +58,7 @@ allowed-tools: Bash(~/.claude/skills/herdr-task/scripts/task-create.sh:*), Bash(
 - master は repo の tab の Claude に直接指示しない。コーディネーターを通す (TASK.md の決定事項とずれないように)
 - **節目は下から上へ報告する** (`task-report.sh "<メッセージ>"`)。tab の中で実行すると、repo の tab からはコーディネーターの pane に直接届く。tab "task" からは master の pane には送らず、`~/tasks/.inbox` に1行 (`<日時>\t<task>\t<メッセージ>`) 追記する。master は人間が話しているセッションなので、そこに打ち込むと人間の入力を邪魔するため
 - master は定期チェックで `~/tasks/.inbox` を読み、人間に報告したら空にする
-- **要対応は ACTIONS.md に集める**。master は定期チェックで各タスクの `~/tasks/<task>/ACTIONS.md` を読み、未完了 (✅ 以外) のものを `~/tasks/ACTIONS.md` にタスクをまたいで 🔴/🟠/🟢/⏳ ごとにまとめる。項目の形式は各タスクと同じ (1 行目 `- **<状態マーク> <task>#<番号> <質問文>**`、その下に字下げした背景・選択肢・期限・URL)。番号はタスクごとに 1 から振られて重なるので `<task>#<番号>` にし、人間も「<task>#1 OK」のように返事する。close されたタスクの項目が残らないよう、`~/tasks/ACTIONS.md` は毎回作り直す (差分更新しない)。master の右 pane で `~/.claude/skills/herdr-task/scripts/actions-view.sh ~/tasks/ACTIONS.md` を表示しておけば、人間はそこを見るだけで何に返事すればよいか分かる。人間の返事 (番号付き) は master が `task-ask.sh` で該当タスクに渡す
+- **要対応は ACTIONS.md に集める**。master は定期チェックで各タスクの `~/tasks/<task>/ACTIONS.md` を読み、未完了 (✅ 以外) のものを `~/tasks/ACTIONS.md` にタスクをまたいで 🔴/🟠/🟢/⏳ ごとにまとめる。項目の形式は各タスクと同じ (1 行目 `- **<状態マーク> <task>#<番号> <質問文>**`、その下に字下げした背景・選択肢・期限・URL)。番号はタスクごとに 1 から振られて重なるので `<task>#<番号>` にし、人間も「<task>#1 OK」のように返事する。close されたタスクの項目が残らないよう、`~/tasks/ACTIONS.md` は毎回作り直す (差分更新しない)。master の右 pane で `~/.claude/skills/herdr-task/scripts/actions-view.sh ~/tasks/ACTIONS.md` を表示しておけば、人間はそこを見るだけで何に返事すればよいか分かる。人間の返事 (番号付き) は master が `task-ask.sh` で該当タスクに渡す。yourturn の `R` で返した返事も `~/tasks/.inbox` に `[yourturn] human reply: <task>#<番号> <返事>` として届くので、同じように渡す
 - **聞かれるまで待たない**。コーディネーターは `/loop` (`task-loop.sh`) で自分の tab を定期チェックし、master も定期実行 (CronCreate、15 分ごと程度) で `task-list.sh` / `task-reply.sh` を見回って、要対応や節目の変化だけを人間に報告する
 
 ## 変化があったときだけコーディネーターを起こす (共通の見張り)
@@ -128,7 +128,9 @@ printf '%s\n' "$now" > "$STATE"
 
 `~/.claude.json` をスクリプトで書き換えて trust しない。起動中の Claude セッションも同じファイルを書き換えているので、上書きし合う。
 
-ACTIONS.md の右 pane (`scripts/actions-view.sh`) は `mdcat` があれば使う (dotfiles の mise config に入っている)。`watch` を使わないのは、色以外のエスケープシーケンスを通さず、mdcat のリンク (OSC 8) がクリックできなくなるため。mdcat が無い・動かないマシンでは `cat` で表示する。master の右 pane はスクリプトでは作らないので、master の pane を右に分割して `~/.claude/skills/herdr-task/scripts/actions-view.sh ~/tasks/ACTIONS.md` を一度動かしておく (ファイルが無くてもできるまで待つ)。
+ACTIONS.md の右 pane (`scripts/actions-view.sh`) は `yourturn` (ACTIONS.md の TUI ビューア。dotfiles の mise config に入っている) があればそれを起動する。項目を開く・リンクを開く・`R` で返事する、ができる。`R` の返事は yourturn に同梱の `contrib/herdr/yourturn-reply.sh` (yourturn の実体の隣にある) に渡され、`~/tasks/.inbox` に追記される (master が拾ってタスクに渡す)。返事のコマンドは `--reply-cmd` ではなく環境変数 `YOURTURN_REPLY_CMD` で渡す (v0.1.0 は知らないフラグで落ちるが、環境変数は無視するのでバージョンを見なくてよい)。自分で `YOURTURN_REPLY_CMD` を設定していればそちらが使われる。v0.2.0 より前の yourturn や同梱スクリプトが見つからないときは `R` だけ使えない。`[interval]` は yourturn では使わない (ファイルの変更で描き直す)。
+
+yourturn が無いマシンでは、15 秒ごとに描き直すループで表示する。`mdcat` があれば使う (これも mise config に入っている)。`watch` を使わないのは、色以外のエスケープシーケンスを通さず、mdcat のリンク (OSC 8) がクリックできなくなるため。mdcat が無い・動かないマシンでは `cat` で表示する。master の右 pane はスクリプトでは作らないので、master の pane を右に分割して `~/.claude/skills/herdr-task/scripts/actions-view.sh ~/tasks/ACTIONS.md` を一度動かしておく (ファイルが無くてもできるまで待つ)。
 
 ## タスクの粒度 (オーケストレーターが判断する)
 
@@ -160,7 +162,7 @@ eval "$(~/.claude/skills/herdr-task/scripts/task-create.sh "$TASK")"
 # => WS_ID / PANE_ID (tab "task" の pane) / TASK_DIR
 ```
 
-- TASK.md と ACTIONS.md の雛形を作り、tab "task" を左右に分割する。右 (幅 35%、pane の label は `ACTIONS`) で `actions-view.sh ACTIONS.md` を動かし、focus は奪わない。分割や actions-view.sh の起動に失敗しても WARN を出して続行する。`PANE_ID` はこれまでどおり左のコーディネーターの pane
+- TASK.md と ACTIONS.md の雛形を作り、tab "task" を左右に分割する。右 (幅 35%、pane の label は `ACTIONS`) で `actions-view.sh ACTIONS.md` (yourturn があれば yourturn) を動かし、focus は奪わない。分割や actions-view.sh の起動に失敗しても WARN を出して続行する。`PANE_ID` はこれまでどおり左のコーディネーターの pane
 - tab "task" ではコーディネーターの Claude (agent 名 `<task>-task`) まで起動される。起動に失敗しても WARN を出して続行するので、その場合は手順 4 の `start-claude-agent.sh` で起動し直す
 - 同名のディレクトリか workspace が既にあれば exit 1 する。既存タスクに repo を足したいだけなら手順 2 から始める
 
