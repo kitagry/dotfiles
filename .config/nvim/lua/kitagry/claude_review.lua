@@ -83,12 +83,52 @@ function M.diff_spec(opts)
   return { diffview_args = rev, git_diff_range = rev }
 end
 
+-- Returns the first @@ hunk of git diff output that overlaps [start_lnum, end_lnum] (new-side line numbers).
+function M.pick_hunk(diff_text, start_lnum, end_lnum)
+  end_lnum = end_lnum or start_lnum
+  -- Split only on lines starting with "@@" so a '@' in the hunk body (decorators etc.)
+  -- does not cut the hunk; body lines always start with ' ', '+', '-' or '\\'.
+  -- A "diff " line starts the next file's header, which must not leak into the hunk.
+  local hunks, cur = {}, nil
+  for line in (diff_text .. "\n"):gmatch("([^\n]*)\n") do
+    if line:sub(1, 2) == "@@" then
+      cur = { line }
+      hunks[#hunks + 1] = cur
+    elseif line:sub(1, 5) == "diff " then
+      cur = nil
+    elseif cur then
+      cur[#cur + 1] = line
+    end
+  end
+  for _, lines in ipairs(hunks) do
+    local new_start, new_count = lines[1]:match("^@@ %-%d+,?%d* %+(%d+),?(%d*) @@")
+    if new_start then
+      new_start = tonumber(new_start)
+      new_count = tonumber(new_count) or 1
+      local hunk_end = new_start + new_count - 1
+      if start_lnum <= hunk_end and end_lnum >= new_start then
+        return table.concat(lines, "\n")
+      end
+    end
+  end
+  return ""
+end
+
 local function quote(text)
   local lines = {}
   for line in (text .. "\n"):gmatch("([^\n]*)\n") do
     lines[#lines + 1] = "> " .. line
   end
   return table.concat(lines, "\n")
+end
+
+-- Use a fence longer than the longest backtick run so a ``` inside the excerpt (e.g. a Markdown diff) does not close the block.
+local function code_fence(text)
+  local longest = 0
+  for run in text:gmatch("`+") do
+    if #run > longest then longest = #run end
+  end
+  return string.rep("`", math.max(3, longest + 1))
 end
 
 local function format_range(start_lnum, end_lnum)
@@ -106,9 +146,10 @@ function M.format_for_claude(opts)
     parts[#parts + 1] = string.format("### %s:%s", c.path, format_range(c.lnum, c.end_lnum))
     local excerpt = diff_excerpt(c.path, c.lnum, c.end_lnum) or ""
     if excerpt ~= "" then
-      parts[#parts + 1] = "```"
+      local fence = code_fence(excerpt)
+      parts[#parts + 1] = fence
       parts[#parts + 1] = excerpt
-      parts[#parts + 1] = "```"
+      parts[#parts + 1] = fence
     end
     parts[#parts + 1] = quote(c.text)
     parts[#parts + 1] = ""
@@ -179,34 +220,21 @@ local function buf_path_relative()
 end
 
 local function diff_excerpt_for(path, start_lnum, end_lnum)
-  end_lnum = end_lnum or start_lnum
-  -- start() で開いたのと同じ range を使う。空なら未コミット差分
+  -- Use the same range start() opened with. Empty means uncommitted changes, diffed against HEAD so staged ones are included.
   local range = state.diff_range or ""
-  local cmd = string.format(
-    "git diff %s-- %s",
-    range ~= "" and (vim.fn.shellescape(range) .. " ") or "",
-    vim.fn.shellescape(path)
-  )
-  local out = shell(cmd)
+  local function run(rev)
+    -- --literal-pathspecs keeps a path with '[' or '*' from matching other files as a glob.
+    return shell(string.format(
+      "git --literal-pathspecs diff %s-- %s",
+      rev ~= "" and (vim.fn.shellescape(rev) .. " ") or "",
+      vim.fn.shellescape(path)
+    ))
+  end
+  local out = run(range ~= "" and range or "HEAD")
+  -- A repository with no commits has no HEAD, so fall back to the diff against the index.
+  if not out and range == "" then out = run("") end
   if not out or out == "" then return "" end
-
-  -- 当該範囲と重なる @@ hunk を抜き出す
-  local hunks = {}
-  for hunk in (out .. "\n@@"):gmatch("(@@[^@]+@@[^@]*)\n@@") do
-    hunks[#hunks + 1] = hunk
-  end
-  for _, h in ipairs(hunks) do
-    local new_start, new_count = h:match("@@ %-%d+,?%d* %+(%d+),?(%d*) @@")
-    if new_start then
-      new_start = tonumber(new_start)
-      new_count = tonumber(new_count) or 1
-      local hunk_end = new_start + new_count - 1
-      if start_lnum <= hunk_end and end_lnum >= new_start then
-        return h
-      end
-    end
-  end
-  return ""
+  return M.pick_hunk(out, start_lnum, end_lnum or start_lnum)
 end
 
 -- ---------------------------------------------------------------------------

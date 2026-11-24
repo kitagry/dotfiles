@@ -160,5 +160,51 @@ describe("claude_review", function()
       assert.is_truthy(out:find("> line1", 1, true))
       assert.is_truthy(out:find("> line2", 1, true))
     end)
+    it("wraps an excerpt containing ``` in a longer fence", function()
+      cr.add_comment("README.md", 1, 1, "comment")
+      local out = cr.format_for_claude({ diff_excerpt = function() return "+```lua\n+x\n+```" end })
+      assert.is_truthy(out:find("````\n+```lua\n+x\n+```\n````", 1, true))
+    end)
+  end)
+
+  describe("pick_hunk", function()
+    local diff = table.concat({
+      "diff --git a/a.py b/a.py",
+      "index 111..222 100644",
+      "--- a/a.py",
+      "+++ b/a.py",
+      "@@ -1,3 +1,4 @@",
+      " import x",
+      "+@decorator",
+      " def f():",
+      "     pass",
+      "@@ -10,2 +11,3 @@ def g(): @@weird",
+      " a",
+      "+b @ c",
+      " d",
+    }, "\n")
+
+    it("does not split a hunk on @ in its body", function()
+      assert.are.equal(
+        "@@ -1,3 +1,4 @@\n import x\n+@decorator\n def f():\n     pass",
+        cr.pick_hunk(diff, 2, 2)
+      )
+    end)
+
+    it("returns the hunk overlapping the range (even with @@ in the header function name)", function()
+      assert.are.equal(
+        "@@ -10,2 +11,3 @@ def g(): @@weird\n a\n+b @ c\n d",
+        cr.pick_hunk(diff, 12, 20)
+      )
+    end)
+
+    it("returns an empty string when no hunk overlaps", function()
+      assert.are.equal("", cr.pick_hunk(diff, 6, 10))
+    end)
+
+    it("does not include the next file's header lines in the hunk", function()
+      local two = diff .. "\ndiff --git a/b.py b/b.py\n--- a/b.py\n+++ b/b.py\n@@ -1 +1 @@\n-x\n+y"
+      assert.are.equal("@@ -10,2 +11,3 @@ def g(): @@weird\n a\n+b @ c\n d", cr.pick_hunk(two, 12, 12))
+    end)
   end)
 end)
