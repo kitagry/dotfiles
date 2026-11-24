@@ -217,6 +217,7 @@ repo の tab の Claude は、コーディネーターに起動・指示させ�
 ~/.claude/skills/herdr-task/scripts/send-instruction.sh "$PANE_ID" "$INSTRUCTION"
 ```
 
+- `start-claude-agent.sh <pane> <name> [--continue] [-- <claude の引数>...]`。`--` の後ろはそのまま claude に渡る (例: `... "$TASK-<label>" -- --model sonnet`、`--continue` と併用なら `--continue -- --model sonnet`)。未知の引数は usage を出して exit 2。`--mcp-config` / `--settings` は拒否される
 - agent 名は session 全体で一意である必要があるので `<task>-<tab label>` にする (例: `bqls-dry-run-command-task`、`bqls-dry-run-command-bqls`)
 - `start-claude-agent.sh` は idle になるまで待つ。trust ダイアログが出たら自動では答えず exit 1 する (trust するかどうかはユーザーが判断することなので)
 - `send-instruction.sh` は起動直後に入力が取りこぼされるケースを、画面に指示文が出ていないことを確かめた上で再送する。二重送信はしない

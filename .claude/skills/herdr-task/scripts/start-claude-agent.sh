@@ -2,12 +2,14 @@
 # Starts Claude Code in an already-open pane and waits until it's idle (past its
 # own startup and at the input prompt).
 #
-# Usage: start-claude-agent.sh <pane_id> <agent_name> [--continue]
+# Usage: start-claude-agent.sh <pane_id> <agent_name> [--continue] [-- <claude args>...]
 #   <agent_name> must be session-wide unique; use "<task>-<tab label>".
 #   --continue resumes the latest Claude session of the pane's cwd (for tabs
 #   opened with task-adopt.sh on a directory that already had one).
+#   Everything after `--` is passed through to claude as-is (e.g. `-- --model sonnet`).
+#   Any other argument is an error.
 #
-# IMPORTANT: do not pass extra flags like --mcp-config/--settings after `--`. The
+# IMPORTANT: do not pass --mcp-config/--settings after `--` (rejected below). The
 # pane's shell is fish, whose `claude` wrapper function
 # (~/.config/fish/functions/claude.fish) already injects --mcp-config and (on
 # NixOS) --settings '{"remoteControlAtStartup": true}'. Passing them again
@@ -20,16 +22,55 @@
 # and retries instead of trusting $?.
 set -uo pipefail
 
-if [ $# -lt 2 ]; then
-  echo "usage: $0 <pane_id> <agent_name> [--continue]" >&2
+usage() {
+  echo "usage: $0 <pane_id> <agent_name> [--continue] [-- <claude args>...]" >&2
   exit 2
+}
+
+if [ $# -lt 2 ]; then
+  usage
 fi
 
 pane_id="$1"
 name="$2"
+shift 2
+
+use_continue=0
+extra_args=()
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --continue)
+      use_continue=1
+      shift
+      ;;
+    --)
+      shift
+      extra_args=("$@")
+      break
+      ;;
+    *)
+      echo "ERROR: unknown argument: $1" >&2
+      usage
+      ;;
+  esac
+done
+
+# The fish `claude` wrapper already injects these; passing them again breaks Remote Control.
+for a in ${extra_args[@]+"${extra_args[@]}"}; do
+  case "$a" in
+    --mcp-config | --mcp-config=* | --settings | --settings=*)
+      echo "ERROR: $a is injected by the fish claude wrapper; do not pass it" >&2
+      exit 2
+      ;;
+  esac
+done
+
+claude_args=()
+[ "$use_continue" -eq 1 ] && claude_args+=(--continue)
+claude_args+=(${extra_args[@]+"${extra_args[@]}"})
 agent_args=()
-if [ "${3:-}" = "--continue" ]; then
-  agent_args=(-- --continue)
+if [ ${#claude_args[@]} -gt 0 ]; then
+  agent_args=(-- "${claude_args[@]}")
 fi
 
 max_attempts=5
