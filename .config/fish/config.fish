@@ -32,3 +32,7 @@ if status is-interactive
     abbr -a gcim "git commit -m ''"
 
 end
+
+
+# Added by Antigravity CLI installer
+fish_add_path -g $HOME/.local/bin

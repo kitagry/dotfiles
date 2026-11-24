@@ -20,3 +20,7 @@ export SHELDON_PROFILE=$HOME/.local/state/sheldon/profile.log
 if (which zprof > /dev/null 2>&1) ;then
   zprof
 fi
+
+
+# Added by Antigravity CLI installer
+export PATH="$HOME/.local/bin:$PATH"
