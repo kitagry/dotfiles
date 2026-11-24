@@ -55,6 +55,11 @@ if command -v "$yourturn" > /dev/null 2>&1; then
     q="'\\''"
     export YOURTURN_REPLY_CMD="'${script//\'/$q}'"
   fi
+  # Where reply-state.sh and yourturn-reply.sh record how far each R reply
+  # got. Older yourturn ignores the variable, like YOURTURN_REPLY_CMD.
+  if [ -z "${YOURTURN_REPLY_STATUS:-}" ]; then
+    export YOURTURN_REPLY_STATUS="${HERDR_TASKS_ROOT:-$HOME/tasks}/.reply-status"
+  fi
   exec "$yourturn" "$file"
 fi
 

@@ -28,7 +28,8 @@ FAKE
   export ACTIONS_VIEW_ONCE=1 ACTIONS_VIEW_COLUMNS=42 ACTIONS_VIEW_ROWS=10
   # The mdcat loop is the fallback; a real yourturn on PATH must not take over.
   export ACTIONS_VIEW_YOURTURN=no-such-yourturn
-  unset ACTIONS_VIEW_MDCAT YOURTURN_REPLY_CMD
+  unset ACTIONS_VIEW_MDCAT YOURTURN_REPLY_CMD YOURTURN_REPLY_STATUS
+  export HERDR_TASKS_ROOT="$tmp/tasks"
   printf '# t1\n\n- [PR](https://example.com/pr/1)\n' > "$tmp/ACTIONS.md"
 }
 
@@ -117,6 +118,7 @@ fake_yourturn() { # <dir> [with reply script: 1]
   cat > "$1/yourturn" <<'FAKE'
 #!/usr/bin/env bash
 echo "yourturn $*"
+echo "reply-status=${YOURTURN_REPLY_STATUS-<unset>}"
 [ "${FAKE_YOURTURN_REPLY:-}" = 1 ] && [ -n "${YOURTURN_REPLY_CMD:-}" ] && sh -c "$YOURTURN_REPLY_CMD"
 exit 0
 FAKE
@@ -165,5 +167,17 @@ fake_yourturn "$tmp/yt" 1
 out=$(YOURTURN_REPLY_CMD='echo user-cmd-ran' FAKE_YOURTURN_REPLY=1 ACTIONS_VIEW_YOURTURN="$tmp/yt/yourturn" bash "$script" "$tmp/ACTIONS.md" 2>&1)
 grep -qx 'user-cmd-ran' <<< "$out" && ! grep -q 'reply-script-ran' <<< "$out"
 check "user's YOURTURN_REPLY_CMD kept" $?
+
+# 15. yourturn is told where the reply states are (.reply-status under the tasks root).
+setup
+fake_yourturn "$tmp/yt" 1
+out=$(ACTIONS_VIEW_YOURTURN="$tmp/yt/yourturn" bash "$script" "$tmp/ACTIONS.md" 2>&1)
+grep -qx "reply-status=$tmp/tasks/.reply-status" <<< "$out"; check "YOURTURN_REPLY_STATUS set to <tasks root>/.reply-status" $?
+
+# 16. A YOURTURN_REPLY_STATUS the user set is kept.
+setup
+fake_yourturn "$tmp/yt" 1
+out=$(YOURTURN_REPLY_STATUS=/elsewhere/status ACTIONS_VIEW_YOURTURN="$tmp/yt/yourturn" bash "$script" "$tmp/ACTIONS.md" 2>&1)
+grep -qx "reply-status=/elsewhere/status" <<< "$out"; check "user's YOURTURN_REPLY_STATUS kept" $?
 
 exit "$fails"

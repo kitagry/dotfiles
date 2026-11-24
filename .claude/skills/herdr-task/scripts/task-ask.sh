@@ -9,6 +9,10 @@
 # The message is prefixed with "[master]" so the coordinator can tell it from
 # a human typing in the task tab directly.
 #
+# Replies sent from yourturn carry "(reply <key>)". Once such a message has
+# reached the coordinator (with --no-wait too), each key is recorded as
+# relayed with reply-state.sh, so yourturn can show that it was passed on.
+#
 # The reply is read from the Claude Code transcript rather than the screen:
 # the pane only shows what fits and wraps long lines.
 #
@@ -70,10 +74,27 @@ if [ -n "$transcript" ]; then
 fi
 
 if [ "$status" = "working" ]; then
-  herdr agent prompt "$pane" "[master] $message" > /dev/null
+  # Checked like send-instruction.sh does: an error can come back as JSON.
+  if ! out=$(herdr agent prompt "$pane" "[master] $message" 2>&1) \
+    || printf '%s' "$out" | jq -e '.error' > /dev/null 2>&1; then
+    echo "ERROR: could not queue the message for the coordinator ($pane)" >&2
+    echo "$out" >&2
+    exit 1
+  fi
 else
   "$script_dir/send-instruction.sh" "$pane" "[master] $message"
 fi
+
+# Delivered, so the replies in it are relayed. A failure here only loses the
+# status line in yourturn, so it must not fail the ask.
+reply_keys=$(printf '%s' "$message" \
+  | grep -oE '\(reply r-[0-9]{8}T[0-9]{6}-[0-9a-f]{4}\)' \
+  | sed -E 's/^\(reply (.*)\)$/\1/' | sort -u || true)
+for key in $reply_keys; do
+  "$script_dir/reply-state.sh" "$key" relayed \
+    || echo "WARN: could not record $key as relayed" >&2
+done
+
 [ "$wait" -eq 1 ] || exit 0
 
 if ! herdr agent wait "$pane" --timeout "$((timeout * 1000))" > /dev/null 2>&1; then
