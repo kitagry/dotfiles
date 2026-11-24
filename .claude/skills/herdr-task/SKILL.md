@@ -1,7 +1,7 @@
 ---
 name: herdr-task
 description: タスク単位で herdr workspace を作り、関係する repo の git worktree を tab として並べ、コーディネーター Claude と各 repo の実装 Claude を起動して指示を投げるスキル。「タスクを始めて」「bqls と bqls.nvim をまたいで〜」「複数 repo で〜」「worktree で並列に作業させて」「delegate して」などのリクエスト時、または /herdr-task で起動する。repo が1つだけのタスクにも使う。
-allowed-tools: Bash(~/.claude/skills/herdr-task/scripts/task-create.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-add-repo.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-adopt.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-status.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-ask.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-reply.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-list.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-loop.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-report.sh:*), Bash(~/.claude/skills/herdr-task/scripts/start-claude-agent.sh:*), Bash(~/.claude/skills/herdr-task/scripts/send-instruction.sh:*), Bash(~/.claude/skills/herdr-task/scripts/read-pane.sh:*), Bash(ghq get:*), Bash(ghq list:*)
+allowed-tools: Bash(~/.claude/skills/herdr-task/scripts/task-create.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-add-repo.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-adopt.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-status.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-ask.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-reply.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-list.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-loop.sh:*), Bash(~/.claude/skills/herdr-task/scripts/task-report.sh:*), Bash(~/.claude/skills/herdr-task/scripts/reply-state.sh:*), Bash(~/.claude/skills/herdr-task/scripts/start-claude-agent.sh:*), Bash(~/.claude/skills/herdr-task/scripts/send-instruction.sh:*), Bash(~/.claude/skills/herdr-task/scripts/read-pane.sh:*), Bash(ghq get:*), Bash(ghq list:*)
 ---
 
 # Task workspace on herdr
@@ -58,7 +58,8 @@ allowed-tools: Bash(~/.claude/skills/herdr-task/scripts/task-create.sh:*), Bash(
 - master は repo の tab の Claude に直接指示しない。コーディネーターを通す (TASK.md の決定事項とずれないように)
 - **節目は下から上へ報告する** (`task-report.sh "<メッセージ>"`)。tab の中で実行すると、repo の tab からはコーディネーターの pane に直接届く。tab "task" からは master の pane には送らず、`~/tasks/.inbox` に1行 (`<日時>\t<task>\t<メッセージ>`) 追記する。master は人間が話しているセッションなので、そこに打ち込むと人間の入力を邪魔するため
 - master は定期チェックで `~/tasks/.inbox` を読み、人間に報告したら空にする
-- **要対応は ACTIONS.md に集める**。master は定期チェックで各タスクの `~/tasks/<task>/ACTIONS.md` を読み、未完了 (✅ 以外) のものを `~/tasks/ACTIONS.md` にタスクをまたいで 🔴/🟠/🟢/⏳ ごとにまとめる。項目の形式は各タスクと同じ (1 行目 `- **<状態マーク> <task>#<番号> <質問文>**`、その下に字下げした背景・選択肢・期限・URL)。番号はタスクごとに 1 から振られて重なるので `<task>#<番号>` にし、人間も「<task>#1 OK」のように返事する。close されたタスクの項目が残らないよう、`~/tasks/ACTIONS.md` は毎回作り直す (差分更新しない)。master の右 pane で `~/.claude/skills/herdr-task/scripts/actions-view.sh ~/tasks/ACTIONS.md` を表示しておけば、人間はそこを見るだけで何に返事すればよいか分かる。人間の返事 (番号付き) は master が `task-ask.sh` で該当タスクに渡す。yourturn の `R` で返した返事も `~/tasks/.inbox` に `[yourturn] human reply: <task>#<番号> <返事>` として届くので、同じように渡す
+- **要対応は ACTIONS.md に集める**。master は定期チェックで各タスクの `~/tasks/<task>/ACTIONS.md` を読み、未完了 (✅ 以外) のものを `~/tasks/ACTIONS.md` にタスクをまたいで 🔴/🟠/🟢/⏳ ごとにまとめる。項目の形式は各タスクと同じ (1 行目 `- **<状態マーク> <task>#<番号> <質問文>**`、その下に字下げした背景・選択肢・期限・URL)。番号はタスクごとに 1 から振られて重なるので `<task>#<番号>` にし、人間も「<task>#1 OK」のように返事する。close されたタスクの項目が残らないよう、`~/tasks/ACTIONS.md` は毎回作り直す (差分更新しない)。master の右 pane で `~/.claude/skills/herdr-task/scripts/actions-view.sh ~/tasks/ACTIONS.md` を表示しておけば、人間はそこを見るだけで何に返事すればよいか分かる。人間の返事 (番号付き) は master が `task-ask.sh` で該当タスクに渡す。yourturn の `R` で返した返事も `~/tasks/.inbox` に `[yourturn] human reply: <task>#<番号> <返事> (reply <key>)` として届くので、同じように渡す
+- **返事の状態** (yourturn の `R` で返した返事がどこまで届いたか): `~/tasks/.reply-status` に 1 行 1 イベント (`<key>\t<state>\t<RFC3339>`) で追記され、yourturn が項目の下に `↳ sent … · relayed … · acked …` と表示する (actions-view.sh が `YOURTURN_REPLY_STATUS` で場所を渡す)。`sent` は yourturn-reply.sh、`relayed` は `task-ask.sh` (渡すメッセージに `(reply <key>)` があれば、届いた後に自動で書く。master は `(reply <key>)` を消さずに渡す)、`acked` はコーディネーターが `reply-state.sh <key> acked` で書く。`done` は書かない (項目が ✅ になった・消えたことから yourturn が判断する)
 - **聞かれるまで待たない**。コーディネーターは `/loop` (`task-loop.sh`) で自分の tab を定期チェックし、master も定期実行 (CronCreate、15 分ごと程度) で `task-list.sh` / `task-reply.sh` を見回って、要対応や節目の変化だけを人間に報告する
 
 ## 変化があったときだけコーディネーターを起こす (共通の見張り)
@@ -231,6 +232,7 @@ repo の tab の Claude は、コーディネーターに起動・指示させ�
 - repo をまたぐ決定事項 (インターフェイス、merge 順) と各 tab の状況 (PR、状態) は TASK.md に書いて。
 - 別の repo や issue が必要になったら task-add-repo.sh で足して。
 - [master] が付いたメッセージは master Claude 経由の人間の指示。付いていなければ人間がこの tab で直接話している。
+- メッセージに `(reply <key>)` が付いていたら (人間が yourturn で返した返事)、受け取った時点で herdr-task スキルの reply-state.sh <key> acked を key ごとに呼んで (人間の画面に「受け取った」と表示される)。
 - 人間に確認したいことは、返答の最後に「確認したいこと」として書いて (master が人間に聞く)。
 - 人間の判断・作業が要るものは $HERDR_TASK_DIR/ACTIONS.md に番号付きで保って (tab の右 pane に表示されていて、master も集約する)。形式: 各項目の 1 行目は「- **<状態マーク> <番号> <質問文>**」で、1 行目だけで何を聞かれているか分かるように質問文は「〜してよい?」「A・B・C のどれ?」「(作業) 〜してください」の形にする。背景・選択肢・期限・URL はその下に字下げした箇条書きで書く。状態マークは 🔴 急ぎ / 🟠 今週 / 🟢 時間があるとき / ⏳ 待ち / ✅ 済み。済んだものは ✅ にして下に移し、古い ✅ は消す (右 pane はスクロールできない)。番号は振り直さない。
 - 返答の最後には、毎回タスク全体の状況を数行で要約して。

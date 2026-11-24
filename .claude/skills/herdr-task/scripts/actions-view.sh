@@ -49,9 +49,16 @@ if command -v "$yourturn" > /dev/null 2>&1; then
   # Set through YOURTURN_REPLY_CMD rather than --reply-cmd: 0.1.0 refuses the
   # unknown flag but ignores the variable, so no version check is needed, and
   # a command the user already set is kept. Sh-quoted since yourturn runs it
-  # with sh -c.
+  # with sh -c. The replacement goes through a variable because bash 3.2
+  # (macOS /bin/bash) keeps the backslashes of an inline one.
   if [ -z "${YOURTURN_REPLY_CMD:-}" ] && script=$(yourturn_reply_script); then
-    export YOURTURN_REPLY_CMD="'${script//\'/\'\\\'\'}'"
+    q="'\\''"
+    export YOURTURN_REPLY_CMD="'${script//\'/$q}'"
+  fi
+  # Where reply-state.sh and yourturn-reply.sh record how far each R reply
+  # got. Older yourturn ignores the variable, like YOURTURN_REPLY_CMD.
+  if [ -z "${YOURTURN_REPLY_STATUS:-}" ]; then
+    export YOURTURN_REPLY_STATUS="${HERDR_TASKS_ROOT:-$HOME/tasks}/.reply-status"
   fi
   exec "$yourturn" "$file"
 fi
