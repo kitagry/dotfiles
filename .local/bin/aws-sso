@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+# aws-sso: make sure an AWS SSO session for <profile> is valid, and optionally
+# print shell code that sets AWS_PROFILE in the calling shell.
+#
+# A child process cannot change its parent's environment, so there are two ways to use it:
+#   aws-sso <profile>                      log in if needed and exit (AWS_PROFILE is NOT set)
+#   eval "$(aws-sso -e <profile>)"         bash / zsh: log in and set AWS_PROFILE
+#   aws-sso <profile>                      fish: the function in functions/aws-sso.fish does the eval
+#
+# From scripts and agents (e.g. Claude Code's Bash tool), run `aws-sso <profile>` first, then pass the
+# profile explicitly: `AWS_PROFILE=<profile> aws ...`.
+#
+# NOTE: when the session has expired, `aws sso login` opens a browser and waits for the
+# approval. A non-interactive caller blocks there until it times out, so a human has to approve it.
+set -euo pipefail
+
+usage() {
+  cat <<'USAGE'
+usage: aws-sso [-h] [-e|--export[=sh|fish]] <aws-profile>
+
+  -e, --export[=SHELL]  print `export AWS_PROFILE=...` (sh, default) or `set -gx AWS_PROFILE ...` (fish)
+                        on stdout. All other messages go to stderr, so `eval "$(aws-sso -e p)"` works.
+USAGE
+}
+
+export_shell=""
+profile=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -h | --help) usage; exit 0 ;;
+    -e | --export) export_shell=sh ;;
+    --export=sh) export_shell=sh ;;
+    --export=fish) export_shell=fish ;;
+    -*) echo "aws-sso: unknown option: $1" >&2; usage >&2; exit 2 ;;
+    *) profile="$1" ;;
+  esac
+  shift
+done
+[ -n "$profile" ] || { usage >&2; exit 1; }
+
+# Epoch seconds of an ISO 8601 timestamp such as 2026-11-25T10:00:00+00:00 (BSD and GNU date).
+to_epoch() {
+  local ts="$1"
+  if date -d "$ts" +%s 2>/dev/null; then return; fi
+  /bin/date -j -f "%Y-%m-%dT%T%z" "$(printf '%s' "$ts" | sed 's/\(.*\):/\1/')" +%s 2>/dev/null
+}
+
+session_valid() {
+  local credential expiration_str expiration
+  credential=$(aws configure export-credentials --profile "$profile" 2>/dev/null) || return 1
+  [ -n "$credential" ] || return 1
+  expiration_str=$(printf '%s' "$credential" | jq -r '.Expiration // empty')
+  [ -n "$expiration_str" ] || return 1
+  expiration=$(to_epoch "$expiration_str") || return 1
+  [ "$expiration" -gt "$(date +%s)" ]
+}
+
+echo "configure aws profile [$profile]" >&2
+
+if [ "$profile" != "default" ] && ! session_valid; then
+  # stdout is reserved for the export line, so send the login output to stderr.
+  aws sso login --profile "$profile" >&2
+fi
+
+case "$export_shell" in
+  sh) printf 'export AWS_PROFILE=%q\n' "$profile" ;;
+  fish) printf 'set -gx AWS_PROFILE %q\n' "$profile" ;;
+  *) echo "AWS_PROFILE is not set in the calling shell; use: eval \"\$(aws-sso -e $profile)\"" >&2 ;;
+esac
