@@ -44,6 +44,17 @@ validate_task_name() {
   fi
 }
 
+# Prints the label of the tab that holds <pane_id> (empty if not found).
+pane_tab_label() { # <workspace_id> <pane_id>
+  local tab_id
+  tab_id=$(herdr pane list --workspace "$1" \
+    | jq -r --arg p "$2" '.result.panes[] | select(.pane_id == $p) | .tab_id' \
+    | head -1) || return
+  [ -n "$tab_id" ] || return 0
+  herdr tab list --workspace "$1" \
+    | jq -r --arg t "$tab_id" '.result.tabs[] | select(.tab_id == $t) | .label'
+}
+
 # Prints the workspace_id whose label equals the task name (empty if none).
 find_task_workspace() {
   herdr workspace list \
