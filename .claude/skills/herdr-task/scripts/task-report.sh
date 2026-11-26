@@ -38,11 +38,7 @@ if [ "$HERDR_PANE_ID" = "$coordinator" ]; then
   exit 0
 else
   target="$coordinator"
-  from=$(herdr pane list --workspace "$HERDR_WORKSPACE_ID" \
-    | jq -r --arg p "$HERDR_PANE_ID" '.result.panes[] | select(.pane_id == $p) | .tab_id' \
-    | head -1)
-  from=$(herdr tab list --workspace "$HERDR_WORKSPACE_ID" \
-    | jq -r --arg t "$from" '.result.tabs[] | select(.tab_id == $t) | .label')
+  from=$(pane_tab_label "$HERDR_WORKSPACE_ID" "$HERDR_PANE_ID")
 fi
 
 if [ -z "$target" ] || [ -z "$(pane_agent "$target")" ]; then
