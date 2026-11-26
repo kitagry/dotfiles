@@ -84,7 +84,8 @@
       "Bash(herdr pane send-keys:*)",
       "Bash(herdr pane send-text:*)",
       "Bash(herdr pane run:*)",
-      "Bash(~/.claude/scripts/claude_timing.py:*)"
+      "Bash(~/.claude/scripts/claude_timing.py:*)",
+      "Bash(~/.claude/skills/herdr-task/scripts/note.sh:*)"
     ],
     "defaultMode": "auto"
   },
@@ -135,6 +136,11 @@
             "type": "command",
             "command": "bash \"$HOME/.claude/hooks/herdr-agent-state.sh\" session",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "f=\"$HOME/.claude/hooks/notebook-repo-context.sh\"; [ ! -f \"$f\" ] || bash \"$f\"",
+            "timeout": 5
           }
         ]
       }
