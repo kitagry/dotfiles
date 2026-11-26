@@ -84,7 +84,8 @@
       "Bash(herdr pane send-keys:*)",
       "Bash(herdr pane send-text:*)",
       "Bash(herdr pane run:*)",
-      "Bash(~/.claude/scripts/claude_timing.py:*)"
+      "Bash(~/.claude/scripts/claude_timing.py:*)",
+      "Bash(~/.claude/skills/herdr-task/scripts/note.sh:*)"
     ],
     "defaultMode": "auto"
   },
