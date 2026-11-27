@@ -12,7 +12,8 @@ tmps=()
 trap 'rm -rf "${tmps[@]}"' EXIT
 
 setup() {
-  # pwd -P: task-create.sh resolves symlinks (macOS $TMPDIR is under /var -> /private/var).
+  # pwd -P: is_trusted (lib.sh) resolves symlinks before looking the path up in .claude.json,
+  # and macOS $TMPDIR is under /var -> /private/var.
   tmp=$(cd "$(mktemp -d)" && pwd -P)
   tmps+=("$tmp")
   export HOME="$tmp/home" HERDR_TASKS_ROOT="$tmp/tasks"
