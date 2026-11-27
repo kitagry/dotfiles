@@ -29,11 +29,13 @@ setup() {
   export FAKE_SYSTEMCTL_LOG="$tmp/systemctl.log"
   export LAUNCH_AGENTS_DIR="$tmp/LaunchAgents"
   export XDG_CONFIG_HOME="$tmp/config"
+  # Empty by default, so the real watch.common.d (which runs htask) is never used.
+  export WATCH_COMMON_DIR="$tmp/common"
   unset FAKE_ASK_EXIT WATCH_TIMEOUT WATCH_SCHEDULER
   : > "$FAKE_ASK_LOG"
   : > "$FAKE_LAUNCHCTL_LOG"
   : > "$FAKE_SYSTEMCTL_LOG"
-  mkdir -p "$tmp/bin" "$HERDR_TASKS_ROOT" "$LAUNCH_AGENTS_DIR"
+  mkdir -p "$tmp/bin" "$HERDR_TASKS_ROOT" "$LAUNCH_AGENTS_DIR" "$WATCH_COMMON_DIR"
   # Stub: record "<task>|<message>|<flags>" and exit with FAKE_ASK_EXIT.
   cat > "$WATCH_TASK_ASK" <<'STUB'
 #!/usr/bin/env bash
@@ -61,6 +63,12 @@ add_check() {
   mkdir -p "$HERDR_TASKS_ROOT/$1/watch.d"
   printf '#!/usr/bin/env bash\n%s\n' "$3" > "$HERDR_TASKS_ROOT/$1/watch.d/$2.sh"
   chmod +x "$HERDR_TASKS_ROOT/$1/watch.d/$2.sh"
+}
+
+# add_common <name> <script body>: a check every task runs.
+add_common() {
+  printf '#!/usr/bin/env bash\n%s\n' "$2" > "$WATCH_COMMON_DIR/$1.sh"
+  chmod +x "$WATCH_COMMON_DIR/$1.sh"
 }
 
 check() { # <name> <condition exit code>
@@ -177,6 +185,44 @@ add_check t1 quiet 'exit 0'
 yes 'old log line' | head -n 5000 > "$HERDR_TASKS_ROOT/.watch.log"
 WATCH_LOG_MAX_LINES=100 bash "$tick" > /dev/null 2>&1
 [ "$(wc -l < "$HERDR_TASKS_ROOT/.watch.log")" -le 101 ]; check "log: capped" $?
+
+# 12b. Common checks run in every task, even one without watch.d, with the same context.
+setup
+mkdir -p "$HERDR_TASKS_ROOT/t1" "$HERDR_TASKS_ROOT/_archive/old"
+add_common env 'echo "$HERDR_TASK $(basename "$PWD") ${WATCH_STATE_DIR#"$HERDR_TASK_DIR/"}"'
+bash "$tick" > /dev/null 2>&1
+grep -qx 't1|\[watch\] t1 t1 watch.state/common|--no-wait' "$FAKE_ASK_LOG"; check "common: runs without watch.d" $?
+[ -d "$HERDR_TASKS_ROOT/t1/watch.state/common" ]; check "common: own state dir" $?
+! grep -q '_archive' "$FAKE_ASK_LOG"; check "common: archived tasks skipped" $?
+
+# 12c. Labels: common checks are "common/<name>", so one named like a task's check stays distinct.
+setup
+add_common prs 'echo from-common'
+add_check t1 prs 'echo from-task'
+bash "$tick" > /dev/null 2>&1
+grep -q '^t1|\[watch\] common/prs: from-common | prs: from-task|' "$FAKE_ASK_LOG"; check "common: both run, common first, labeled" $?
+[ "$(wc -l < "$FAKE_ASK_LOG")" -eq 1 ]; check "common: folded into one wake" $?
+
+# 12c2. A WATCH_COMMON_DIR with a trailing slash still marks its checks as common.
+setup
+mkdir -p "$HERDR_TASKS_ROOT/t1"
+add_common env 'echo "${WATCH_STATE_DIR#"$HERDR_TASK_DIR/"}"'
+WATCH_COMMON_DIR="$WATCH_COMMON_DIR/" bash "$tick" > /dev/null 2>&1
+grep -qx 't1|\[watch\] watch.state/common|--no-wait' "$FAKE_ASK_LOG"; check "common: trailing slash in WATCH_COMMON_DIR" $?
+
+# 12d. A failing common check is logged as common/<name> and not forwarded.
+setup
+mkdir -p "$HERDR_TASKS_ROOT/t1"
+add_common bad 'echo partial; exit 3'
+bash "$tick" > /dev/null 2>&1
+[ ! -s "$FAKE_ASK_LOG" ]; check "common failure: no wake" $?
+grep -q 't1/common/bad.sh exited 3' "$HERDR_TASKS_ROOT/.watch.log"; check "common failure: logged" $?
+
+# 12e. A task dir with neither watch.d nor common checks is left alone.
+setup
+mkdir -p "$HERDR_TASKS_ROOT/t1"
+bash "$tick" > /dev/null 2>&1
+[ ! -e "$HERDR_TASKS_ROOT/t1/watch.state" ]; check "nothing to run: no state dir" $?
 
 # 13. install-watch.sh writes a valid plist and loads it via launchctl.
 setup

@@ -25,7 +25,7 @@ allowed-tools: Bash(~/.claude/skills/herdr-task/scripts/task-create.sh:*), Bash(
 - active なタスクは日付なしの `~/tasks/<task>/` に置く (タスク名を workspace の label や `HERDR_TASK_DIR` にそのまま使うため)。日付で分けるのは溜まっていく archive だけ
 - 全 tab の shell に `HERDR_TASK` / `HERDR_TASK_DIR` が入る
 - **ACTIONS.md**: 人間はチャットを全部は追えないので、人間に返事や作業を求めるものは ACTIONS.md に番号付きで保ち、tab "task" の右 pane に常に表示しておく。形式は、1 項目 = 1 行目が `- **<状態マーク> <番号> <質問文>**` で、背景・選択肢・期限・URL はその下に字下げした箇条書き。1 行目だけで何を聞かれているか分かるように、質問文は「〜してよい?」「A・B・C のどれ?」「(作業) 〜してください」の形にする。PR / issue は必ず `[repo#N](https://github.com/<owner>/<repo>/pull/N)` (issue は `/issues/N`) のフル URL のリンクで書き、`PR #N`・`repo#N`・素の `#N` だけで書かない (board と ACTIONS の pane で項目番号と紛れずにクリックできるように。素の `#N` は表示側で推測してリンクにしない)。状態マークは 🔴 急ぎ / 🟠 今週 / 🟢 時間があるとき / ⏳ 待ち / ✅ 済み。人間は「1 OK」「2 A」のように番号で返事する。番号は振り直さない (返事がずれるため)。右 pane はスクロールできず、pane の高さを超えた分は下が切れるので、未完了のものを上に置き、済んだもの・watch で起きたときにもう解決している・状況が変わって意味がなくなった項目は ✅ にして下に移し、前の日より古い ✅ は消す
-- ACTIONS.md (各タスクのものと `~/tasks/.master-actions.md`) を Edit / Write すると、PostToolUse hook (`scripts/actions-lint-hook.sh` が `htask actions lint` を呼ぶ) がリンクになっていない PR / issue の参照を返すので、その場で直す。htask が無い・古いマシンでは何もしない (古いときは `mise up github:kitagry/htask` の案内だけ出る)
+- ACTIONS.md (各タスクのものと `~/tasks/.master-actions.md`) を Edit / Write すると、PostToolUse hook (`scripts/actions-lint-hook.sh` が `htask actions lint` を呼ぶ) がリンクになっていない PR / issue の参照を返すので、その場で直す。htask が無い・古いマシンでは何もしない (古いときは `mise up github:kitagry/htask` の案内だけ出る)。**ACTIONS.md は Edit / Write で編集する** (Bash の `sed -i` や heredoc だと hook が走らず、30 分後の watch の共通チェックまで気づけない)
 
   ```markdown
   - **🔴 1 [repo#239](https://github.com/<org>/<repo>/pull/239) を merge してよい?**
@@ -70,6 +70,7 @@ PR のレビューや CI のように「外で変わるもの」を待つとき�
 - 30 分ごとに `scripts/watch-tick.sh` を 1 回走らせて終了する。macOS は launchd の LaunchAgent、Linux は systemd の user timer (oneshot service + timer) が起動する (常駐ループではないので、ゾンビも孤児も出ず、再起動後も自動で動く)
 - `~/tasks/<task>/watch.d/*.sh` を全部走らせ、**標準出力が空でなければ** `task-ask.sh <task> "[watch] <出力>" --no-wait` でそのタスクのコーディネーターを起こす。1 タスクの複数チェックは 1 通にまとめる (複数が出力したときだけ `<チェック名>:` が付く)。コーディネーターが起動していない・プロンプトで止まっているときは `~/tasks/.inbox` に追記する
 - 登録は `watch.d/` にスクリプトを置くだけ。タスクを閉じるとディレクトリごと `_archive` に移るので、登録も自動で消える
+- 全タスク共通のチェックは skill の `scripts/watch.common.d/*.sh` に置く。各タスクで watch.d より先に走り、cwd・環境変数・timeout・ログの扱いは watch.d と同じ。メッセージとログでは `common/<名前>` と出る (タスクの watch.d と同じ名前でも区別でき、両方走る)。状態は `$WATCH_STATE_DIR` = `~/tasks/<task>/watch.state/common/` に分かれる。今あるのは `actions-lint.sh` (ACTIONS.md を `htask actions lint` し、前回から増えた違反の行番号と参照だけを出す。初回は覚えるだけで何も出さない)
 - 二重起動は `~/tasks/.watch.lock/` (mkdir ロック。クラッシュ後の古いロックは回収する)、各チェックは 60 秒 (`WATCH_TIMEOUT`) で打ち切る。終了コードが 0 でない・タイムアウトしたチェックの出力は転送せず `~/tasks/.watch.log` に書く (上限 `WATCH_LOG_MAX_LINES`、既定 500 行)
 - `~/tasks/.watch-last` に最後に完走した時刻が入る。止めたいときは `touch ~/tasks/.watch-disabled` (消せば再開)
 
@@ -89,11 +90,12 @@ PR のレビューや CI のように「外で変わるもの」を待つとき�
 
 チェックは「**前回の状態と比べて、変わった分だけを出力する。変化が無ければ何も出さない**」スクリプト。空でない出力 = コーディネーターを起こす理由、なので、毎回同じ内容を出すと 30 分ごとに起こしてしまう。
 
-- 状態は `$WATCH_STATE_DIR` (= `~/tasks/<task>/watch.state/`) に置く。cwd はタスクのディレクトリで、`HERDR_TASK` / `HERDR_TASK_DIR` も入っている
+- 状態は `$WATCH_STATE_DIR` (= `~/tasks/<task>/watch.state/`、共通チェックは `watch.state/common/`) に置く。cwd はタスクのディレクトリで、`HERDR_TASK` / `HERDR_TASK_DIR` も入っている
 - 出力に使うのは「次に何をすべきか判断できる 1 行」(PR の URL・状態・失敗した check など)。複数行でも 1 行にまとめて送られる。出力はそのままコーディネーターのプロンプトに打ち込まれるので、PR タイトルやコメント本文のような第三者が書ける自由文は含めない (プロンプトインジェクションの経路になる)
 - 外部 API は**まとめて 1 回**で呼ぶ。PR が 10 本あるなら `gh pr view` を 10 回ではなく GraphQL の alias で 1 クエリにする。30 分ごとでもレート制限を食わない
 - API の取得に失敗 (空の応答) したときは何も出さず、**状態も上書きしない**。次回に差分として拾える
 - スクリプトは冪等に。途中で打ち切られても (60 秒 timeout) 次回やり直せば同じ結果になるよう、状態は最後に一度だけ書く
+- 共通チェック (`watch.common.d/`) は launchd が `/bin/bash` (macOS では 3.2) で起動する watch-tick.sh から走るので、bash 3.2 で動く書き方にする (連想配列・`mapfile` を使わない)
 
 ```bash
 #!/usr/bin/env bash

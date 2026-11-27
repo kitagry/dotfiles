@@ -51,6 +51,15 @@ version_at_least() { # <version> <min>
   return 0
 }
 
+# Prints the installed htask's version ("0.2.0"); fails when htask is missing
+# or broken (e.g. a mise shim with no version set for the cwd).
+htask_version() {
+  local v
+  command -v htask > /dev/null || return 1
+  v=$(htask version 2> /dev/null) || return 1
+  printf '%s' "${v#htask }"
+}
+
 task_dir() {
   printf '%s/%s' "$(tasks_root)" "$1"
 }
