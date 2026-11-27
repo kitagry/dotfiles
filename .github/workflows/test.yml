@@ -1,0 +1,58 @@
+name: test
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Keep every master run so each merge has its own result.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  shell-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        # macOS runs the launchd branch against the real plutil and the scripts against BSD date / sed.
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # The system bash on macOS is 3.2. The scripts target the newer bash that mise / nix provide
+      # on the human's Mac, and they move to Go later, so they are not bent to fit 3.2.
+      # launchd still starts watch-tick.sh with /bin/bash; see #56.
+      - name: Use a newer bash (macOS)
+        if: runner.os == 'macOS'
+        env:
+          # Skip the formula index refresh brew would otherwise run before every install.
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+          HOMEBREW_NO_INSTALL_CLEANUP: "1"
+        run: |
+          brew install bash
+          echo "$(brew --prefix)/bin" >> "$GITHUB_PATH"
+      - run: bash --version | head -1
+      - name: Run shell tests
+        run: |
+          failed=()
+          for t in .claude/skills/herdr-task/tests/*.test.sh tests/*_test.sh; do
+            echo "::group::$t"
+            if bash "$t"; then
+              echo "::endgroup::"
+            else
+              echo "::endgroup::"
+              echo "::error file=$t::$t failed"
+              failed+=("$t")
+            fi
+          done
+          if [ "${#failed[@]}" -gt 0 ]; then
+            printf 'failed: %s\n' "${failed[@]}"
+            exit 1
+          fi

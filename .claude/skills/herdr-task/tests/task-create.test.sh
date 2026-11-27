@@ -12,7 +12,9 @@ tmps=()
 trap 'rm -rf "${tmps[@]}"' EXIT
 
 setup() {
-  tmp=$(mktemp -d)
+  # pwd -P: is_trusted (lib.sh) resolves symlinks before looking the path up in .claude.json,
+  # and macOS $TMPDIR is under /var -> /private/var.
+  tmp=$(cd "$(mktemp -d)" && pwd -P)
   tmps+=("$tmp")
   export HOME="$tmp/home" HERDR_TASKS_ROOT="$tmp/tasks"
   export FAKE_HERDR_LOG="$tmp/herdr.log"
