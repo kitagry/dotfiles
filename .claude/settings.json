@@ -205,5 +205,6 @@
   },
   "skillOverrides": {
     "test-writing": "off"
-  }
+  },
+  "editorMode": "vim"
 }
