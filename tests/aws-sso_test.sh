@@ -12,7 +12,7 @@ pass=0 fail=0
 # stub_aws <expiration or empty>: `export-credentials` returns it; every call is logged.
 stub_aws() {
   cat >"$T/bin/aws" <<STUB
-#!/bin/bash
+#!/usr/bin/env bash
 echo "\$*" >>"$T/calls.log"
 if [ "\$1 \$2" = "configure export-credentials" ]; then
   [ -n "$1" ] && echo '{"Expiration":"$1"}'
