@@ -43,9 +43,7 @@ case "$rel" in
   *) exit 0 ;;
 esac
 
-command -v htask > /dev/null || exit 0
-version=$(htask version 2> /dev/null) || exit 0
-version=${version#htask }
+version=$(htask_version) || exit 0
 if ! version_at_least "$version" "$HTASK_MIN_VERSION"; then
   # On exit 0 Claude Code shows neither stdout nor stderr to anyone;
   # systemMessage is the field it surfaces to the user.

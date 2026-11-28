@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
-# One pass of the shared watcher: runs every <tasks_root>/<task>/watch.d/*.sh
-# and wakes the task's coordinator only when a check printed something.
+# One pass of the shared watcher: in every task, runs the common checks
+# (watch.common.d/*.sh next to this script) and the task's own
+# <tasks_root>/<task>/watch.d/*.sh, and wakes the task's coordinator only when
+# a check printed something. Common checks are labeled "common/<name>" in
+# messages and the log, so one named like a task's check stays distinct, and
+# get their own state dir (watch.state/common) so their files cannot clash.
 # launchd (macOS) or a systemd user timer (Linux) starts this every 30 minutes
 # (see install-watch.sh); it runs once and exits, so there is no resident loop
 # to leak or orphan.
@@ -20,7 +24,8 @@
 #   .watch.lock/     mutex held for the duration of a pass
 #
 # Env: WATCH_TIMEOUT (seconds per check, default 60), WATCH_LOG_MAX_LINES
-# (default 500), WATCH_TASK_ASK (path to task-ask.sh, for tests).
+# (default 500), WATCH_TASK_ASK (path to task-ask.sh, for tests),
+# WATCH_COMMON_DIR (dir of the common checks, for tests).
 set -uo pipefail
 
 # launchd gives the job no LANG, so bash would count bytes: truncating a
@@ -34,6 +39,7 @@ root=$(tasks_root)
 timeout_sec="${WATCH_TIMEOUT:-60}"
 max_log_lines="${WATCH_LOG_MAX_LINES:-500}"
 ask="${WATCH_TASK_ASK:-$script_dir/task-ask.sh}"
+common_dir="${WATCH_COMMON_DIR:-$script_dir/watch.common.d}"
 log="$root/.watch.log"
 inbox="$root/.inbox"
 lock="$root/.watch.lock"
@@ -98,20 +104,43 @@ wake() { # <task> <message>
   printf '%s\t%s\t%s\n' "$(date '+%F %T')" "$task" "$message" >> "$inbox"
 }
 
+# Has <dir> any *.sh in it?
+has_checks() { # <dir>
+  local f
+  for f in "$1"/*.sh; do
+    [ -f "$f" ] && return 0
+  done
+  return 1
+}
+
 run_task() { # <task dir>
-  local dir="$1" task out msg="" check name rc n=0
+  local dir="$1" task out msg="" check label state rc n=0
   local names=() outs=()
   task=$(basename "$dir")
-  mkdir -p "$dir/watch.state"
-  for check in "$dir"/watch.d/*.sh; do
+  # Common checks first, then the task's own. Bash 3.2 (launchd's /bin/bash)
+  # has no associative arrays, so the label prefix rides along in the loop.
+  for check in "$common_dir"/*.sh "$dir"/watch.d/*.sh; do
     [ -f "$check" ] || continue
-    name=$(basename "$check")
-    out=$(cd "$dir" && HERDR_TASK="$task" HERDR_TASK_DIR="$dir" WATCH_STATE_DIR="$dir/watch.state" \
+    label=$(basename "$check")
+    state="$dir/watch.state"
+    # Match on the glob's own prefix: comparing dirname with $common_dir
+    # misses when WATCH_COMMON_DIR ends in "/".
+    case "$check" in
+      "$common_dir"/*)
+        label="common/$label"
+        state="$dir/watch.state/common"
+        ;;
+    esac
+    if ! mkdir -p "$state" 2>> "$log"; then
+      log_line "$task/$label skipped: cannot create $state"
+      continue
+    fi
+    out=$(cd "$dir" && HERDR_TASK="$task" HERDR_TASK_DIR="$dir" WATCH_STATE_DIR="$state" \
       run_with_timeout bash "$check" 2>>"$log")
     rc=$?
     if [ "$rc" -ne 0 ]; then
       # Output of a check that failed or timed out is unreliable, so it is not forwarded.
-      log_line "$task/$name exited $rc"
+      log_line "$task/$label exited $rc"
       continue
     fi
     [ -n "$out" ] || continue
@@ -119,7 +148,7 @@ run_task() { # <task dir>
     # Tabs would also break the inbox's tab-separated fields.
     out=$(printf '%s' "$out" | tr '\n\r\t' '   ' | sed 's/  */ /g; s/ *$//')
     n=$((n + 1))
-    names[n]="${name%.sh}"
+    names[n]="${label%.sh}"
     outs[n]="$out"
   done
   # The check name is only worth showing when several checks report at once.
@@ -138,10 +167,12 @@ run_task() { # <task dir>
   wake "$task" "[watch] $msg"
 }
 
+has_common=0
+has_checks "$common_dir" && has_common=1
 for dir in "$root"/*/; do
   dir="${dir%/}"
   case "$(basename "$dir")" in _*|.*) continue ;; esac
-  [ -d "$dir/watch.d" ] || continue
+  [ "$has_common" -eq 1 ] || has_checks "$dir/watch.d" || continue
   run_task "$dir"
 done
 

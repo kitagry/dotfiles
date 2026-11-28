@@ -56,3 +56,12 @@ jobs:
             printf 'failed: %s\n' "${failed[@]}"
             exit 1
           fi
+      # launchd starts watch-tick.sh with /bin/bash (3.2, see #56), so the watcher and the
+      # common checks it runs must work there even though the other scripts may need bash 4+.
+      - name: Run watch tests under the system bash (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          export PATH="/bin:$PATH"
+          bash --version | head -1
+          bash .claude/skills/herdr-task/tests/watch-tick.test.sh
+          bash .claude/skills/herdr-task/tests/actions-lint.test.sh
