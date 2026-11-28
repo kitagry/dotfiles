@@ -114,6 +114,16 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$HOME/.claude/skills/herdr-task/scripts/actions-lint-hook.sh\"; [ ! -f \"$f\" ] || bash \"$f\"",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "PostToolUseFailure": [

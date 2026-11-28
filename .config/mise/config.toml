@@ -40,6 +40,7 @@ make = "latest"
 node = "latest"
 "go:github.com/github/github-mcp-server/cmd/github-mcp-server" = "latest"
 "github:kitagry/yourturn" = "latest"
+"github:kitagry/htask" = "latest"
 # mdcat is in neither the mise nor the aqua registry. BIRSAx2/mdcat (the
 # maintained successor of the archived swsnr/mdcat) ships Linux binaries only,
 # and building it with cargo on Linux needs OpenSSL headers, so each OS gets

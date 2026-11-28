@@ -31,6 +31,26 @@ systemd_user_unit_dir() {
   printf '%s/systemd/user' "${XDG_CONFIG_HOME:-$HOME/.config}"
 }
 
+# Oldest htask the scripts work with. htask only ever adds commands and flags,
+# so a newer one is fine (design: release htask first, then change the skill).
+HTASK_MIN_VERSION=0.2.0
+
+# Succeeds when <version> ("0.2.0", "v0.2.0", or a Go pseudo-version such as
+# "0.2.1-0.20261127-abcdef") is at least <min>. A version that is not X.Y.Z
+# (a local `go build` says "dev") counts as new enough: it is someone's own build.
+version_at_least() { # <version> <min>
+  local v="${1#v}" a b i
+  v=${v%%[-+]*}
+  [[ "$v" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || return 0
+  IFS=. read -r -a a <<< "$v"
+  IFS=. read -r -a b <<< "$2"
+  for i in 0 1 2; do
+    ((10#${a[i]} > 10#${b[i]})) && return 0
+    ((10#${a[i]} < 10#${b[i]})) && return 1
+  done
+  return 0
+}
+
 task_dir() {
   printf '%s/%s' "$(tasks_root)" "$1"
 }
